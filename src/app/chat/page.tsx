@@ -4,9 +4,9 @@
 import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bell, Bot, Languages, Search, Settings, Smile } from 'lucide-react';
+import { Bell, Bot, Languages, Search, Settings, Smile, Minus, Square, X, Maximize } from 'lucide-react';
 
 const chats = [
   { id: 1, name: 'Alex Starr', lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', online: true },
@@ -54,6 +54,11 @@ export default function ChitChatPage() {
               </div>
             </>
           )}
+           <div className="ml-auto flex items-center gap-1">
+             <Button variant="ghost" size="icon"><Minus className="h-4 w-4"/></Button>
+             <Button variant="ghost" size="icon"><Maximize className="h-4 w-4"/></Button>
+             <Button variant="ghost" size="icon"><X className="h-4 w-4" /></Button>
+           </div>
         </div>
         <div className="flex-grow p-4 space-y-4 overflow-y-auto">
           {chatMessages.map((msg, index) => (
@@ -67,6 +72,7 @@ export default function ChitChatPage() {
         <div className="p-4 border-t flex items-center gap-2">
           <Input placeholder="Write a message..." className="flex-grow" />
           <Button variant="ghost" size="icon"><Smile /></Button>
+          <Button variant="ghost" size="icon"><Languages /></Button>
           <Button>Send</Button>
         </div>
       </div>
@@ -77,7 +83,6 @@ export default function ChitChatPage() {
            <h2 className="text-xl font-bold">Chats</h2>
            <div className="flex items-center gap-1">
              <Button variant="ghost" size="icon"><Bot className="h-5 w-5"/></Button>
-             <Button variant="ghost" size="icon"><Languages className="h-5 w-5"/></Button>
              <Button variant="ghost" size="icon"><Settings className="h-5 w-5" /></Button>
              <Button variant="ghost" size="icon"><Bell className="h-5 w-5"/></Button>
            </div>

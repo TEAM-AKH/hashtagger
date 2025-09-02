@@ -1,3 +1,4 @@
+
 import { Search, Bell } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
@@ -6,7 +7,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { ModeToggle } from './dark-mode-toggle';
-import { UserCircle } from 'lucide-react';
 
 export default function Header() {
   return (
@@ -25,17 +25,19 @@ export default function Header() {
           className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
         />
       </div>
-      <ModeToggle />
       <Button variant="ghost" size="icon" className="rounded-full">
         <Bell className="h-5 w-5" />
         <span className="sr-only">Notifications</span>
       </Button>
+      <ModeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="rounded-full">
             <Avatar className="h-8 w-8">
               <AvatarImage src="https://picsum.photos/100" alt="@user" data-ai-hint="person selfie"/>
-              <AvatarFallback><UserCircle className="h-4 w-4" /></AvatarFallback>
+              <AvatarFallback>
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 4.5l15 15"/><path d="M17 3v4"/><path d="M21 7h-4"/><path d="M12.5 7.5L10 10"/><path d="M16.5 11.5L14 14"/><path d="M11 21v-4"/><path d="M7 21H3"/><path d="M3 3l3.55 3.55"/></svg>
+              </AvatarFallback>
             </Avatar>
              <span className="sr-only">User menu</span>
           </Button>

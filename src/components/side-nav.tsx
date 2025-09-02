@@ -3,24 +3,21 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Circle, MessageSquare, Video, Bookmark, History, Radio, Gamepad2, Diamond, Compass, Rss } from 'lucide-react';
+import { Home, Circle, MessageSquare, Video, Bookmark, History, Radio, Compass, Rss, Film, Clapperboard } from 'lucide-react';
 import { SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter } from '@/components/ui/sidebar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Hash, User, Settings, LogOut } from 'lucide-react';
+import { Hash, User, Settings } from 'lucide-react';
 import { QuickAccessIcon } from './quick-access-icon';
 
 const mainLinks = [
   { href: '/home', label: 'Home', icon: Home },
   { href: '/', label: 'Circles', icon: Circle },
   { href: '/chat', label: 'Chit Chat', icon: MessageSquare },
-  { href: '/videos', label: 'Videos', icon: Video },
+  { href: '/clips', label: 'Clips', icon: Clapperboard },
+  { href: '/flicks', label: 'Flicks', icon: Film },
   { href: '/memory-bank', label: 'Memory Bank', icon: Bookmark },
-  { href: '/reels', label: 'Reels', icon: History },
   { href: '/stream', label: 'Stream', icon: Radio },
-  { href: '/fun-arena', label: 'Fun Arena', icon: Gamepad2 },
-  { href: '/treasures', label: 'Treasures', icon: Diamond },
   { href: '/instant-updates', label: 'Instant Updates', icon: Compass },
-  { href: '/dynamic-feeds', label: 'Dynamic Feeds', icon: Rss },
 ];
 
 
@@ -82,14 +79,6 @@ export default function SideNav() {
               <Link href="/settings">
                 <Settings className="h-5 w-5" />
                 <span className="group-data-[collapsible=icon]:hidden">Settings</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Logout">
-              <Link href="/logout">
-                <LogOut className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">Logout</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -1,10 +1,12 @@
+
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PostCard from '@/components/post-card';
 import { Badge } from '@/components/ui/badge';
-import { UserCircle } from 'lucide-react';
+import { UserCircle, LogOut, PlusCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const userPosts = [
     {
@@ -41,7 +43,9 @@ export default function ProfilePage() {
         <CardContent className="relative -mt-16 flex flex-col items-center p-6 text-center sm:flex-row sm:items-start sm:text-left">
             <Avatar className="h-32 w-32 border-4 border-card shadow-md">
                 <AvatarImage src="https://picsum.photos/seed/user/128" alt="User" data-ai-hint="person selfie"/>
-                <AvatarFallback><UserCircle className="h-10 w-10"/></AvatarFallback>
+                 <AvatarFallback>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 4.5l15 15"/><path d="M17 3v4"/><path d="M21 7h-4"/><path d="M12.5 7.5L10 10"/><path d="M16.5 11.5L14 14"/><path d="M11 21v-4"/><path d="M7 21H3"/><path d="M3 3l3.55 3.55"/></svg>
+                </AvatarFallback>
             </Avatar>
             <div className='sm:ml-6 mt-4 sm:mt-16 w-full'>
               <div className="sm:flex items-baseline justify-between">
@@ -50,8 +54,8 @@ export default function ProfilePage() {
                   <p className="text-muted-foreground">@yourusername</p>
                 </div>
                 <div className="mt-2 sm:mt-0 flex items-center justify-center sm:justify-start gap-2">
-                    <UserCircle className="h-4 w-4 text-accent-foreground/80" />
-                    <span className="font-medium text-muted-foreground">Zodiac: Leo</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-foreground/80"><path d="M4.5 4.5l15 15"/><path d="M17 3v4"/><path d="M21 7h-4"/><path d="M12.5 7.5L10 10"/><path d="M16.5 11.5L14 14"/><path d="M11 21v-4"/><path d="M7 21H3"/><path d="M3 3l3.55 3.55"/></svg>
+                    <span className="font-medium text-muted-foreground">Zodiac: Scorpio</span>
                 </div>
               </div>
               <p className="mt-4 max-w-xl text-center sm:text-left mx-auto sm:mx-0">
@@ -75,6 +79,9 @@ export default function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="circles" className="mt-6">
+           <div className="mb-4 flex justify-end">
+               <Button><PlusCircle/>Create Circle</Button>
+           </div>
            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {userCircles.map(circle => (
               <Card key={circle.id} className="group relative overflow-hidden aspect-[4/3]">
@@ -102,6 +109,10 @@ export default function ProfilePage() {
                     <li><strong>Website:</strong> <a href="#" className="text-primary-foreground hover:underline">your.website.com</a></li>
                     <li><strong>Interests:</strong> #tech #travel #photography #foodie</li>
                   </ul>
+                   <Button variant="outline" className="w-full mt-6">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                    </Button>
                 </CardContent>
             </Card>
         </TabsContent>
