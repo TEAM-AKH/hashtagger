@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { ModeToggle } from './dark-mode-toggle';
-import { Leo } from 'lucide-react';
+import { UserCircle } from 'lucide-react';
 
 export default function Header() {
   return (
@@ -35,7 +35,7 @@ export default function Header() {
           <Button variant="ghost" size="icon" className="rounded-full">
             <Avatar className="h-8 w-8">
               <AvatarImage src="https://picsum.photos/100" alt="@user" data-ai-hint="person selfie"/>
-              <AvatarFallback><Leo className="h-4 w-4" /></AvatarFallback>
+              <AvatarFallback><UserCircle className="h-4 w-4" /></AvatarFallback>
             </Avatar>
              <span className="sr-only">User menu</span>
           </Button>
