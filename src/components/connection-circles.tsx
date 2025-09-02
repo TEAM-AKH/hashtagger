@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
-import { PlusCircle, UserPlus, X } from "lucide-react";
+import { PlusCircle, UserPlus, Minus } from "lucide-react";
 
 const subCircles = [
   { id: 1, name: "Best Friends", image: "https://picsum.photos/seed/bf/200", hint: "group friends", members: [
@@ -98,9 +98,9 @@ export default function ConnectionCircles() {
             <DialogDescription>
               Members of the {selectedCircle?.name.toLowerCase()} circle.
             </DialogDescription>
-             <DialogClose asChild>
+            <DialogClose asChild>
                 <Button variant="ghost" size="icon" className="absolute top-3 right-10">
-                    <X className="h-4 w-4" />
+                    <Minus className="h-4 w-4" />
                     <span className="sr-only">Remove Circle</span>
                 </Button>
             </DialogClose>

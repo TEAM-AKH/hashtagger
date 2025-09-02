@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Send } from "lucide-react";
 
 type Post = {
     id: number;
@@ -32,19 +32,19 @@ export default function PostCard({ post }: { post: Post }) {
         )}
       </CardContent>
       <CardFooter className="flex justify-between">
-        <div className="flex gap-1 sm:gap-4">
+        <div className="flex gap-1 sm:gap-2">
             <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
-                <Heart className="h-4 w-4" />
-                <span>{post.likes}</span>
+                <Heart className="h-5 w-5" />
+                <span>Hubb ({post.likes})</span>
             </Button>
             <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
-                <MessageCircle className="h-4 w-4" />
-                <span>{post.comments}</span>
+                <MessageCircle className="h-5 w-5" />
+                <span>Express ({post.comments})</span>
             </Button>
         </div>
         <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
-            <Share2 className="h-4 w-4" />
-            <span>Share</span>
+            <Send className="h-5 w-5" />
+            <span>Circulate</span>
         </Button>
       </CardFooter>
     </Card>

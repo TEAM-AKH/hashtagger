@@ -2,11 +2,13 @@
 'use client';
 
 import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Bell, Bot, Languages, Search, Settings, Smile, Minus, Square, X, Maximize } from 'lucide-react';
+import { Logo } from '@/components/logo';
 
 const chats = [
   { id: 1, name: 'Alex Starr', lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', online: true },
@@ -27,57 +29,93 @@ const messages = {
   2: [
     { from: 'other', text: 'Haha, that\'s hilarious!', time: 'Yesterday' },
   ],
-  // ... other messages
+  3: [
+    { from: 'other', text: 'Don\'t forget the meeting at 11.', time: '9:15 AM' },
+  ],
+  4: [
+    { from: 'other', text: 'Let\'s catch up next week.', time: 'Sunday' },
+  ],
+  5: [
+    { from: 'other', text: 'I saw that movie you recommended!', time: 'Friday' },
+  ],
+  6: [
+     { from: 'other', text: 'Can you send me the files?', time: '8:30 AM' },
+  ],
+  7: [
+    { from: 'other', text: 'Typing...', time: '7:55 AM' },
+  ]
 };
 
 
 export default function ChitChatPage() {
-  const [selectedChatId, setSelectedChatId] = useState(1);
+  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
 
   const selectedChat = chats.find(c => c.id === selectedChatId);
-  const chatMessages = messages[selectedChatId as keyof typeof messages] || [];
+  const chatMessages = selectedChatId ? messages[selectedChatId as keyof typeof messages] || [] : [];
+
+  const openChat = (id: number) => {
+    setSelectedChatId(id);
+  }
+
+  const closeChat = () => {
+    setSelectedChatId(null);
+  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 h-[calc(100vh-8rem)]">
-      {/* Center: Chat Window */}
-      <div className="md:col-span-8 flex flex-col bg-card border rounded-lg">
-        <div className="flex items-center p-4 border-b">
-          {selectedChat && (
-            <>
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={`https://picsum.photos/seed/${selectedChat.id}/100`} alt={selectedChat.name} />
-                <AvatarFallback>{selectedChat.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className="ml-4">
-                <p className="font-semibold">{selectedChat.name}</p>
-                <p className="text-xs text-muted-foreground">{selectedChat.online ? 'Active now' : 'Offline'}</p>
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 h-[calc(100vh-8rem)] relative">
+      {/* Center: Chat Window or Logo */}
+      <div className="md:col-span-8 flex flex-col items-center justify-center bg-card/50 border rounded-lg overflow-hidden">
+        <AnimatePresence>
+          {selectedChat ? (
+             <motion.div 
+              key={selectedChat.id}
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -50, scale: 0.9 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="w-full h-full flex flex-col bg-card"
+            >
+              <div className="flex items-center p-4 border-b">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={`https://picsum.photos/seed/${selectedChat.id}/100`} alt={selectedChat.name} />
+                  <AvatarFallback>{selectedChat.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="ml-4">
+                  <p className="font-semibold">{selectedChat.name}</p>
+                  <p className="text-xs text-muted-foreground">{selectedChat.online ? 'Active now' : 'Offline'}</p>
+                </div>
+                <div className="ml-auto flex items-center gap-1">
+                  <Button variant="ghost" size="icon"><Minus className="h-4 w-4"/></Button>
+                  <Button variant="ghost" size="icon"><Maximize className="h-4 w-4"/></Button>
+                  <Button variant="ghost" size="icon" onClick={closeChat}><X className="h-4 w-4" /></Button>
+                </div>
               </div>
-            </>
+              <div className="flex-grow p-4 space-y-4 overflow-y-auto">
+                {chatMessages.map((msg, index) => (
+                  <div key={index} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`p-3 rounded-lg max-w-xs lg:max-w-md ${msg.from === 'me' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                      <p>{msg.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="p-4 border-t flex items-center gap-2 bg-background">
+                <Input placeholder="Write a message..." className="flex-grow" />
+                <Button variant="ghost" size="icon"><Smile /></Button>
+                <Button variant="ghost" size="icon"><Languages /></Button>
+                <Button>Send</Button>
+              </div>
+            </motion.div>
+          ) : (
+             <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <Logo className="h-24 w-24 mb-4" />
+                <p>Select a chat to start messaging</p>
+             </div>
           )}
-           <div className="ml-auto flex items-center gap-1">
-             <Button variant="ghost" size="icon"><Minus className="h-4 w-4"/></Button>
-             <Button variant="ghost" size="icon"><Maximize className="h-4 w-4"/></Button>
-             <Button variant="ghost" size="icon"><X className="h-4 w-4" /></Button>
-           </div>
-        </div>
-        <div className="flex-grow p-4 space-y-4 overflow-y-auto">
-          {chatMessages.map((msg, index) => (
-            <div key={index} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`p-3 rounded-lg max-w-xs lg:max-w-md ${msg.from === 'me' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                <p>{msg.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="p-4 border-t flex items-center gap-2">
-          <Input placeholder="Write a message..." className="flex-grow" />
-          <Button variant="ghost" size="icon"><Smile /></Button>
-          <Button variant="ghost" size="icon"><Languages /></Button>
-          <Button>Send</Button>
-        </div>
+        </AnimatePresence>
       </div>
 
-      {/* Right: Chat List and AI tools */}
+      {/* Right: Chat List */}
       <div className="md:col-span-4 flex flex-col gap-4">
         <div className="flex items-center justify-between">
            <h2 className="text-xl font-bold">Chats</h2>
@@ -98,7 +136,7 @@ export default function ChitChatPage() {
                 <div 
                   key={chat.id} 
                   className={`flex items-center p-4 cursor-pointer hover:bg-muted/50 border-b ${selectedChatId === chat.id ? 'bg-muted' : ''}`}
-                  onClick={() => setSelectedChatId(chat.id)}
+                  onClick={() => openChat(chat.id)}
                 >
                   <Avatar className="h-10 w-10 relative">
                     <AvatarImage src={`https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
@@ -107,7 +145,7 @@ export default function ChitChatPage() {
                   </Avatar>
                   <div className="ml-4 flex-grow">
                     <p className="font-semibold">{chat.name}</p>
-                    <p className={`text-sm text-muted-foreground truncate ${chat.typing ? 'italic text-primary-foreground' : ''}`}>{chat.lastMessage}</p>
+                    <p className={`text-sm text-muted-foreground truncate ${chat.typing ? 'italic text-primary' : ''}`}>{chat.lastMessage}</p>
                   </div>
                   <div className="text-xs text-muted-foreground text-right">
                     <p>{chat.time}</p>

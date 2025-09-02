@@ -6,8 +6,10 @@ import { usePathname } from 'next/navigation';
 import { Home, Circle, MessageSquare, Video, Bookmark, History, Radio, Compass, Rss, Film, Clapperboard } from 'lucide-react';
 import { SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter } from '@/components/ui/sidebar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Hash, User, Settings } from 'lucide-react';
+import { User, Settings, Gem } from 'lucide-react';
 import { QuickAccessIcon } from './quick-access-icon';
+import { Logo } from './logo';
+
 
 const mainLinks = [
   { href: '/home', label: 'Home', icon: Home },
@@ -31,8 +33,8 @@ export default function SideNav() {
             <DropdownMenuTrigger asChild>
                  <SidebarHeader>
                     <div className="flex items-center gap-2">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                            <Hash className="h-6 w-6 text-primary-foreground"/>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-accent-foreground">
+                            <Logo className="h-8 w-8"/>
                         </div>
                         <span className="text-lg font-semibold group-data-[collapsible=icon]:hidden">Hastagger</span>
                     </div>

@@ -1,5 +1,5 @@
 
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, Gem } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,15 +7,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { ModeToggle } from './dark-mode-toggle';
+import { Logo } from './logo';
 
 export default function Header() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
       <SidebarTrigger className="md:hidden" />
       <div className="hidden md:block">
-        <h1 className="text-xl font-bold tracking-tight text-foreground">
-          <Link href="/">Hastagger</Link>
-        </h1>
+        <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight text-foreground">
+          <Logo className="h-7 w-7" />
+          <h1>Hastagger</h1>
+        </Link>
       </div>
       <div className="relative ml-auto flex-1 md:grow-0">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -36,7 +38,7 @@ export default function Header() {
             <Avatar className="h-8 w-8">
               <AvatarImage src="https://picsum.photos/100" alt="@user" data-ai-hint="person selfie"/>
               <AvatarFallback>
-                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 4.5l15 15"/><path d="M17 3v4"/><path d="M21 7h-4"/><path d="M12.5 7.5L10 10"/><path d="M16.5 11.5L14 14"/><path d="M11 21v-4"/><path d="M7 21H3"/><path d="M3 3l3.55 3.55"/></svg>
+                 <Gem className="h-4 w-4 text-muted-foreground" />
               </AvatarFallback>
             </Avatar>
              <span className="sr-only">User menu</span>
