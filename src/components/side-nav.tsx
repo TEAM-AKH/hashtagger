@@ -1,23 +1,26 @@
+
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Circle, Video, MessageSquare, History, Bookmark, Radio, Gamepad2, Film } from 'lucide-react';
+import { Home, Circle, MessageSquare, Video, Bookmark, History, Radio, Gamepad2, Diamond, Compass, Rss } from 'lucide-react';
 import { SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter } from '@/components/ui/sidebar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
 import { Hash, User, Settings, LogOut } from 'lucide-react';
+import { QuickAccessIcon } from './quick-access-icon';
 
 const mainLinks = [
   { href: '/home', label: 'Home', icon: Home },
   { href: '/', label: 'Circles', icon: Circle },
-  { href: '/clips', label: 'Clips', icon: Video },
   { href: '/chat', label: 'Chit Chat', icon: MessageSquare },
-  { href: '/feeds', label: 'Dynamic Feeds', icon: History },
+  { href: '/videos', label: 'Videos', icon: Video },
   { href: '/memory-bank', label: 'Memory Bank', icon: Bookmark },
+  { href: '/reels', label: 'Reels', icon: History },
   { href: '/stream', label: 'Stream', icon: Radio },
   { href: '/fun-arena', label: 'Fun Arena', icon: Gamepad2 },
-  { href: '/videos', label: 'Videos', icon: Film },
+  { href: '/treasures', label: 'Treasures', icon: Diamond },
+  { href: '/instant-updates', label: 'Instant Updates', icon: Compass },
+  { href: '/dynamic-feeds', label: 'Dynamic Feeds', icon: Rss },
 ];
 
 
@@ -39,15 +42,10 @@ export default function SideNav() {
                  </SidebarHeader>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="right" align="start" className="w-56">
-                <DropdownMenuItem asChild><Link href="/home"><Home className="mr-2 h-4 w-4" /><span>Home</span></Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="/"><Circle className="mr-2 h-4 w-4" /><span>Circles</span></Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="/clips"><Video className="mr-2 h-4 w-4" /><span>Clips</span></Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="/chat"><MessageSquare className="mr-2 h-4 w-4" /><span>Chit Chat</span></Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="/feeds"><History className="mr-2 h-4 w-4" /><span>Dynamic Feeds</span></Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="/memory-bank"><Bookmark className="mr-2 h-4 w-4" /><span>Memory Bank</span></Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="/stream"><Radio className="mr-2 h-4 w-4" /><span>Stream</span></Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="/fun-arena"><Gamepad2 className="mr-2 h-4 w-4" /><span>Fun Arena</span></Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link href="/videos"><Film className="mr-2 h-4 w-4" /><span>Videos</span></Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="#"><QuickAccessIcon className="mr-2 h-4 w-4" /><span>Quick Access</span></Link></DropdownMenuItem>
+                {mainLinks.map(link => (
+                    <DropdownMenuItem key={link.href} asChild><Link href={link.href}><link.icon className="mr-2 h-4 w-4" /><span>{link.label}</span></Link></DropdownMenuItem>
+                ))}
             </DropdownMenuContent>
         </DropdownMenu>
 

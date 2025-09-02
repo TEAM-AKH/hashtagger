@@ -1,0 +1,119 @@
+
+'use client';
+
+import { useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Bell, Bot, Languages, Search, Settings, Smile } from 'lucide-react';
+
+const chats = [
+  { id: 1, name: 'Alex Starr', lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', online: true },
+  { id: 2, name: 'Mia Wong', lastMessage: 'Haha, that\'s hilarious!', time: 'Yesterday', online: false },
+  { id: 3, name: 'Project Team', lastMessage: 'Don\'t forget the meeting at 11.', time: '9:15 AM', online: false, unread: true },
+  { id: 4, name: 'David Chen', lastMessage: 'Let\'s catch up next week.', time: 'Sunday', online: false },
+  { id: 5, name: 'Sophia Loren', lastMessage: 'I saw that movie you recommended!', time: 'Friday', online: false },
+  { id: 6, name: 'Emily Clark', lastMessage: 'Can you send me the files?', time: '8:30 AM', online: false },
+  { id: 7, name: 'Chris Evans', lastMessage: 'Typing...', time: '7:55 AM', online: true, typing: true },
+];
+
+const messages = {
+  1: [
+    { from: 'other', text: 'Hey! Did you check the new post on The Hashtagger?', time: '10:40 AM' },
+    { from: 'me', text: 'Yes, looks great! Let\'s catch up later today.', time: '10:42 AM' },
+    { from: 'other', text: 'Hey, are you free for a call?', time: '10:45 AM' },
+  ],
+  2: [
+    { from: 'other', text: 'Haha, that\'s hilarious!', time: 'Yesterday' },
+  ],
+  // ... other messages
+};
+
+
+export default function ChitChatPage() {
+  const [selectedChatId, setSelectedChatId] = useState(1);
+
+  const selectedChat = chats.find(c => c.id === selectedChatId);
+  const chatMessages = messages[selectedChatId as keyof typeof messages] || [];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 h-[calc(100vh-8rem)]">
+      {/* Center: Chat Window */}
+      <div className="md:col-span-8 flex flex-col bg-card border rounded-lg">
+        <div className="flex items-center p-4 border-b">
+          {selectedChat && (
+            <>
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={`https://picsum.photos/seed/${selectedChat.id}/100`} alt={selectedChat.name} />
+                <AvatarFallback>{selectedChat.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div className="ml-4">
+                <p className="font-semibold">{selectedChat.name}</p>
+                <p className="text-xs text-muted-foreground">{selectedChat.online ? 'Active now' : 'Offline'}</p>
+              </div>
+            </>
+          )}
+        </div>
+        <div className="flex-grow p-4 space-y-4 overflow-y-auto">
+          {chatMessages.map((msg, index) => (
+            <div key={index} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`p-3 rounded-lg max-w-xs lg:max-w-md ${msg.from === 'me' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                <p>{msg.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="p-4 border-t flex items-center gap-2">
+          <Input placeholder="Write a message..." className="flex-grow" />
+          <Button variant="ghost" size="icon"><Smile /></Button>
+          <Button>Send</Button>
+        </div>
+      </div>
+
+      {/* Right: Chat List and AI tools */}
+      <div className="md:col-span-4 flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+           <h2 className="text-xl font-bold">Chats</h2>
+           <div className="flex items-center gap-1">
+             <Button variant="ghost" size="icon"><Bot className="h-5 w-5"/></Button>
+             <Button variant="ghost" size="icon"><Languages className="h-5 w-5"/></Button>
+             <Button variant="ghost" size="icon"><Settings className="h-5 w-5" /></Button>
+             <Button variant="ghost" size="icon"><Bell className="h-5 w-5"/></Button>
+           </div>
+        </div>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Search chats" className="pl-8" />
+        </div>
+        <Card className="flex-grow overflow-hidden">
+          <CardContent className="p-0 h-full overflow-y-auto">
+            <div className="flex flex-col">
+              {chats.map(chat => (
+                <div 
+                  key={chat.id} 
+                  className={`flex items-center p-4 cursor-pointer hover:bg-muted/50 border-b ${selectedChatId === chat.id ? 'bg-muted' : ''}`}
+                  onClick={() => setSelectedChatId(chat.id)}
+                >
+                  <Avatar className="h-10 w-10 relative">
+                    <AvatarImage src={`https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
+                    <AvatarFallback>{chat.name.charAt(0)}</AvatarFallback>
+                    {chat.online && <div className="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-500 rounded-full border-2 border-card" />}
+                  </Avatar>
+                  <div className="ml-4 flex-grow">
+                    <p className="font-semibold">{chat.name}</p>
+                    <p className={`text-sm text-muted-foreground truncate ${chat.typing ? 'italic text-primary-foreground' : ''}`}>{chat.lastMessage}</p>
+                  </div>
+                  <div className="text-xs text-muted-foreground text-right">
+                    <p>{chat.time}</p>
+                    {chat.unread && <div className="h-2 w-2 bg-blue-500 rounded-full ml-auto mt-1" />}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
