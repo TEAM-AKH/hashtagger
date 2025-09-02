@@ -1,10 +1,11 @@
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, Sparkles } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import Link from 'next/link';
+import { ModeToggle } from './dark-mode-toggle';
 
 export default function Header() {
   return (
@@ -23,6 +24,7 @@ export default function Header() {
           className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
         />
       </div>
+      <ModeToggle />
       <Button variant="ghost" size="icon" className="rounded-full">
         <Bell className="h-5 w-5" />
         <span className="sr-only">Notifications</span>
@@ -32,7 +34,7 @@ export default function Header() {
           <Button variant="ghost" size="icon" className="rounded-full">
             <Avatar className="h-8 w-8">
               <AvatarImage src="https://picsum.photos/100" alt="@user" data-ai-hint="person selfie"/>
-              <AvatarFallback>U</AvatarFallback>
+              <AvatarFallback><Sparkles className="h-4 w-4" /></AvatarFallback>
             </Avatar>
              <span className="sr-only">User menu</span>
           </Button>
