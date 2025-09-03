@@ -4,12 +4,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/logo';
@@ -25,6 +23,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const navItems = [
   { href: '/circles', label: 'Circles', icon: CircleDot },
@@ -55,7 +54,8 @@ export default function SideNav() {
               if (item.isHome) {
                 return (
                   <SidebarMenuItem key={item.href} className="my-4">
-                    <TooltipWrapper label={item.label}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                        <Link href={item.href}>
                         <motion.div
                           whileHover={{ scale: 1.1, rotate: 10 }}
@@ -68,36 +68,42 @@ export default function SideNav() {
                             <Icon className="h-10 w-10" />
                         </motion.div>
                       </Link>
-                    </TooltipWrapper>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" align="center">{item.label}</TooltipContent>
+                    </Tooltip>
                   </SidebarMenuItem>
                 );
               }
 
               return (
                 <SidebarMenuItem key={item.href}>
-                  <TooltipWrapper label={item.label}>
-                    <Link href={item.href} className="flex flex-col items-center group">
-                      <motion.div
-                        whileHover={{ y: -4 }}
-                        className="relative"
-                      >
-                         <div className={`
-                            absolute -inset-2 rounded-full transition-all duration-300
-                            ${isActive ? 'bg-primary/20 scale-100' : 'scale-0 group-hover:scale-100'}
-                         `}/>
-                         <div className={`
-                           relative flex h-12 w-12 items-center justify-center rounded-full
-                           transition-colors duration-300
-                           ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'}
-                         `}>
-                          <Icon className="h-6 w-6" />
-                        </div>
-                      </motion.div>
-                      <span className="mt-2 text-xs font-medium text-foreground/80 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {item.label}
-                      </span>
-                    </Link>
-                  </TooltipWrapper>
+                   <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link href={item.href} className="flex flex-col items-center group">
+                          <motion.div
+                            whileHover={{ y: -4 }}
+                            className="relative"
+                          >
+                            <div className={`
+                                absolute -inset-2 rounded-full transition-all duration-300
+                                ${isActive ? 'bg-primary/20 scale-100' : 'scale-0 group-hover:scale-100'}
+                            `}/>
+                            <div className={`
+                              relative flex h-12 w-12 items-center justify-center rounded-full
+                              transition-colors duration-300
+                              ${isActive ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'}
+                            `}>
+                              <Icon className="h-6 w-6" />
+                            </div>
+                          </motion.div>
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" align="center">
+                        <span className="text-xs font-medium text-foreground/80 transition-opacity">
+                          {item.label}
+                        </span>
+                      </TooltipContent>
+                   </Tooltip>
                 </SidebarMenuItem>
               );
             })}
@@ -106,7 +112,8 @@ export default function SideNav() {
         <SidebarFooter>
              <SidebarMenu>
                  <SidebarMenuItem>
-                      <TooltipWrapper label="Settings">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
                          <Link href="/settings" className="flex flex-col items-center group">
                              <motion.div
                                 whileHover={{ y: -4 }}
@@ -120,22 +127,17 @@ export default function SideNav() {
                                      <Settings className="h-6 w-6"/>
                                  </div>
                              </motion.div>
-                              <span className="mt-2 text-xs font-medium text-foreground/80 opacity-0 group-hover:opacity-100 transition-opacity">
+                         </Link>
+                        </TooltipTrigger>
+                         <TooltipContent side="right" align="center">
+                            <span className="text-xs font-medium text-foreground/80 transition-opacity">
                                 Settings
                               </span>
-                         </Link>
-                      </TooltipWrapper>
+                         </TooltipContent>
+                      </Tooltip>
                  </SidebarMenuItem>
              </SidebarMenu>
         </SidebarFooter>
       </div>
   );
-}
-
-const TooltipWrapper = ({ label, children }: { label: string, children: React.ReactNode }) => {
-    return (
-        <div className="group relative flex justify-center">
-            {children}
-        </div>
-    )
 }
