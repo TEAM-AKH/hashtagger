@@ -1,5 +1,10 @@
 import type { ReactNode } from 'react';
-import { SidebarProvider, Sidebar, SidebarInset } from '@/components/ui/sidebar';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarInset,
+  SidebarProvider,
+} from '@/components/ui/sidebar';
 import SideNav from '@/components/side-nav';
 import Header from '@/components/header';
 
@@ -11,9 +16,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <Header />
-        <main className="p-4 lg:p-6">
-          {children}
-        </main>
+        <main className="flex-1 p-4 lg:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

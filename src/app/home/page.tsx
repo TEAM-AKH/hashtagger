@@ -1,6 +1,8 @@
 
+'use client';
+
 import PostCard from "@/components/post-card";
-import { redirect } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 const posts = [
     {
@@ -31,14 +33,50 @@ const posts = [
     },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 10,
+    },
+  },
+};
+
 
 export default function HomePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Home Feed</h1>
+      <motion.h1 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="text-3xl font-bold tracking-tight">Home Feed</motion.h1>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
         {posts.map(post => (
-            <PostCard key={post.id} post={post} />
+          <motion.div key={post.id} variants={itemVariants}>
+            <PostCard post={post} />
+          </motion.div>
         ))}
+      </motion.div>
     </div>
   );
 }
