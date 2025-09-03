@@ -56,7 +56,7 @@ export default function ConnectionCircles() {
               className="absolute flex flex-col items-center group cursor-pointer transition-all duration-500 ease-in-out"
               style={{ 
                 width: CIRCLE_SIZE, 
-                height: CIRCLE_SIZE + 20,
+                height: CIRCLE_SIZE + 40,
                 transform: `translate(${x}px, ${y}px) scale(${isExpanded ? 1 : 0})`,
                 opacity: isExpanded ? 1 : 0,
                 transitionDelay: `${isExpanded ? index * 70 : (subCircles.length - index) * 50}ms`,
@@ -65,7 +65,7 @@ export default function ConnectionCircles() {
               <div className="relative rounded-full overflow-hidden border-4 border-accent/50 shadow-lg hover:border-primary transition-colors" style={{ width: CIRCLE_SIZE, height: CIRCLE_SIZE }}>
                 <Image src={circle.image} alt={circle.name} fill style={{ objectFit: 'cover' }} data-ai-hint={circle.hint} />
               </div>
-              <span className="mt-2 text-sm font-medium text-foreground opacity-90 group-hover:opacity-100 transition-opacity">{circle.name}</span>
+              <span className="mt-2 text-sm font-medium text-foreground opacity-0 group-hover:opacity-100 transition-opacity">{circle.name}</span>
             </button>
           );
         })}

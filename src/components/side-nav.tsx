@@ -76,7 +76,7 @@ export default function SideNav() {
               return (
                 <SidebarMenuItem key={item.href}>
                   <TooltipWrapper label={item.label}>
-                    <Link href={item.href} className="flex flex-col items-center">
+                    <Link href={item.href} className="flex flex-col items-center group">
                       <motion.div
                         whileHover={{ y: -4 }}
                         className="relative"
@@ -93,7 +93,7 @@ export default function SideNav() {
                           <Icon className="h-6 w-6" />
                         </div>
                       </motion.div>
-                      <span className="mt-2 text-xs font-medium text-foreground/80 group-hover:text-primary">
+                      <span className="mt-2 text-xs font-medium text-foreground/80 opacity-0 group-hover:opacity-100 transition-opacity">
                         {item.label}
                       </span>
                     </Link>
@@ -107,7 +107,7 @@ export default function SideNav() {
              <SidebarMenu>
                  <SidebarMenuItem>
                       <TooltipWrapper label="Settings">
-                         <Link href="/settings" className="flex flex-col items-center">
+                         <Link href="/settings" className="flex flex-col items-center group">
                              <motion.div
                                 whileHover={{ y: -4 }}
                                 className="relative"
@@ -120,7 +120,7 @@ export default function SideNav() {
                                      <Settings className="h-6 w-6"/>
                                  </div>
                              </motion.div>
-                              <span className="mt-2 text-xs font-medium text-foreground/80 group-hover:text-primary">
+                              <span className="mt-2 text-xs font-medium text-foreground/80 opacity-0 group-hover:opacity-100 transition-opacity">
                                 Settings
                               </span>
                          </Link>

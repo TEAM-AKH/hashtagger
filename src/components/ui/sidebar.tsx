@@ -591,27 +591,29 @@ const SidebarMenuButton = React.forwardRef<
     if (state === "expanded" || isMobile) {
       return button
     }
-    
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {button}
-        </TooltipTrigger>
-        <TooltipContent
-          side="right"
-          align="center"
-          onPointerDownOutside={(e) => {
-            const target = e.target as HTMLElement
-            if (target.closest('[data-sidebar="sidebar"]')) {
-              e.preventDefault()
-            }
-          }}
-          hidden={state !== "collapsed" || isMobile}
-        >
-          {tooltip}
-        </TooltipContent>
-      </Tooltip>
-    )
+
+    if (tooltip) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipContent
+            side="right"
+            align="center"
+            onPointerDownOutside={(e) => {
+              const target = e.target as HTMLElement
+              if (target.closest('[data-sidebar="sidebar"]')) {
+                e.preventDefault()
+              }
+            }}
+            hidden={state !== "collapsed" || isMobile}
+          >
+            {tooltip}
+          </TooltipContent>
+        </Tooltip>
+      )
+    }
+
+    return button
   }
 )
 SidebarMenuButton.displayName = "SidebarMenuButton"
