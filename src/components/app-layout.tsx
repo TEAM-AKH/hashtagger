@@ -1,7 +1,7 @@
+
 import type { ReactNode } from 'react';
 import {
   Sidebar,
-  SidebarContent,
   SidebarInset,
   SidebarProvider,
 } from '@/components/ui/sidebar';
@@ -11,13 +11,13 @@ import Header from '@/components/header';
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider>
-      <Sidebar>
+      <div className="flex min-h-screen">
         <SideNav />
-      </Sidebar>
-      <SidebarInset>
-        <Header />
-        <main className="flex-1 p-4 lg:p-6">{children}</main>
-      </SidebarInset>
+        <div className="flex-1 flex flex-col">
+            <Header />
+            <main className="flex-1 p-4 lg:p-6">{children}</main>
+        </div>
+      </div>
     </SidebarProvider>
   );
 }
