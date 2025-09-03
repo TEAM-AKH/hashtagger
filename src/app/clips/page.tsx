@@ -32,7 +32,16 @@ export default function ClipsPage() {
                 const isVisible = videoTop >= containerTop && videoTop + videoHeight <= containerTop + containerHeight + 20;
 
                 if (isVisible) {
-                    video.play().catch(error => console.error("Video play failed:", error));
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            if (error.name === 'AbortError') {
+                                // This is fine, the user scrolled away
+                            } else {
+                                console.error("Video play failed:", error)
+                            }
+                        });
+                    }
                 } else {
                     video.pause();
                 }
