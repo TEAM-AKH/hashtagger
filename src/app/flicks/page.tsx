@@ -2,7 +2,9 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Download, Heart, MessageCircle, Send } from 'lucide-react';
+import { Download, Heart, MessageCircle, Send, MoreVertical, Upload, Settings } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { motion } from 'framer-motion';
 
 const flicks = [
   {
@@ -46,14 +48,40 @@ export default function FlicksPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Flicks</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Flicks</h1>
+        <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.2 }}
+        >
+            <Button className="rounded-full shadow-lg">
+                <Upload className="mr-2" />
+                Upload Flick
+            </Button>
+        </motion.div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {flicks.map((flick) => (
-          <div key={flick.id} className="bg-card rounded-lg overflow-hidden border shadow-sm">
-            <video controls poster={flick.thumbnail} className="w-full h-auto aspect-video">
-                <source src={flick.videoSrc} type="video/mp4" />
-                Your browser does not support the video tag.
-            </video>
+          <div key={flick.id} className="bg-card rounded-lg overflow-hidden border shadow-sm group">
+            <div className="relative">
+                <video controls poster={flick.thumbnail} className="w-full h-auto aspect-video">
+                    <source src={flick.videoSrc} type="video/mp4" />
+                    Your browser does not support the video tag.
+                </video>
+                 <div className="absolute top-2 right-2 z-10">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-white rounded-full bg-black/30 hover:bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <MoreVertical className="h-5 w-5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem><Settings className="mr-2"/>Quality</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
             <div className="p-4">
               <h3 className="font-bold text-lg">{flick.title}</h3>
               <p className="text-sm text-muted-foreground">@{flick.user}</p>

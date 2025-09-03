@@ -2,7 +2,10 @@ import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Send } from "lucide-react";
+import { Heart, MessageCircle, Send, Circle } from "lucide-react";
+import { motion } from "framer-motion";
+import { Badge } from "./ui/badge";
+import { cn } from "@/lib/utils";
 
 type Post = {
     id: number;
@@ -11,17 +14,39 @@ type Post = {
     image?: { src: string, hint: string, width?: number, height?: number };
     likes: number;
     comments: number;
+    circle?: string;
 };
+
+const circleColors: { [key: string]: string } = {
+  "Best Friends": "bg-green-500",
+  "Family": "bg-blue-500",
+  "Organization": "bg-purple-500",
+  "Clubs": "bg-yellow-500",
+}
 
 export default function PostCard({ post }: { post: Post }) {
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-center gap-4">
         <Avatar>
           <AvatarImage src={post.author.avatar} alt={post.author.name} data-ai-hint={post.author.hint} width={40} height={40} />
           <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
         </Avatar>
-        <div className="font-semibold">{post.author.name}</div>
+        <div className="flex-grow">
+          <div className="font-semibold">{post.author.name}</div>
+        </div>
+         {post.circle && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.3 }}
+          >
+            <Badge variant="outline" className="flex items-center gap-2">
+                <div className={cn("h-2 w-2 rounded-full", circleColors[post.circle] || "bg-gray-500")} />
+                {post.circle}
+            </Badge>
+          </motion.div>
+        )}
       </CardHeader>
       <CardContent className="space-y-4 pt-0">
         <p className="text-foreground/90">{post.content}</p>

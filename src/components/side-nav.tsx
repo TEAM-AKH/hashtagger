@@ -29,24 +29,9 @@ export default function SideNav() {
   return (
     <>
       <SidebarContent>
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                 <SidebarHeader>
-                    <div className="flex items-center gap-2">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-accent-foreground">
-                            <Logo className="h-8 w-8"/>
-                        </div>
-                        <span className="text-lg font-semibold group-data-[collapsible=icon]:hidden">Hastagger</span>
-                    </div>
-                 </SidebarHeader>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" align="start" className="w-56">
-                <DropdownMenuItem asChild><Link href="#"><QuickAccessIcon className="mr-2 h-4 w-4" /><span>Quick Access</span></Link></DropdownMenuItem>
-                {mainLinks.map(link => (
-                    <DropdownMenuItem key={link.href} asChild><Link href={link.href}><link.icon className="mr-2 h-4 w-4" /><span>{link.label}</span></Link></DropdownMenuItem>
-                ))}
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <SidebarHeader className="justify-center">
+            <Logo className="h-10 w-10"/>
+        </SidebarHeader>
 
         <SidebarMenu>
           {mainLinks.map((link) => (

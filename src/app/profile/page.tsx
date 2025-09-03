@@ -15,6 +15,7 @@ const userPosts = [
         content: "Just set up my Hastagger profile! Excited to connect with everyone here. #newbeginnings #social",
         likes: 5,
         comments: 2,
+        circle: "Family",
     },
     {
         id: 5,
@@ -23,6 +24,7 @@ const userPosts = [
         image: { src: "https://picsum.photos/600/375?random=3", hint: "travel landscape" },
         likes: 31,
         comments: 7,
+        circle: "Best Friends",
     },
 ];
 
@@ -80,7 +82,7 @@ export default function ProfilePage() {
 
         <TabsContent value="circles" className="mt-6">
            <div className="mb-4 flex justify-end">
-               <Button><PlusCircle/>Create Circle</Button>
+               <Button><PlusCircle className="mr-2"/>Create Circle</Button>
            </div>
            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {userCircles.map(circle => (

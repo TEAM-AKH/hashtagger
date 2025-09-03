@@ -8,6 +8,7 @@ const posts = [
         image: { src: "https://picsum.photos/600/375?random=1", hint: "landscape nature" },
         likes: 12,
         comments: 3,
+        circle: "Best Friends",
     },
     {
         id: 2,
@@ -16,6 +17,7 @@ const posts = [
         image: { src: "https://picsum.photos/600/375?random=2", hint: "computer desk" },
         likes: 45,
         comments: 12,
+        circle: "Organization",
     },
     {
         id: 3,
@@ -23,6 +25,7 @@ const posts = [
         content: "Exploring the hidden gems of the city. There's so much history and art in these streets! #citylife #urbanexplorer",
         likes: 23,
         comments: 5,
+        circle: "Clubs",
     },
 ];
 
