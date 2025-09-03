@@ -1,4 +1,6 @@
+
 import PostCard from "@/components/post-card";
+import { redirect } from 'next/navigation';
 
 const posts = [
     {

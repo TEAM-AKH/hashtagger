@@ -1,3 +1,4 @@
+
 import { cn } from "@/lib/utils"
 
 export function Logo({ className }: { className?: string }) {
@@ -16,13 +17,7 @@ export function Logo({ className }: { className?: string }) {
                     strokeWidth="5"
                     fill="transparent"
                 />
-                <path
-                    d="M30,40 L70,40 M30,60 L70,60 M40,30 L40,70 M60,30 L60,70"
-                    stroke="currentColor"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                />
-                <g transform="translate(18, 65) scale(0.2)">
+                 <g transform="translate(18, 65) scale(0.2)">
                     <path
                         d="M64,32A32,32,0,1,0,32,64"
                         stroke="currentColor"

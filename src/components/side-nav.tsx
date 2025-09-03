@@ -3,24 +3,20 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Circle, MessageSquare, Video, Bookmark, History, Radio, Compass, Rss, Film, Clapperboard } from 'lucide-react';
-import { SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarContent, SidebarFooter } from '@/components/ui/sidebar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { User, Settings, Gem } from 'lucide-react';
-import { QuickAccessIcon } from './quick-access-icon';
+import { MessageSquare, Clapperboard, Film, User, Settings } from 'lucide-react';
+import { SidebarContent, SidebarFooter, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { Logo } from './logo';
+import { cn } from '@/lib/utils';
 
-
-const mainLinks = [
-  { href: '/home', label: 'Home', icon: Home },
-  { href: '/', label: 'Circles', icon: Circle },
+const topLinks = [
   { href: '/chat', label: 'Chit Chat', icon: MessageSquare },
   { href: '/clips', label: 'Clips', icon: Clapperboard },
-  { href: '/flicks', label: 'Flicks', icon: Film },
-  { href: '/memory-bank', label: 'Memory Bank', icon: Bookmark },
-  { href: '/stream', label: 'Stream', icon: Radio },
-  { href: '/instant-updates', label: 'Instant Updates', icon: Compass },
 ];
+
+const bottomLinks = [
+    { href: '/flicks', label: 'Flicks', icon: Film },
+    { href: '/profile', label: 'Profile', icon: User },
+]
 
 
 export default function SideNav() {
@@ -29,43 +25,62 @@ export default function SideNav() {
   return (
     <>
       <SidebarContent>
-        <SidebarHeader className="justify-center">
-            <Logo className="h-10 w-10"/>
-        </SidebarHeader>
+        <SidebarMenu className="items-center flex-grow justify-center">
+            <div className="flex flex-col items-center gap-4">
+              {topLinks.map((link) => (
+                <SidebarMenuItem key={link.label}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith(link.href)}
+                    tooltip={link.label}
+                    className="h-12 w-12 rounded-full justify-center transition-transform duration-200 ease-in-out hover:-translate-y-1"
+                  >
+                    <Link href={link.href}>
+                      <link.icon className="h-6 w-6" />
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </div>
 
-        <SidebarMenu>
-          {mainLinks.map((link) => (
-            <SidebarMenuItem key={link.label}>
-              <SidebarMenuButton
+            <SidebarMenuItem className="my-4">
+               <SidebarMenuButton
                 asChild
-                isActive={pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))}
-                tooltip={link.label}
+                isActive={pathname === '/home' || pathname === '/'}
+                tooltip="Home"
+                className="h-16 w-16 rounded-full justify-center transition-transform duration-200 ease-in-out hover:scale-110"
               >
-                <Link href={link.href}>
-                  <link.icon className="h-5 w-5" />
-                  <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
+                <Link href="/home">
+                  <Logo className="h-8 w-8" />
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          ))}
+
+            <div className="flex flex-col items-center gap-4">
+              {bottomLinks.map((link) => (
+                <SidebarMenuItem key={link.label}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith(link.href)}
+                    tooltip={link.label}
+                    className="h-12 w-12 rounded-full justify-center transition-transform duration-200 ease-in-out hover:-translate-y-1"
+                  >
+                     <Link href={link.href}>
+                      <link.icon className="h-6 w-6" />
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </div>
         </SidebarMenu>
       </SidebarContent>
 
-       <SidebarFooter>
-        <SidebarMenu>
+       <SidebarFooter className="items-center">
+        <SidebarMenu className="items-center">
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={pathname.startsWith('/profile')} tooltip="Profile">
-              <Link href="/profile">
-                <User className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">Profile</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Settings">
-              <Link href="/settings">
-                <Settings className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">Settings</span>
+            <SidebarMenuButton asChild tooltip="Settings" className="h-12 w-12 rounded-full justify-center">
+               <Link href="/settings">
+                <Settings className="h-6 w-6" />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
