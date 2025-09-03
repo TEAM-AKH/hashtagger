@@ -1,12 +1,11 @@
 
 'use client';
 
-import { Search, Bell, UserCircle } from 'lucide-react';
+import { Search, Bell, CircleUser } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { ModeToggle } from './dark-mode-toggle';
 import { motion } from 'framer-motion';
@@ -14,7 +13,6 @@ import { motion } from 'framer-motion';
 export default function Header() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
-      <SidebarTrigger className="md:hidden" />
       <div className="hidden md:block">
         <Link href="/">
            <motion.h1 
@@ -46,7 +44,7 @@ export default function Header() {
             <Avatar className="h-8 w-8">
               <AvatarImage src="https://picsum.photos/100" alt="@user" data-ai-hint="person selfie"/>
               <AvatarFallback>
-                 <UserCircle className="h-5 w-5 text-muted-foreground" />
+                 <CircleUser className="h-5 w-5 text-muted-foreground" />
               </AvatarFallback>
             </Avatar>
              <span className="sr-only">User menu</span>
