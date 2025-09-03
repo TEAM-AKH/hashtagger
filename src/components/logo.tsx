@@ -8,30 +8,13 @@ export function Logo({ className }: { className?: string }) {
             viewBox="0 0 100 100"
             xmlns="http://www.w3.org/2000/svg"
         >
-            <g className="text-primary">
-                <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    stroke="currentColor"
-                    strokeWidth="5"
-                    fill="transparent"
-                />
-                 <g transform="translate(18, 65) scale(0.2)">
-                    <path
-                        d="M64,32A32,32,0,1,0,32,64"
-                        stroke="currentColor"
-                        strokeWidth="20"
-                        fill="none"
-                    />
-                    <path
-                        d="M64,32,c0,17.67-14.33,32-32,32S0,49.67,0,32,14.33,0,32,0"
-                        stroke="currentColor"
-                        strokeWidth="20"
-                        fill="none"
-                    />
-                    <circle cx="32" cy="32" r="12" fill="currentColor" />
+            <g>
+                <circle cx="50" cy="50" r="48" fill="#A875FF" />
+                <circle cx="50" cy="50" r="45" stroke="#E6C753" strokeWidth="3" fill="none" />
+                <g transform="translate(15, 15) scale(0.7)">
+                    <path d="M15 40 L85 40 M15 60 L85 60 M40 15 L40 85 M60 15 L60 85" stroke="white" strokeWidth="8" strokeLinecap="round" />
                 </g>
+                <text x="22" y="78" fontFamily="Arial, sans-serif" fontSize="20" fill="#E6C753" fontWeight="bold">@</text>
             </g>
         </svg>
     );

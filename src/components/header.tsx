@@ -9,10 +9,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import Link from 'next/link';
 import { ModeToggle } from './dark-mode-toggle';
 import { motion } from 'framer-motion';
+import { SidebarTrigger } from './ui/sidebar';
 
 export default function Header() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
+      <SidebarTrigger className="md:hidden" />
       <div className="hidden md:block">
         <Link href="/">
            <motion.h1 
