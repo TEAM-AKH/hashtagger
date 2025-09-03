@@ -78,7 +78,7 @@ export default function SideNav() {
        <SidebarFooter className="items-center">
         <SidebarMenu className="items-center">
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Settings" className="h-12 w-12 rounded-full justify-center">
+            <SidebarMenuButton tooltip="Settings" className="h-12 w-12 rounded-full justify-center">
                <Link href="/settings">
                 <Settings className="h-6 w-6" />
               </Link>
