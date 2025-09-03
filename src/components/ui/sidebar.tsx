@@ -183,6 +183,12 @@ const Sidebar = React.forwardRef<
   ) => {
     const { isMobile, state, openMobile, setOpenMobile, setIsHovering, setOpen } = useSidebar()
 
+    React.useEffect(() => {
+        if (!isMobile) {
+            setOpen(false)
+        }
+    }, [isMobile, setOpen])
+
     if (collapsible === "none") {
       return (
         <div
@@ -198,9 +204,6 @@ const Sidebar = React.forwardRef<
       )
     }
 
-    React.useEffect(() => {
-        setOpen(false);
-    }, [setOpen]);
 
     if (isMobile) {
       return (
@@ -524,7 +527,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-primary data-[active=true]:font-medium data-[active=true]:text-sidebar-primary-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[state=expanded]:w-[calc(var(--sidebar-width)_-_theme(spacing.4))] group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:!p-2 [&>span:last-child]:truncate group-data-[state=collapsed]:[&>span]:hidden [&>svg]:size-5 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-primary data-[active=true]:font-medium data-[active=true]:text-sidebar-primary-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[state=expanded]:w-[calc(var(--sidebar-width)_-_theme(spacing.4))] group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:!p-2 [&>span:last-child]:truncate group-data-[state=collapsed]:group-data-[state=expanded]:[&>span]:hidden group-data-[state=collapsed]:[&>span]:hidden [&>svg]:size-5 [&>svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -585,14 +588,12 @@ const SidebarMenuButton = React.forwardRef<
     if (state === "expanded" || isMobile) {
       return button
     }
-
-    if (!tooltip) {
-      return button
-    }
-
+    
     return (
       <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipTrigger asChild>
+          {button}
+        </TooltipTrigger>
         <TooltipContent
           side="right"
           align="center"
