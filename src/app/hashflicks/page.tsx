@@ -4,7 +4,8 @@
 import { Button } from '@/components/ui/button';
 import { Download, Flame, MessageCircle, Send, MoreVertical, Upload, Settings } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 
 const hashflicks = [
   {
@@ -37,6 +38,13 @@ const hashflicks = [
 ];
 
 export default function HashflicksPage() {
+  const [showLikeAnimation, setShowLikeAnimation] = useState<number | null>(null);
+
+  const handleLike = (id: number) => {
+    setShowLikeAnimation(id);
+    setTimeout(() => setShowLikeAnimation(null), 1000);
+  };
+
   const handleDownload = (videoSrc: string, title: string) => {
     const link = document.createElement('a');
     link.href = videoSrc;
@@ -69,6 +77,18 @@ export default function HashflicksPage() {
                     <source src={flick.videoSrc} type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
+                 <AnimatePresence>
+                  {showLikeAnimation === flick.id && (
+                    <motion.div
+                      initial={{ scale: 0, rotate: -30, opacity: 0 }}
+                      animate={{ scale: 1.2, rotate: 0, opacity: 1, transition: { type: 'spring', stiffness: 260, damping: 20 } }}
+                      exit={{ scale: 0, opacity: 0, transition: { duration: 0.3 } }}
+                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    >
+                      <Flame className="h-32 w-32 text-red-500/80" fill="currentColor" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                  <div className="absolute top-2 right-2 z-10">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -88,7 +108,7 @@ export default function HashflicksPage() {
               <p className="text-sm text-muted-foreground">{flick.views} views • {flick.uploaded}</p>
               <div className="flex justify-between items-center mt-4">
                 <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2" onClick={() => handleLike(flick.id)}>
                         <Flame className="h-5 w-5" /> Lit
                     </Button>
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">

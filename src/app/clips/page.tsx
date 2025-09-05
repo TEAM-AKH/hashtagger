@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Flame, MessageCircle, Send, MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const clips = [
   { id: 1, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", user: "bunny_lover", description: "Big Buck Bunny adventures!" },
@@ -16,6 +16,12 @@ const clips = [
 
 export default function ClipsPage() {
     const containerRef = useRef<HTMLDivElement>(null);
+    const [showLikeAnimation, setShowLikeAnimation] = useState<number | null>(null);
+
+    const handleLike = (id: number) => {
+        setShowLikeAnimation(id);
+        setTimeout(() => setShowLikeAnimation(null), 1000);
+    };
 
     useEffect(() => {
         const container = containerRef.current;
@@ -78,6 +84,18 @@ export default function ClipsPage() {
                         <video loop muted playsInline className="h-full w-full object-cover">
                             <source src={clip.src} type="video/mp4" />
                         </video>
+                         <AnimatePresence>
+                          {showLikeAnimation === clip.id && (
+                            <motion.div
+                              initial={{ scale: 0, rotate: -30, opacity: 0 }}
+                              animate={{ scale: 1.2, rotate: 0, opacity: 1, transition: { type: 'spring', stiffness: 260, damping: 20 } }}
+                              exit={{ scale: 0, opacity: 0, transition: { duration: 0.3 } }}
+                              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                            >
+                              <Flame className="h-32 w-32 text-red-500/80" fill="currentColor" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                         <div className="absolute top-4 right-4 z-10">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -97,7 +115,7 @@ export default function ClipsPage() {
                             <p className="text-sm">{clip.description}</p>
                         </div>
                         <div className="absolute bottom-4 right-4 flex flex-col gap-4">
-                            <Button variant="ghost" size="icon" className="text-white hover:text-red-500 rounded-full bg-black/30 hover:bg-black/50">
+                            <Button variant="ghost" size="icon" className="text-white hover:text-red-500 rounded-full bg-black/30 hover:bg-black/50" onClick={() => handleLike(clip.id)}>
                                 <Flame className="h-7 w-7" />
                                 <span className="sr-only">Lit</span>
                             </Button>
