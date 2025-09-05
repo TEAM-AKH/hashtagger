@@ -4,10 +4,50 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { PanelLeft, PanelLeftClose, PanelRight, PanelRightClose } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useIsMobile } from "@/hooks/use-mobile"
+
+type SidebarContextProps = {
+  isMobile: boolean
+  isDesktopExpanded: boolean
+  isMobileExpanded: boolean
+  setIsDesktopExpanded: React.Dispatch<React.SetStateAction<boolean>>
+  setIsMobileExpanded: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const SidebarContext = React.createContext<SidebarContextProps | undefined>(
+  undefined
+)
+function useSidebar() {
+  const context = React.useContext(SidebarContext)
+  if (!context) {
+    throw new Error("useSidebar must be used within a SidebarProvider")
+  }
+  return context
+}
+
+function SidebarProvider({ children }: { children: React.ReactNode }) {
+  const isMobile = useIsMobile()
+  const [isDesktopExpanded, setIsDesktopExpanded] = React.useState(true)
+  const [isMobileExpanded, setIsMobileExpanded] = React.useState(false)
+
+  return (
+    <SidebarContext.Provider
+      value={{
+        isMobile,
+        isDesktopExpanded: isMobile ? false : isDesktopExpanded,
+        isMobileExpanded: isMobile ? isMobileExpanded : false,
+        setIsDesktopExpanded,
+        setIsMobileExpanded,
+      }}
+    >
+      {children}
+    </SidebarContext.Provider>
+  )
+}
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,
@@ -21,10 +61,12 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
+    const { isDesktopExpanded } = useSidebar()
     return (
       <div
         ref={ref}
-        className={cn("hidden md:flex text-sidebar-foreground flex-col w-64 border-r", className)}
+        data-expanded={isDesktopExpanded}
+        className={cn("hidden md:flex text-sidebar-foreground flex-col border-r transition-all duration-300 ease-in-out", isDesktopExpanded ? 'w-64' : 'w-16', className)}
         {...props}
       >
         <div
@@ -123,14 +165,15 @@ const SidebarMenuButton = React.forwardRef<
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
-
+    const { isDesktopExpanded } = useSidebar()
+    
     const button = (
       <Comp
         ref={ref}
         data-sidebar="menu-button"
         data-size={size}
         data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+        className={cn(sidebarMenuButtonVariants({ variant, size }), !isDesktopExpanded && "justify-center", className)}
         {...props}
       >
         {children}
@@ -142,10 +185,27 @@ const SidebarMenuButton = React.forwardRef<
 )
 SidebarMenuButton.displayName = "SidebarMenuButton"
 
+function SidebarTrigger({ className }: { className?: string }) {
+  const { isDesktopExpanded, setIsDesktopExpanded } = useSidebar()
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className={cn("hidden md:flex", className)}
+      onClick={() => setIsDesktopExpanded(!isDesktopExpanded)}
+    >
+      {isDesktopExpanded ? <PanelLeftClose /> : <PanelLeft />}
+    </Button>
+  )
+}
+
 export {
   Sidebar,
   SidebarContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarProvider,
+  useSidebar,
+  SidebarTrigger,
 }

@@ -83,9 +83,6 @@ export default function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="circles" className="mt-6">
-           <div className="mb-4 flex justify-end">
-               <Button><PlusCircle className="mr-2"/>Create Circle</Button>
-           </div>
            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {userCircles.map(circle => (
               <Card key={circle.id} className="group relative overflow-hidden aspect-[4/3]">

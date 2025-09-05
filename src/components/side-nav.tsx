@@ -28,8 +28,8 @@ import { Logo } from './logo';
 const topNavItems = [
   { href: '/circles', label: 'Circles', icon: Circle },
   { href: '/chat', label: 'ChitChat', icon: Users },
-  { href: '/clips', label: 'Clips', icon: Clapperboard },
-  { href: '/hashflicks', label: 'HASHFLICKS', icon: Film },
+  { href: '/clips', label: 'Clips', icon: Film },
+  { href: '/hashflicks', label: 'HASHFLICKS', icon: Clapperboard },
 ];
 
 const bottomNavItems = [
