@@ -14,10 +14,8 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import {
-  Home,
   Users,
   Film,
-  Video,
   BrainCircuit,
   Radio,
   History,
@@ -26,6 +24,7 @@ import {
   Compass,
   User,
   Clapperboard,
+  Home,
 } from 'lucide-react';
 import { Logo } from './logo';
 import { cn } from '@/lib/utils';
@@ -34,8 +33,6 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 
 const mainNavItems = [
-  { href: '/home', label: 'Home', icon: Home },
-  { href: '/circles', label: 'Circles', icon: CircleDot },
   { href: '/chat', label: 'ChitChat', icon: Users },
   { href: '/clips', label: 'Clips', icon: Clapperboard },
   { href: '/hashflicks', label: 'HASHFLICKS', icon: Film },
@@ -45,7 +42,13 @@ const secondaryNavItems = [
   { href: '/memory-bank', label: 'Memory Bank', icon: BrainCircuit },
   { href: '/stream', label: 'Stream', icon: Radio },
   { href: '/instant-updates', label: 'Updates', icon: History },
+  { href: '/dynamic-feeds', label: 'Dynamic Feeds', icon: Compass },
 ];
+
+const profileNavItems = [
+    { href: '/profile', label: 'Profile', icon: User },
+    { href: '/settings', label: 'Settings', icon: Settings },
+]
 
 export default function SideNav() {
   const pathname = usePathname();
@@ -53,17 +56,8 @@ export default function SideNav() {
 
 
   return (
-      <Sidebar
-        onMouseEnter={() => {}}
-        onMouseLeave={() => {}}
-       >
+      <Sidebar>
         <SidebarContent>
-          <SidebarHeader>
-            <Logo />
-             <div className={cn("transition-opacity duration-200", state === 'collapsed' ? 'opacity-0' : 'opacity-100')}>
-                <h2 className="font-semibold text-lg">Hastagger</h2>
-             </div>
-          </SidebarHeader>
           <SidebarMenu>
             {mainNavItems.map((item) => (
               <SidebarMenuItem key={item.href}>
@@ -82,16 +76,53 @@ export default function SideNav() {
             ))}
           </SidebarMenu>
 
-           <SidebarMenu className="mt-auto">
+          <SidebarMenu>
+             <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/home'}
+                  tooltip="Home"
+                  size="lg"
+                  className="h-16 w-16"
+                >
+                  <Link href="/home">
+                    <Logo className="h-10 w-10" />
+                    <span className="sr-only">Home</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+          </SidebarMenu>
+
+
+           <SidebarMenu>
              {secondaryNavItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
                   isActive={pathname === item.href}
                   tooltip={item.label}
+                  size="lg"
                 >
                   <Link href={item.href}>
-                    <item.icon />
+                    <item.icon className="h-6 w-6" />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+           </SidebarMenu>
+
+           <SidebarMenu className="mt-auto">
+             {profileNavItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === item.href}
+                  tooltip={item.label}
+                   size="lg"
+                >
+                  <Link href={item.href}>
+                    <item.icon className="h-6 w-6" />
                     <span>{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
@@ -99,19 +130,6 @@ export default function SideNav() {
             ))}
            </SidebarMenu>
         </SidebarContent>
-        <SidebarFooter>
-            <div className="w-full border-t border-sidebar-border pt-2">
-                <SidebarMenuButton asChild tooltip="Profile">
-                     <Link href="/profile">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage src="https://picsum.photos/100" alt="@user" />
-                            <AvatarFallback>U</AvatarFallback>
-                        </Avatar>
-                        <span>Profile</span>
-                    </Link>
-                </SidebarMenuButton>
-            </div>
-        </SidebarFooter>
       </Sidebar>
   );
 }

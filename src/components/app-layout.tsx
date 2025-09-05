@@ -1,8 +1,6 @@
 
 import type { ReactNode } from 'react';
 import {
-  Sidebar,
-  SidebarInset,
   SidebarProvider,
 } from '@/components/ui/sidebar';
 import SideNav from '@/components/side-nav';

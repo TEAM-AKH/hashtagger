@@ -1,11 +1,12 @@
 
+
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PostCard from '@/components/post-card';
 import { Badge } from '@/components/ui/badge';
-import { UserCircle, LogOut, PlusCircle, Gem } from 'lucide-react';
+import { UserCircle, LogOut, PlusCircle, Gem, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const userPosts = [
@@ -68,10 +69,11 @@ export default function ProfilePage() {
       </Card>
 
       <Tabs defaultValue="posts" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="posts">Posts</TabsTrigger>
           <TabsTrigger value="circles">Circles</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="posts" className="mt-6 space-y-6 max-w-2xl mx-auto">
@@ -111,7 +113,17 @@ export default function ProfilePage() {
                     <li><strong>Website:</strong> <a href="#" className="text-primary hover:underline">your.website.com</a></li>
                     <li><strong>Interests:</strong> #tech #travel #photography #foodie</li>
                   </ul>
-                   <Button variant="outline" className="w-full mt-6">
+                </CardContent>
+            </Card>
+        </TabsContent>
+         <TabsContent value="settings" className="mt-6 max-w-2xl mx-auto">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Account Settings</CardTitle>
+                    <CardDescription>Manage your account preferences.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Button variant="outline" className="w-full mt-6">
                         <LogOut className="mr-2 h-4 w-4" />
                         Logout
                     </Button>
