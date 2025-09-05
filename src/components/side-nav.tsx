@@ -38,7 +38,7 @@ const mainNavItems = [
   { href: '/circles', label: 'Circles', icon: CircleDot },
   { href: '/chat', label: 'ChitChat', icon: Users },
   { href: '/clips', label: 'Clips', icon: Clapperboard },
-  { href: '/flicks', label: 'Flicks', icon: Film },
+  { href: '/hashflicks', label: 'HASHFLICKS', icon: Film },
 ];
 
 const secondaryNavItems = [
