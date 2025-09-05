@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Send, Circle } from "lucide-react";
+import { Flame, MessageCircle, Send, Circle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Badge } from "./ui/badge";
 import { cn } from "@/lib/utils";
@@ -62,8 +62,8 @@ export default function PostCard({ post }: { post: Post }) {
       <CardFooter className="flex justify-between">
         <div className="flex gap-1 sm:gap-2">
             <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
-                <Heart className="h-5 w-5" />
-                <span>Hubb ({post.likes})</span>
+                <Flame className="h-5 w-5" />
+                <span>Lit ({post.likes})</span>
             </Button>
             <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
                 <MessageCircle className="h-5 w-5" />

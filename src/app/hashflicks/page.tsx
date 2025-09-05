@@ -2,7 +2,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Download, Heart, MessageCircle, Send, MoreVertical, Upload, Settings } from 'lucide-react';
+import { Download, Flame, MessageCircle, Send, MoreVertical, Upload, Settings } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { motion } from 'framer-motion';
 
@@ -89,7 +89,7 @@ export default function HashflicksPage() {
               <div className="flex justify-between items-center mt-4">
                 <div className="flex gap-2">
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                        <Heart className="h-5 w-5" /> Hubb
+                        <Flame className="h-5 w-5" /> Lit
                     </Button>
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">
                         <MessageCircle className="h-5 w-5" /> Express

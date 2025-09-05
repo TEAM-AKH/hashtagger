@@ -3,7 +3,7 @@
 
 import { useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Send, MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Flame, MessageCircle, Send, MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { motion } from 'framer-motion';
 
@@ -98,8 +98,8 @@ export default function ClipsPage() {
                         </div>
                         <div className="absolute bottom-4 right-4 flex flex-col gap-4">
                             <Button variant="ghost" size="icon" className="text-white hover:text-red-500 rounded-full bg-black/30 hover:bg-black/50">
-                                <Heart className="h-7 w-7" />
-                                <span className="sr-only">Hubb</span>
+                                <Flame className="h-7 w-7" />
+                                <span className="sr-only">Lit</span>
                             </Button>
                             <Button variant="ghost" size="icon" className="text-white hover:text-blue-400 rounded-full bg-black/30 hover:bg-black/50">
                                 <MessageCircle className="h-7 w-7" />
