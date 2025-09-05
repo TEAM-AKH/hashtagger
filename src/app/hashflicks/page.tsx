@@ -37,12 +37,32 @@ const hashflicks = [
   },
 ];
 
+const bubbleVariants = {
+  hidden: { opacity: 0, scale: 0 },
+  visible: (i: number) => ({
+    opacity: 1,
+    scale: 1,
+    transition: {
+      delay: i * 0.1,
+      type: 'spring',
+      stiffness: 150,
+      damping: 10,
+    },
+  }),
+  exit: {
+    opacity: 0,
+    scale: 0,
+    transition: { duration: 0.3 }
+  }
+};
+
+
 export default function HashflicksPage() {
   const [showLikeAnimation, setShowLikeAnimation] = useState<number | null>(null);
 
   const handleLike = (id: number) => {
     setShowLikeAnimation(id);
-    setTimeout(() => setShowLikeAnimation(null), 1000);
+    setTimeout(() => setShowLikeAnimation(null), 1200);
   };
 
   const handleDownload = (videoSrc: string, title: string) => {
@@ -80,12 +100,20 @@ export default function HashflicksPage() {
                  <AnimatePresence>
                   {showLikeAnimation === flick.id && (
                     <motion.div
-                      initial={{ scale: 0, rotate: -30, opacity: 0 }}
-                      animate={{ scale: 1.2, rotate: 0, opacity: 1, transition: { type: 'spring', stiffness: 260, damping: 20 } }}
-                      exit={{ scale: 0, opacity: 0, transition: { duration: 0.3 } }}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
                       className="absolute inset-0 flex items-center justify-center pointer-events-none"
                     >
-                      <Flame className="h-32 w-32 text-red-500/80" fill="currentColor" />
+                        <motion.div custom={0} variants={bubbleVariants} className="absolute">
+                            <Flame className="h-32 w-32 text-red-500/80" fill="currentColor" />
+                        </motion.div>
+                        <motion.div custom={1} variants={bubbleVariants} className="absolute" style={{ top: '30%', left: '25%', transform: 'rotate(-20deg)' }}>
+                            <Flame className="h-16 w-16 text-orange-400/80" fill="currentColor" />
+                        </motion.div>
+                        <motion.div custom={2} variants={bubbleVariants} className="absolute" style={{ bottom: '30%', right: '25%', transform: 'rotate(20deg)' }}>
+                            <Flame className="h-20 w-20 text-yellow-400/80" fill="currentColor" />
+                        </motion.div>
                     </motion.div>
                   )}
                 </AnimatePresence>
