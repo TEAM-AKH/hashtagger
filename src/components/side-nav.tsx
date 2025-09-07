@@ -1,12 +1,11 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Users,
   Film,
   BrainCircuit,
   Radio,
@@ -20,10 +19,11 @@ import {
 import { Logo } from './logo';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { ChitChatIcon } from './chitchat-icon';
 
 const navItems = [
   { href: '/circles', label: 'Circles', icon: Circle },
-  { href: '/chat', label: 'ChitChat', icon: Users },
+  { href: '/chat', label: 'ChitChat', icon: ChitChatIcon },
   { href: '/clips', label: 'Clips', icon: Clapperboard },
   { href: '/hashflicks', label: 'HASHFLICKS', icon: Film },
   { href: '/home', label: 'Hastagger', icon: Logo, isCentral: true },
@@ -75,20 +75,19 @@ export default function SideNav() {
   const { path: highlightPath } = getHighlightStyle();
 
   return (
-     <TooltipProvider>
         <nav
         ref={navRef}
         onMouseLeave={() => setHoveredPath(null)}
         className="fixed top-0 left-0 h-full w-20 bg-background/80 backdrop-blur-sm border-r flex flex-col items-center py-6 gap-2 z-50"
         >
-        <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+        <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: -1 }}>
             <motion.path
             d={highlightPath}
             fill="transparent"
             stroke="hsl(var(--primary))"
             strokeWidth="2.5"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1, d: highlightPath }}
+            animate={{ opacity: activeIndex >= 0 ? 1 : 0, d: highlightPath }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             />
         </svg>
@@ -99,31 +98,38 @@ export default function SideNav() {
             const isHovered = hoveredPath === item.href;
 
             return (
-                <Tooltip key={item.href}>
-                <TooltipTrigger asChild>
-                    <Link
-                    href={item.href}
-                    ref={(el) => (itemsRef.current[index] = el)}
-                    onMouseEnter={() => setHoveredPath(item.href)}
-                    className="relative"
-                    >
-                    <motion.div
-                        className={cn(
-                        'flex items-center justify-center rounded-full text-muted-foreground transition-colors duration-300 hover:text-primary',
-                        isActive && 'text-primary',
-                        item.isCentral ? 'w-14 h-14' : 'w-12 h-12'
-                        )}
-                        animate={{ scale: isActive || isHovered ? 1.1 : 1 }}
-                        transition={{ type: 'spring', stiffness: 200, damping: 10 }}
-                    >
-                        <item.icon className={cn(item.isCentral ? 'h-12 w-12' : 'h-6 w-6')} />
-                    </motion.div>
-                    </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={10}>
-                    <p>{item.label}</p>
-                </TooltipContent>
-                </Tooltip>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  ref={(el) => (itemsRef.current[index] = el)}
+                  onMouseEnter={() => setHoveredPath(item.href)}
+                  className="relative flex flex-col items-center"
+                >
+                  <motion.div
+                      className={cn(
+                      'flex items-center justify-center rounded-full text-muted-foreground transition-colors duration-300 hover:text-primary',
+                      isActive && 'text-primary',
+                      item.isCentral ? 'w-14 h-14' : 'w-12 h-12'
+                      )}
+                      animate={{ scale: isActive || isHovered ? 1.1 : 1 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                  >
+                      <item.icon className={cn(item.isCentral ? 'h-12 w-12' : 'h-6 w-6')} />
+                  </motion.div>
+                  <AnimatePresence>
+                  {isHovered && (
+                     <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute bottom-[-20px] text-xs text-primary font-medium"
+                     >
+                       {item.label}
+                     </motion.div>
+                  )}
+                  </AnimatePresence>
+                </Link>
             );
             })}
         </div>
@@ -134,31 +140,37 @@ export default function SideNav() {
                  const isActive = pathname === item.href;
                  const isHovered = hoveredPath === item.href;
                  return (
-                    <Tooltip key={item.href}>
-                        <TooltipTrigger asChild>
-                            <Link
-                                href={item.href}
-                                ref={(el) => (itemsRef.current[fullIndex] = el)}
-                                onMouseEnter={() => setHoveredPath(item.href)}
-                                className="relative"
-                            >
-                                <motion.div
-                                    className="flex items-center justify-center w-12 h-12 rounded-full text-muted-foreground transition-colors duration-300 hover:text-primary"
-                                     animate={{ scale: isActive || isHovered ? 1.1 : 1 }}
-                                    transition={{ type: 'spring', stiffness: 200, damping: 10 }}
-                                >
-                                    <item.icon className="h-6 w-6" />
-                                </motion.div>
-                            </Link>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" sideOffset={10}>
-                            <p>{item.label}</p>
-                        </TooltipContent>
-                    </Tooltip>
+                    <Link
+                        key={item.href}
+                        href={item.href}
+                        ref={(el) => (itemsRef.current[fullIndex] = el)}
+                        onMouseEnter={() => setHoveredPath(item.href)}
+                        className="relative flex flex-col items-center"
+                    >
+                        <motion.div
+                            className="flex items-center justify-center w-12 h-12 rounded-full text-muted-foreground transition-colors duration-300 hover:text-primary"
+                             animate={{ scale: isActive || isHovered ? 1.1 : 1 }}
+                            transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                        >
+                            <item.icon className="h-6 w-6" />
+                        </motion.div>
+                         <AnimatePresence>
+                          {isHovered && (
+                             <motion.div
+                                initial={{ opacity: 0, y: -5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -5 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                className="absolute bottom-[-20px] text-xs text-primary font-medium"
+                             >
+                               {item.label}
+                             </motion.div>
+                          )}
+                          </AnimatePresence>
+                    </Link>
                  )
             })}
         </div>
         </nav>
-     </TooltipProvider>
   );
 }

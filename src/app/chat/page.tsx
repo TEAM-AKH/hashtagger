@@ -20,7 +20,7 @@ const chats = [
   { id: 7, name: 'Chris Evans', lastMessage: 'Typing...', time: '7:55 AM', online: true, typing: true },
 ];
 
-const messages = {
+const messages: Record<number, { from: 'me' | 'other'; text: string; time: string }[]> = {
   1: [
     { from: 'other', text: 'Hey! Did you check the new post on The Hashtagger?', time: '10:40 AM' },
     { from: 'me', text: 'Yes, looks great! Let\'s catch up later today.', time: '10:42 AM' },
@@ -149,7 +149,7 @@ export default function ChitChatPage() {
                   </div>
                   <div className="text-xs text-muted-foreground text-right">
                     <p>{chat.time}</p>
-                    {chat.unread && <div className="h-2 w-2 bg-blue-500 rounded-full ml-auto mt-1" />}
+                    {chat.unread && <div className="h-2 w-2 bg-primary rounded-full ml-auto mt-1" />}
                   </div>
                 </div>
               ))}
