@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,12 +37,33 @@ const bottomNavItems = [
     { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
+function useOnClickOutside(ref: React.RefObject<HTMLElement>, handler: (event: MouseEvent | TouchEvent) => void) {
+  useEffect(() => {
+    const listener = (event: MouseEvent | TouchEvent) => {
+      if (!ref.current || ref.current.contains(event.target as Node)) {
+        return;
+      }
+      handler(event);
+    };
+    document.addEventListener("mousedown", listener);
+    document.addEventListener("touchstart", listener);
+    return () => {
+      document.removeEventListener("mousedown", listener);
+      document.removeEventListener("touchstart", listener);
+    };
+  }, [ref, handler]);
+}
+
+
 export default function SideNav() {
   const pathname = usePathname();
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const navRef = useRef<HTMLElement>(null);
   const itemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  useOnClickOutside(navRef, () => setIsExpanded(false));
 
   const allItems = [...navItems, ...bottomNavItems];
   const activeIndex = allItems.findIndex(item => item.href === pathname);
@@ -70,12 +91,18 @@ export default function SideNav() {
   const { path: highlightPath } = getHighlightStyle();
   
   const labelVariants = {
-    hidden: { opacity: 0, x: -10, y: 0 },
-    hovered: { opacity: 1, x: 0, y: 40 },
-    active: { opacity: 1, x: 60, y: 0 },
+    hidden: { opacity: 0, x: -10 },
+    hovered: (isActive: boolean) => ({ 
+      opacity: 1, 
+      x: 0,
+      y: isActive && isExpanded ? 0 : 40,
+    }),
+    active: {
+      opacity: 1,
+      x: isExpanded ? 0 : -10,
+      y: 0,
+    }
   };
-
-  const isAnyItemActive = activeIndex >= 0;
 
   const renderNavItem = (item: any, index: number, isBottom: boolean) => {
     const isActive = pathname === item.href;
@@ -88,6 +115,7 @@ export default function SideNav() {
           href={item.href}
           ref={(el) => (itemsRef.current[fullIndex] = el)}
           onMouseEnter={() => setHoveredPath(item.href)}
+          onClick={() => setIsExpanded(true)}
           className="relative flex flex-col items-center justify-center group py-2"
         >
           <motion.div
@@ -102,22 +130,20 @@ export default function SideNav() {
               <item.icon className={cn(item.isCentral ? 'h-12 w-12' : 'h-6 w-6')} />
           </motion.div>
           <AnimatePresence>
-            {(isHovered || isActive) && (
+            {(isHovered || (isActive && isExpanded)) && (
               <motion.div
                 key={item.href}
                 variants={labelVariants}
                 initial="hidden"
-                animate={isActive ? 'active' : 'hovered'}
+                animate={isActive && isExpanded ? 'active' : 'hovered'}
+                custom={isActive}
                 exit="hidden"
                 transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                 className={cn(
                   "absolute text-sm font-bold whitespace-nowrap",
-                  isActive ? "text-accent-foreground" : "text-primary"
+                  isActive ? "text-accent-foreground" : "text-primary",
+                  isActive && isExpanded ? "left-[70px]" : "left-1/2 -translate-x-1/2"
                 )}
-                style={{
-                  left: item.isCentral ? '50%' : 'calc(50% - 8px)',
-                  transform: item.isCentral && !isActive ? 'translateX(-50%)' : 'translateX(0)'
-                }}
               >
                 {item.label}
               </motion.div>
@@ -133,7 +159,7 @@ export default function SideNav() {
           onMouseLeave={() => setHoveredPath(null)}
           className="fixed top-0 left-0 h-full bg-background/80 backdrop-blur-sm border-r flex flex-col items-center py-6 gap-2 z-50"
           initial={false}
-          animate={{ width: isAnyItemActive ? 180 : 80 }}
+          animate={{ width: isExpanded ? 180 : 80 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
           <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: -1 }}>

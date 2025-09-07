@@ -24,13 +24,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isAnyItemActive = navItems.some(item => item.href === pathname);
 
+  // This is a placeholder to pass to SideNav to determine its expanded state.
+  // In a real app, this would be managed by a state management solution (e.g., Context, Redux, Zustand)
+  // For now, we base it on whether any nav item is active.
+  // The new implementation of SideNav will manage its own expanded state.
+  const isExpanded = isAnyItemActive;
+
   return (
       <div className="flex min-h-screen">
         <SideNav />
         <motion.div 
             className="flex-1 flex flex-col"
             initial={false}
-            animate={{ marginLeft: isAnyItemActive ? '180px' : '80px' }}
+            animate={{ marginLeft: isExpanded ? '180px' : '80px' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
           <Header />
