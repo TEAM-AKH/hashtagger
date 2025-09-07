@@ -23,8 +23,8 @@ import { ChitChatIcon } from './chitchat-icon';
 const navItems = [
   { href: '/circles', label: 'Circles', icon: Circle },
   { href: '/chat', label: 'ChitChat', icon: ChitChatIcon },
-  { href: '/clips', label: 'Clips', icon: Clapperboard },
-  { href: '/hashflicks', label: 'HASHFLICKS', icon: Film },
+  { href: '/clips', label: 'Clips', icon: Film },
+  { href: '/hashflicks', label: 'HASHFLICKS', icon: Clapperboard },
   { href: '/home', label: 'Hastagger', icon: Logo, isCentral: true },
   { href: '/memory-bank', label: 'Memory Bank', icon: BrainCircuit },
   { href: '/stream', label: 'Stream', icon: Radio },
@@ -96,8 +96,16 @@ export default function SideNav() {
   
   const labelVariants = {
     hidden: { opacity: 0, x: -10 },
-    hovered: { opacity: 1, y: 35, x: 0 },
-    active: { opacity: 1, y: 0, x: 0 }
+    hovered: (isActive: boolean) => ({ 
+        opacity: 1, 
+        x: isActive ? 5 : 0, 
+        y: isActive ? 0 : 35 
+    }),
+    active: { 
+        opacity: 1, 
+        x: 5, 
+        y: 0 
+    }
   };
 
   const renderNavItem = (item: any, index: number, isBottom: boolean) => {
@@ -113,13 +121,13 @@ export default function SideNav() {
           onMouseEnter={() => setHoveredPath(item.href)}
           onClick={() => setIsExpanded(true)}
           className={cn(
-            "relative flex items-center justify-center group py-2 w-full",
-            isExpanded ? "justify-start px-4" : "justify-center"
+            "relative flex items-center group py-2 w-full",
+            isExpanded ? "justify-start px-4 gap-2" : "justify-center"
           )}
         >
           <motion.div
               className={cn(
-              'flex items-center justify-center rounded-full text-muted-foreground transition-colors duration-300 group-hover:text-primary',
+              'flex items-center justify-center rounded-full text-muted-foreground transition-colors duration-300 group-hover:text-primary z-10',
               isActive && 'text-primary',
               item.isCentral ? 'w-14 h-14' : 'w-12 h-12'
               )}
@@ -135,11 +143,12 @@ export default function SideNav() {
                 variants={labelVariants}
                 initial="hidden"
                 animate={isActive && isExpanded ? 'active' : 'hovered'}
+                custom={isActive && isExpanded}
                 exit="hidden"
                 transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                 className={cn(
                   "absolute text-sm font-bold whitespace-nowrap text-accent",
-                  isActive && isExpanded ? "ml-2 left-[60px]" : "left-1/2 -translate-x-1/2"
+                  isActive && isExpanded ? "left-[70px]" : "left-1/2 -translate-x-1/2"
                 )}
               >
                 {item.label}
