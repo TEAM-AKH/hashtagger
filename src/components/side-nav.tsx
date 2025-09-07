@@ -78,30 +78,25 @@ export default function SideNav() {
     const top = itemRect.top - navRect.top;
     const height = itemRect.height;
     
-    const path = `M${navRect.width - 2},${top - 20} 
-                 C${navRect.width - 15},${top + (height * 0.4)}, ${navRect.width - 15},${top + height - (height * 0.4)}, ${navRect.width - 2},${top + height + 20}
-                 `;
+    let path;
 
-    return {
-      top,
-      path,
-    };
+    if (isExpanded) {
+        path = `M${navRect.width - 2},${top - 20} 
+                C${navRect.width - 15},${top + (height * 0.4)}, ${navRect.width - 15},${top + height - (height * 0.4)}, ${navRect.width - 2},${top + height + 20}
+                `;
+    } else {
+         path = `M${navRect.width - 2},${top} Q${navRect.width - 20},${top + height/2} ${navRect.width - 2},${top + height}`
+    }
+
+    return { top, path, };
   };
 
   const { path: highlightPath } = getHighlightStyle();
   
   const labelVariants = {
-    hidden: { opacity: 0, x: -10 },
-    hovered: (isActive: boolean) => ({ 
-      opacity: 1, 
-      x: 0,
-      y: isActive && isExpanded ? 0 : 40,
-    }),
-    active: {
-      opacity: 1,
-      x: isExpanded ? 0 : -10,
-      y: 0,
-    }
+    hidden: { opacity: 0, x: -10, y: 0 },
+    hovered: { opacity: 1, x: 0, y: 35 },
+    active: { opacity: 1, x: 0, y: 0 }
   };
 
   const renderNavItem = (item: any, index: number, isBottom: boolean) => {
@@ -136,13 +131,11 @@ export default function SideNav() {
                 variants={labelVariants}
                 initial="hidden"
                 animate={isActive && isExpanded ? 'active' : 'hovered'}
-                custom={isActive}
                 exit="hidden"
                 transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                 className={cn(
-                  "absolute text-sm font-bold whitespace-nowrap",
-                  isActive ? "text-accent-foreground" : "text-primary",
-                  isActive && isExpanded ? "left-[70px]" : "left-1/2 -translate-x-1/2"
+                  "absolute text-sm font-bold whitespace-nowrap text-accent",
+                  isActive && isExpanded ? "left-[60px]" : ""
                 )}
               >
                 {item.label}
@@ -184,3 +177,4 @@ export default function SideNav() {
         </motion.nav>
   );
 }
+
