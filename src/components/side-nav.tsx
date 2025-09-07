@@ -72,6 +72,12 @@ export default function SideNav() {
   };
 
   const { path: highlightPath } = getHighlightStyle();
+  
+  const labelVariants = {
+    hidden: { opacity: 0, y: 10, x: 0 },
+    hovered: { opacity: 1, y: 40, x: 0 },
+    active: { opacity: 1, y: 0, x: 60 },
+  };
 
   const renderNavItem = (item: any, index: number, isBottom: boolean) => {
     const isActive = pathname === item.href;
@@ -84,7 +90,7 @@ export default function SideNav() {
           href={item.href}
           ref={(el) => (itemsRef.current[fullIndex] = el)}
           onMouseEnter={() => setHoveredPath(item.href)}
-          className="relative flex flex-col items-center group"
+          className="relative flex flex-col items-center justify-center group py-2"
         >
           <motion.div
               className={cn(
@@ -98,23 +104,26 @@ export default function SideNav() {
               <item.icon className={cn(item.isCentral ? 'h-12 w-12' : 'h-6 w-6')} />
           </motion.div>
           <AnimatePresence>
-          {(isHovered || isActive) && (
-             <motion.div
+            {(isHovered || isActive) && (
+              <motion.div
                 key={item.href}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ 
-                  opacity: 1, 
-                  x: 50
-                }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
+                variants={labelVariants}
+                initial="hidden"
+                animate={isActive ? 'active' : 'hovered'}
+                exit="hidden"
+                transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                 className={cn(
-                  "absolute top-1/2 -translate-y-1/2 left-0 text-sm font-bold whitespace-nowrap text-accent-foreground"
+                  "absolute text-sm font-bold whitespace-nowrap",
+                  isActive ? "text-accent-foreground" : "text-primary"
                 )}
-             >
-               {item.label}
-             </motion.div>
-          )}
+                style={{
+                  left: item.isCentral ? '50%' : 'calc(50% - 8px)',
+                  transform: item.isCentral && !isActive ? 'translateX(-50%)' : 'translateX(0)'
+                }}
+              >
+                {item.label}
+              </motion.div>
+            )}
           </AnimatePresence>
         </Link>
     );
