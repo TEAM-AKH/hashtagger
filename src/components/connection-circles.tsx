@@ -1,65 +1,63 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
-import { PlusCircle, UserPlus, MinusCircle } from "lucide-react";
+import { UserPlus } from "lucide-react";
 
-const subCircles = [
-  { id: 1, name: "Best Friends", image: "https://picsum.photos/seed/bf/200", hint: "group friends", members: [
-      { name: "Alice", avatar: "https://picsum.photos/seed/1/100" },
-      { name: "Bob", avatar: "https://picsum.photos/seed/2/100" },
-      { name: "Charlie", avatar: "https://picsum.photos/seed/3/100" },
-  ]},
-  { id: 2, name: "Family", image: "https://picsum.photos/seed/fam/200", hint: "family picture", members: [
-      { name: "Diana", avatar: "https://picsum.photos/seed/4/100" },
-      { name: "Eve", avatar: "https://picsum.photos/seed/5/100" },
-  ]},
-  { id: 3, name: "Organization", image: "https://picsum.photos/seed/org/200", hint: "office building", members: [
-      { name: "Frank", avatar: "https://picsum.photos/seed/6/100" },
-      { name: "Grace", avatar: "https://picsum.photos/seed/7/100" },
-      { name: "Heidi", avatar: "https://picsum.photos/seed/8/100" },
-      { name: "Ivan", avatar: "https://picsum.photos/seed/9/100" },
-  ]},
-  { id: 4, name: "Clubs", image: "https://picsum.photos/seed/club/200", hint: "people hobby", members: [
-       { name: "Judy", avatar: "https://picsum.photos/seed/10/100" },
-       { name: "Mallory", avatar: "https://picsum.photos/seed/11/100" },
-  ]},
-];
-
-type Circle = typeof subCircles[0];
+type Member = { name: string; avatar: string };
+type Circle = { id: number; name: string; image: string; hint: string; members: Member[] };
 
 const CIRCLE_SIZE = 90;
 const MAIN_CIRCLE_SIZE = 120;
 const RADIUS = 220;
 
-export default function ConnectionCircles() {
+interface ConnectionCirclesProps {
+  circles: Circle[];
+  onCircleSelect: (circle: Circle | null) => void;
+}
+
+
+export default function ConnectionCircles({ circles, onCircleSelect }: ConnectionCirclesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
+  const [selectedDialogCircle, setSelectedDialogCircle] = useState<Circle | null>(null);
+  
+  useEffect(() => {
+    // When a circle is removed from the parent, close the dialog if it was showing that circle
+    if(selectedDialogCircle && !circles.find(c => c.id === selectedDialogCircle.id)) {
+        setSelectedDialogCircle(null);
+    }
+  }, [circles, selectedDialogCircle]);
+
+
+  const handleCircleClick = (circle: Circle) => {
+    setSelectedDialogCircle(circle);
+    onCircleSelect(circle);
+  }
 
   return (
     <>
       <div className="relative flex items-center justify-center" style={{ height: RADIUS * 2, width: RADIUS * 2 }}>
-        {subCircles.map((circle, index) => {
-          const angle = (index / subCircles.length) * 2 * Math.PI - (Math.PI / 2); // Start from top
+        {circles.map((circle, index) => {
+          const angle = (index / circles.length) * 2 * Math.PI - (Math.PI / 2); // Start from top
           const x = isExpanded ? RADIUS * Math.cos(angle) : 0;
           const y = isExpanded ? RADIUS * Math.sin(angle) : 0;
           
           return (
             <button
               key={circle.id}
-              onClick={() => setSelectedCircle(circle)}
+              onClick={() => handleCircleClick(circle)}
               className="absolute flex flex-col items-center group cursor-pointer transition-all duration-500 ease-in-out"
               style={{ 
                 width: CIRCLE_SIZE, 
                 height: CIRCLE_SIZE + 40,
                 transform: `translate(${x}px, ${y}px) scale(${isExpanded ? 1 : 0})`,
                 opacity: isExpanded ? 1 : 0,
-                transitionDelay: `${isExpanded ? index * 70 : (subCircles.length - index) * 50}ms`,
+                transitionDelay: `${isExpanded ? index * 70 : (circles.length - index) * 50}ms`,
               }}
             >
               <div className="relative rounded-full overflow-hidden border-4 border-accent/50 shadow-lg hover:border-primary transition-colors" style={{ width: CIRCLE_SIZE, height: CIRCLE_SIZE }}>
@@ -91,16 +89,21 @@ export default function ConnectionCircles() {
         </button>
       </div>
 
-      <Dialog open={!!selectedCircle} onOpenChange={(isOpen) => !isOpen && setSelectedCircle(null)}>
+      <Dialog open={!!selectedDialogCircle} onOpenChange={(isOpen) => {
+          if (!isOpen) {
+              setSelectedDialogCircle(null);
+              onCircleSelect(null);
+          }
+      }}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{selectedCircle?.name}</DialogTitle>
+            <DialogTitle>{selectedDialogCircle?.name}</DialogTitle>
             <DialogDescription>
-              Members of the {selectedCircle?.name.toLowerCase()} circle.
+              Members of the {selectedDialogCircle?.name.toLowerCase()} circle.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            {selectedCircle?.members.map(member => (
+          <div className="space-y-4 py-4 max-h-[300px] overflow-y-auto">
+            {selectedDialogCircle?.members.length ? selectedDialogCircle?.members.map(member => (
               <div key={member.name} className="flex items-center gap-4">
                 <Avatar>
                   <AvatarImage src={member.avatar} alt={member.name} />
@@ -108,11 +111,10 @@ export default function ConnectionCircles() {
                 </Avatar>
                 <span>{member.name}</span>
               </div>
-            ))}
+            )) : <p className="text-muted-foreground text-center">No members yet.</p>}
           </div>
-          <DialogFooter className="justify-between">
-            <Button variant="destructive-outline" size="sm"><MinusCircle className="mr-2"/>Remove Circle</Button>
-            <Button variant="outline" size="sm"><UserPlus className="mr-2"/>Add Member</Button>
+          <DialogFooter>
+            <Button variant="outline"><UserPlus className="mr-2"/>Add Member</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

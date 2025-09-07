@@ -3,8 +3,8 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Flame, MessageCircle, Send, MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Flame, MessageCircle, Send, MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from 'framer-motion';
 
 const clips = [
@@ -12,6 +12,9 @@ const clips = [
   { id: 2, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", user: "dreamer", description: "Elephants have dreams too." },
   { id: 3, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", user: "firestarter", description: "Just chilling by the fire." },
   { id: 4, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", user: "escape_artist", description: "My great escape" },
+  { id: 5, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", user: "fun_times", description: "Living my best life!" },
+  { id: 6, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4", user: "joy_rider", description: "Cruising into the weekend." },
+  { id: 7, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4", user: "sintel_fan", description: "The journey begins." },
 ];
 
 const bubbleVariants = {
@@ -36,53 +39,87 @@ const bubbleVariants = {
 export default function ClipsPage() {
     const containerRef = useRef<HTMLDivElement>(null);
     const [showLikeAnimation, setShowLikeAnimation] = useState<number | null>(null);
+    const [handsFreeLoops, setHandsFreeLoops] = useState<string>('default'); // 'default', '1' to '6'
+    const [currentClip, setCurrentClip] = useState<number>(0);
+    const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+    useEffect(() => {
+        videoRefs.current = videoRefs.current.slice(0, clips.length);
+    }, []);
 
     const handleLike = (id: number) => {
         setShowLikeAnimation(id);
         setTimeout(() => setShowLikeAnimation(null), 1200);
     };
 
+    const handleScrollToNext = (index: number) => {
+        const nextIndex = (index + 1) % clips.length;
+        const container = containerRef.current;
+        if (container) {
+            const nextVideoElement = container.children[nextIndex];
+            nextVideoElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setCurrentClip(nextIndex);
+        }
+    };
+
+    const setupAutoScroll = (video: HTMLVideoElement, index: number) => {
+        let loopCount = 0;
+        const targetLoops = handsFreeLoops === 'default' ? 2 : parseInt(handsFreeLoops, 10);
+        
+        if (targetLoops === 0) return; // Hands-free disabled
+
+        const onEnded = () => {
+            loopCount++;
+            if (loopCount >= targetLoops) {
+                handleScrollToNext(index);
+            } else {
+                video.play();
+            }
+        };
+
+        video.addEventListener('ended', onEnded);
+        return () => video.removeEventListener('ended', onEnded);
+    };
+
+
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
 
-        const handleScroll = () => {
-            const videos = Array.from(container.getElementsByTagName('video'));
-            const containerTop = container.getBoundingClientRect().top;
-            const containerHeight = container.clientHeight;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target as HTMLVideoElement;
+                    const index = videoRefs.current.indexOf(video);
+                    
+                    if (entry.isIntersecting) {
+                        video.play().catch(e => console.error("Autoplay failed", e));
+                        setCurrentClip(index);
+                        const cleanup = setupAutoScroll(video, index);
+                        (video as any).cleanupAutoScroll = cleanup;
 
-            videos.forEach(video => {
-                const videoTop = video.getBoundingClientRect().top;
-                const videoHeight = video.clientHeight;
-                const isVisible = videoTop >= containerTop && videoTop + videoHeight <= containerTop + containerHeight + 20;
-
-                if (isVisible) {
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(error => {
-                            if (error.name === 'AbortError') {
-                                // This is fine, the user scrolled away
-                            } else {
-                                console.error("Video play failed:", error)
-                            }
-                        });
+                    } else {
+                        video.pause();
+                        if ((video as any).cleanupAutoScroll) {
+                            (video as any).cleanupAutoScroll();
+                        }
                     }
-                } else {
-                    video.pause();
-                }
-            });
-        };
+                });
+            },
+            { threshold: 0.7 } // At least 70% of the video is visible
+        );
 
-        container.addEventListener('scroll', handleScroll);
-        // Initial check
-        handleScroll();
+        videoRefs.current.forEach(video => {
+            if (video) observer.observe(video);
+        });
 
         return () => {
-            container.removeEventListener('scroll', handleScroll);
-            const videos = Array.from(container.getElementsByTagName('video'));
-            videos.forEach(video => video.pause());
+            videoRefs.current.forEach(video => {
+                if (video) observer.unobserve(video);
+            });
         };
-    }, []);
+    }, [handsFreeLoops]);
+    
 
     return (
         <div className="flex justify-center relative">
@@ -98,9 +135,9 @@ export default function ClipsPage() {
                 </Button>
             </motion.div>
             <div ref={containerRef} className="h-[calc(100vh-10rem)] w-full max-w-md snap-y snap-mandatory overflow-y-scroll rounded-lg bg-card border">
-                {clips.map(clip => (
+                {clips.map((clip, index) => (
                     <div key={clip.id} className="relative h-full w-full snap-start flex-shrink-0">
-                        <video loop muted playsInline className="h-full w-full object-cover">
+                        <video ref={el => videoRefs.current[index] = el} loop={handsFreeLoops === "0"} muted playsInline className="h-full w-full object-cover">
                             <source src={clip.src} type="video/mp4" />
                         </video>
                          <AnimatePresence>
@@ -131,6 +168,24 @@ export default function ClipsPage() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                            <Wand2 className="mr-2 h-4 w-4" />
+                                            Hands-free
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuRadioGroup value={handsFreeLoops} onValueChange={setHandsFreeLoops}>
+                                                <DropdownMenuRadioItem value="default">Default (2 loops)</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="1">1 loop</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="2">2 loops</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="3">3 loops</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="4">4 loops</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="5">5 loops</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="6">6 loops</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="0">Disabled</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuSub>
                                     <DropdownMenuItem><Flag className="mr-2"/>Report</DropdownMenuItem>
                                     <DropdownMenuItem><ThumbsUp className="mr-2"/>Interested</DropdownMenuItem>
                                     <DropdownMenuItem><ThumbsDown className="mr-2"/>Not Interested</DropdownMenuItem>
