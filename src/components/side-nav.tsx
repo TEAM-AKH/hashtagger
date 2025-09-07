@@ -79,13 +79,14 @@ export default function SideNav() {
     const height = itemRect.height;
     
     let path;
+    const navWidth = isExpanded ? 180 : 80;
 
     if (isExpanded) {
-        path = `M${navRect.width - 2},${top - 20} 
-                C${navRect.width - 15},${top + (height * 0.4)}, ${navRect.width - 15},${top + height - (height * 0.4)}, ${navRect.width - 2},${top + height + 20}
+        path = `M${navWidth - 2},${top - 20} 
+                C${navWidth - 15},${top + (height * 0.4)}, ${navWidth - 15},${top + height - (height * 0.4)}, ${navWidth - 2},${top + height + 20}
                 `;
     } else {
-         path = `M${navRect.width - 2},${top} Q${navRect.width - 20},${top + height/2} ${navRect.width - 2},${top + height}`
+         path = `M${navWidth - 2},${top} Q${navWidth - 20},${top + height/2} ${navWidth - 2},${top + height}`
     }
 
     return { top, path, };
@@ -94,9 +95,9 @@ export default function SideNav() {
   const { path: highlightPath } = getHighlightStyle();
   
   const labelVariants = {
-    hidden: { opacity: 0, x: -10, y: 0 },
-    hovered: { opacity: 1, x: 0, y: 35 },
-    active: { opacity: 1, x: 0, y: 0 }
+    hidden: { opacity: 0, x: -10 },
+    hovered: { opacity: 1, y: 35, x: 0 },
+    active: { opacity: 1, y: 0, x: 0 }
   };
 
   const renderNavItem = (item: any, index: number, isBottom: boolean) => {
@@ -111,7 +112,10 @@ export default function SideNav() {
           ref={(el) => (itemsRef.current[fullIndex] = el)}
           onMouseEnter={() => setHoveredPath(item.href)}
           onClick={() => setIsExpanded(true)}
-          className="relative flex flex-col items-center justify-center group py-2"
+          className={cn(
+            "relative flex items-center justify-center group py-2 w-full",
+            isExpanded ? "justify-start px-4" : "justify-center"
+          )}
         >
           <motion.div
               className={cn(
@@ -125,7 +129,7 @@ export default function SideNav() {
               <item.icon className={cn(item.isCentral ? 'h-12 w-12' : 'h-6 w-6')} />
           </motion.div>
           <AnimatePresence>
-            {(isHovered || (isActive && isExpanded)) && (
+            { (isHovered && !isExpanded) || (isActive && isExpanded) ? (
               <motion.div
                 key={item.href}
                 variants={labelVariants}
@@ -135,12 +139,12 @@ export default function SideNav() {
                 transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                 className={cn(
                   "absolute text-sm font-bold whitespace-nowrap text-accent",
-                  isActive && isExpanded ? "left-[60px]" : ""
+                  isActive && isExpanded ? "ml-2 left-[60px]" : "left-1/2 -translate-x-1/2"
                 )}
               >
                 {item.label}
               </motion.div>
-            )}
+            ) : null }
           </AnimatePresence>
         </Link>
     );
@@ -177,4 +181,3 @@ export default function SideNav() {
         </motion.nav>
   );
 }
-
