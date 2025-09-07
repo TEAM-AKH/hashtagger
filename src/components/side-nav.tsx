@@ -23,8 +23,8 @@ import { ChitChatIcon } from './chitchat-icon';
 const navItems = [
   { href: '/circles', label: 'Circles', icon: Circle },
   { href: '/chat', label: 'ChitChat', icon: ChitChatIcon },
-  { href: '/clips', label: 'Clips', icon: Clapperboard },
-  { href: '/hashflicks', label: 'HASHFLICKS', icon: Film },
+  { href: '/clips', label: 'Clips', icon: Film },
+  { href: '/hashflicks', label: 'HASHFLICKS', icon: Clapperboard },
   { href: '/home', label: 'Hastagger', icon: Logo, isCentral: true },
   { href: '/memory-bank', label: 'Memory Bank', icon: BrainCircuit },
   { href: '/stream', label: 'Stream', icon: Radio },
@@ -101,17 +101,15 @@ export default function SideNav() {
           {(isHovered || isActive) && (
              <motion.div
                 key={item.href}
-                initial={{ opacity: 0, y: 10, x: 0 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ 
                   opacity: 1, 
-                  y: isActive ? -40 : 10,
-                  x: isActive ? 60 : 0,
+                  x: 50
                 }}
-                exit={{ opacity: 0, y: 10, x: 0}}
+                exit={{ opacity: 0, x: -10 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 className={cn(
-                  "absolute text-xs font-medium whitespace-nowrap",
-                  isActive ? "text-foreground" : "text-primary top-12"
+                  "absolute top-1/2 -translate-y-1/2 left-0 text-sm font-bold whitespace-nowrap text-accent-foreground"
                 )}
              >
                {item.label}
@@ -150,4 +148,3 @@ export default function SideNav() {
         </nav>
   );
 }
-
