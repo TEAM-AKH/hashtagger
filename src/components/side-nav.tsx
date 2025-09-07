@@ -15,9 +15,9 @@ import {
   User,
   Clapperboard,
   Compass,
-  Home,
   Circle,
 } from 'lucide-react';
+import { Logo } from './logo';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
@@ -26,7 +26,7 @@ const navItems = [
   { href: '/chat', label: 'ChitChat', icon: Users },
   { href: '/clips', label: 'Clips', icon: Clapperboard },
   { href: '/hashflicks', label: 'HASHFLICKS', icon: Film },
-  { href: '/home', label: 'Hastagger', icon: Home, isCentral: true },
+  { href: '/home', label: 'Hastagger', icon: Logo, isCentral: true },
   { href: '/memory-bank', label: 'Memory Bank', icon: BrainCircuit },
   { href: '/stream', label: 'Stream', icon: Radio },
   { href: '/instant-updates', label: 'Updates', icon: History },
@@ -45,8 +45,9 @@ export default function SideNav() {
   const navRef = useRef<HTMLElement>(null);
   const itemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
 
-  const activeIndex = [...navItems, ...bottomNavItems].findIndex(item => item.href === pathname);
-  const activeItem = [...navItems, ...bottomNavItems][activeIndex];
+  const allItems = [...navItems, ...bottomNavItems];
+  const activeIndex = allItems.findIndex(item => item.href === pathname);
+  const activeItem = allItems[activeIndex];
 
   const getHighlightStyle = () => {
     if (!activeItem || activeIndex < 0 || !navRef.current || !itemsRef.current[activeIndex]) return {};
@@ -71,7 +72,7 @@ export default function SideNav() {
     };
   };
 
-  const { top: highlightTop, path: highlightPath } = getHighlightStyle();
+  const { path: highlightPath } = getHighlightStyle();
 
   return (
      <TooltipProvider>
@@ -115,7 +116,7 @@ export default function SideNav() {
                         animate={{ scale: isActive || isHovered ? 1.1 : 1 }}
                         transition={{ type: 'spring', stiffness: 200, damping: 10 }}
                     >
-                        <item.icon className={cn(item.isCentral ? 'h-8 w-8' : 'h-6 w-6')} />
+                        <item.icon className={cn(item.isCentral ? 'h-12 w-12' : 'h-6 w-6')} />
                     </motion.div>
                     </Link>
                 </TooltipTrigger>
