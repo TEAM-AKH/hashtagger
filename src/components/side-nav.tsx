@@ -23,8 +23,8 @@ import { ChitChatIcon } from './chitchat-icon';
 const navItems = [
   { href: '/circles', label: 'Circles', icon: Circle },
   { href: '/chat', label: 'ChitChat', icon: ChitChatIcon },
-  { href: '/clips', label: 'Clips', icon: Film },
-  { href: '/hashflicks', label: 'HASHFLICKS', icon: Clapperboard },
+  { href: '/clips', label: 'Clips', icon: Clapperboard },
+  { href: '/hashflicks', label: 'HASHFLICKS', icon: Film },
   { href: '/home', label: 'Hastagger', icon: Logo, isCentral: true },
   { href: '/memory-bank', label: 'Memory Bank', icon: BrainCircuit },
   { href: '/stream', label: 'Stream', icon: Radio },
@@ -56,13 +56,9 @@ export default function SideNav() {
 
     const top = itemRect.top - navRect.top;
     const height = itemRect.height;
-    const width = navRect.width;
     
-    const waveWidth = 15;
-    const waveHeight = height * 0.4;
-    
-    const path = `M${width - 2},${top - 20} 
-                 C${width - waveWidth},${top + waveHeight}, ${width - waveWidth},${top + height - waveHeight}, ${width - 2},${top + height + 20}
+    const path = `M${navRect.width - 2},${top - 20} 
+                 C${navRect.width - 15},${top + (height * 0.4)}, ${navRect.width - 15},${top + height - (height * 0.4)}, ${navRect.width - 2},${top + height + 20}
                  `;
 
     return {
@@ -74,10 +70,12 @@ export default function SideNav() {
   const { path: highlightPath } = getHighlightStyle();
   
   const labelVariants = {
-    hidden: { opacity: 0, y: 10, x: 0 },
-    hovered: { opacity: 1, y: 40, x: 0 },
-    active: { opacity: 1, y: 0, x: 60 },
+    hidden: { opacity: 0, x: -10, y: 0 },
+    hovered: { opacity: 1, x: 0, y: 40 },
+    active: { opacity: 1, x: 60, y: 0 },
   };
+
+  const isAnyItemActive = activeIndex >= 0;
 
   const renderNavItem = (item: any, index: number, isBottom: boolean) => {
     const isActive = pathname === item.href;
@@ -130,30 +128,33 @@ export default function SideNav() {
   }
 
   return (
-        <nav
-        ref={navRef}
-        onMouseLeave={() => setHoveredPath(null)}
-        className="fixed top-0 left-0 h-full w-20 bg-background/80 backdrop-blur-sm border-r flex flex-col items-center py-6 gap-2 z-50"
+        <motion.nav
+          ref={navRef}
+          onMouseLeave={() => setHoveredPath(null)}
+          className="fixed top-0 left-0 h-full bg-background/80 backdrop-blur-sm border-r flex flex-col items-center py-6 gap-2 z-50"
+          initial={false}
+          animate={{ width: isAnyItemActive ? 180 : 80 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
-        <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: -1 }}>
-            <motion.path
-            d={highlightPath}
-            fill="transparent"
-            stroke="hsl(var(--primary))"
-            strokeWidth="2.5"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: activeIndex >= 0 ? 1 : 0, d: highlightPath }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            />
-        </svg>
+          <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: -1 }}>
+              <motion.path
+              d={highlightPath}
+              fill="transparent"
+              stroke="hsl(var(--primary))"
+              strokeWidth="2.5"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: activeIndex >= 0 ? 1 : 0, d: highlightPath }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              />
+          </svg>
 
-        <div className="flex flex-col items-center gap-2">
-            {navItems.map((item, index) => renderNavItem(item, index, false))}
-        </div>
+          <div className="flex flex-col items-center gap-2">
+              {navItems.map((item, index) => renderNavItem(item, index, false))}
+          </div>
 
-        <div className="mt-auto flex flex-col items-center gap-2">
-            {bottomNavItems.map((item, index) => renderNavItem(item, index, true))}
-        </div>
-        </nav>
+          <div className="mt-auto flex flex-col items-center gap-2">
+              {bottomNavItems.map((item, index) => renderNavItem(item, index, true))}
+          </div>
+        </motion.nav>
   );
 }
