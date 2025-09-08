@@ -4,7 +4,7 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import PostCard from '@/components/post-card';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChevronLeft, Film, Clapperboard, Hash } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -21,7 +21,7 @@ const yearData: { [key: string]: any } = {
             { id: 1, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", user: "fun_times", description: "Living my best life in Feb 2024!", date: 'Feb 18, 2024' },
         ],
         hashflicks: [
-             { id: 1, title: "Spring Awakening", thumbnail: "https://picsum.photos/seed/flick2024/800/450", user: "nature_lover", date: 'Apr 05, 2024' },
+             { id: 1, title: "Spring Awakening", thumbnail: "https://picsum.photos/seed/flick2024/800/450", user: "nature_lover", date: 'Apr 05, 2024', videoSrc: "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" },
         ]
     },
     '2023': {
@@ -30,8 +30,8 @@ const yearData: { [key: string]: any } = {
         ],
         clips: [],
         hashflicks: [
-             { id: 2, title: "Summer Blockbuster", thumbnail: "https://picsum.photos/seed/flick2023/800/450", user: "movie_fan", date: 'Jul 21, 2023' },
-             { id: 3, title: "Holiday Special", thumbnail: "https://picsum.photos/seed/flick2023-2/800/450", user: "festive_films", date: 'Dec 24, 2023' },
+             { id: 2, title: "Summer Blockbuster", thumbnail: "https://picsum.photos/seed/flick2023/800/450", user: "movie_fan", date: 'Jul 21, 2023', videoSrc: "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4" },
+             { id: 3, title: "Holiday Special", thumbnail: "https://picsum.photos/seed/flick2023-2/800/450", user: "festive_films", date: 'Dec 24, 2023', videoSrc: "https://storage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4" },
         ]
     }
 };
@@ -100,8 +100,8 @@ export default function YearMemoriesPage() {
                                 {data.clips.map((clip: any) => (
                                     <motion.div key={clip.id} variants={itemVariants}>
                                         <Card className="overflow-hidden group">
-                                            <div className="relative aspect-video">
-                                                <video src={clip.src} poster={`https://picsum.photos/seed/clip${clip.id}/400`} muted loop className="w-full h-full object-cover" />
+                                            <div className="relative aspect-[9/16]">
+                                                <video src={clip.src} poster={`https://picsum.photos/seed/clip${clip.id}/400/711`} muted loop className="w-full h-full object-cover" />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                                                 <div className="absolute bottom-0 p-2 text-white">
                                                     <p className="text-xs font-semibold">@{clip.user}</p>
@@ -126,13 +126,12 @@ export default function YearMemoriesPage() {
                                             <div className="relative aspect-video">
                                                 <Image src={flick.thumbnail} alt={flick.title} fill className="object-cover" />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                                <div className="absolute bottom-0 p-4 text-white">
-                                                    <h3 className="font-bold">{flick.title}</h3>
-                                                    <p className="text-xs">@{flick.user}</p>
-                                                </div>
                                             </div>
-                                            <CardContent className="p-3">
-                                                 <p className="text-sm text-muted-foreground">{flick.date}</p>
+                                            <CardHeader>
+                                                <CardTitle className="text-base truncate">{flick.title}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="p-4 pt-0">
+                                                 <p className="text-sm text-muted-foreground">@{flick.user} &bull; {flick.date}</p>
                                             </CardContent>
                                         </Card>
                                      </motion.div>
@@ -146,5 +145,3 @@ export default function YearMemoriesPage() {
         </motion.div>
     );
 }
-
-    

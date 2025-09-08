@@ -5,9 +5,9 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bell, Bot, Languages, Search, Settings, Smile, Minus, Square, X, Maximize, Phone, Video, Mic, Camera } from 'lucide-react';
+import { Bell, Bot, Search, Settings, Smile, Mic, Camera, Phone, Video, X } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 const chats = [
@@ -48,7 +48,7 @@ const messages: Record<number, { from: 'me' | 'other'; text: string; time: strin
 
 
 export default function ChitChatPage() {
-  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
+  const [selectedChatId, setSelectedChatId] = useState<number | null>(1);
 
   const selectedChat = chats.find(c => c.id === selectedChatId);
   const chatMessages = selectedChatId ? messages[selectedChatId as keyof typeof messages] || [] : [];
@@ -90,18 +90,19 @@ export default function ChitChatPage() {
                   <Button variant="ghost" size="icon" onClick={closeChat}><X className="h-5 w-5" /></Button>
                 </div>
               </div>
-              <div className="flex-grow p-4 space-y-4 overflow-y-auto">
+              <div className="flex-grow p-4 space-y-4 overflow-y-auto bg-muted/20">
                 {chatMessages.map((msg, index) => (
                   <div key={index} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`p-3 rounded-lg max-w-xs lg:max-w-md ${msg.from === 'me' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                    <div className={`p-3 rounded-lg max-w-xs lg:max-w-md ${msg.from === 'me' ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
                       <p>{msg.text}</p>
+                      <p className={`text-xs mt-1 ${msg.from === 'me' ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{msg.time}</p>
                     </div>
                   </div>
                 ))}
               </div>
               <div className="p-4 border-t flex items-center gap-2 bg-background">
-                <Input placeholder="Write a message..." className="flex-grow" />
                 <Button variant="ghost" size="icon"><Smile className="h-5 w-5" /></Button>
+                <Input placeholder="Write a message..." className="flex-grow" />
                 <Button variant="ghost" size="icon"><Mic className="h-5 w-5" /></Button>
                 <Button variant="ghost" size="icon"><Camera className="h-5 w-5" /></Button>
                 <Button>Send</Button>
