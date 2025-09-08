@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BrainCircuit, Bookmark, Plus, FolderHeart, ArrowRight } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Badge } from '@/components/ui/badge';
@@ -190,7 +190,7 @@ export default function MemoryBankPage() {
                     <DialogTitle>Create New Treasure</DialogTitle>
                     <DialogDescription>
                        Give your new collection a name. You can add items to it later.
-                    </Description>
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleCreateTreasure}>
                     <div className="grid gap-4 py-4">

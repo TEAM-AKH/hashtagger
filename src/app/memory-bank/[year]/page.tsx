@@ -130,7 +130,7 @@ export default function YearMemoriesPage() {
                                             <CardHeader>
                                                 <CardTitle className="text-base truncate">{flick.title}</CardTitle>
                                             </CardHeader>
-                                            <CardContent className="p-4 pt-0">
+                                            <CardContent className="pt-0">
                                                  <p className="text-sm text-muted-foreground">@{flick.user} &bull; {flick.date}</p>
                                             </CardContent>
                                         </Card>
