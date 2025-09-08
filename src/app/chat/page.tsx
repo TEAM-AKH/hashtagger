@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bell, Bot, Languages, Search, Settings, Smile, Minus, Square, X, Maximize } from 'lucide-react';
+import { Bell, Bot, Languages, Search, Settings, Smile, Minus, Square, X, Maximize, Phone, Video, Mic, Camera } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 const chats = [
@@ -84,10 +84,10 @@ export default function ChitChatPage() {
                   <p className="font-semibold">{selectedChat.name}</p>
                   <p className="text-xs text-muted-foreground">{selectedChat.online ? 'Active now' : 'Offline'}</p>
                 </div>
-                <div className="ml-auto flex items-center gap-1">
-                  <Button variant="ghost" size="icon"><Minus className="h-4 w-4"/></Button>
-                  <Button variant="ghost" size="icon"><Maximize className="h-4 w-4"/></Button>
-                  <Button variant="ghost" size="icon" onClick={closeChat}><X className="h-4 w-4" /></Button>
+                <div className="ml-auto flex items-center gap-2">
+                  <Button variant="ghost" size="icon"><Phone className="h-5 w-5"/></Button>
+                  <Button variant="ghost" size="icon"><Video className="h-5 w-5"/></Button>
+                  <Button variant="ghost" size="icon" onClick={closeChat}><X className="h-5 w-5" /></Button>
                 </div>
               </div>
               <div className="flex-grow p-4 space-y-4 overflow-y-auto">
@@ -101,8 +101,9 @@ export default function ChitChatPage() {
               </div>
               <div className="p-4 border-t flex items-center gap-2 bg-background">
                 <Input placeholder="Write a message..." className="flex-grow" />
-                <Button variant="ghost" size="icon"><Smile /></Button>
-                <Button variant="ghost" size="icon"><Languages /></Button>
+                <Button variant="ghost" size="icon"><Smile className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon"><Mic className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon"><Camera className="h-5 w-5" /></Button>
                 <Button>Send</Button>
               </div>
             </motion.div>

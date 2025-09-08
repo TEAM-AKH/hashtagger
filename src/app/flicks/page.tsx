@@ -56,7 +56,7 @@ export default function FlicksPage() {
             transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.2 }}
         >
             <Button className="rounded-full shadow-lg">
-                <Upload className="mr-2" />
+                <Upload className="mr-2 h-4 w-4" />
                 Upload Flick
             </Button>
         </motion.div>
@@ -77,7 +77,7 @@ export default function FlicksPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuItem><Settings className="mr-2"/>Quality</DropdownMenuItem>
+                            <DropdownMenuItem><Settings className="mr-2 h-4 w-4"/>Quality</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -87,7 +87,7 @@ export default function FlicksPage() {
               <p className="text-sm text-muted-foreground">@{flick.user}</p>
               <p className="text-sm text-muted-foreground">{flick.views} views • {flick.uploaded}</p>
               <div className="flex justify-between items-center mt-4">
-                <div className="flex gap-2">
+                <div className="flex gap-1">
                     <Button variant="ghost" size="sm" className="flex items-center gap-2">
                         <Heart className="h-5 w-5" /> Hubb
                     </Button>
@@ -98,8 +98,9 @@ export default function FlicksPage() {
                         <Send className="h-5 w-5" /> Circulate
                     </Button>
                 </div>
-                 <Button variant="outline" size="sm" onClick={() => handleDownload(flick.videoSrc, flick.title)}>
-                    <Download className="h-5 w-5 mr-2" /> Download
+                 <Button variant="outline" size="icon" onClick={() => handleDownload(flick.videoSrc, flick.title)}>
+                    <Download className="h-5 w-5" />
+                    <span className="sr-only">Download</span>
                 </Button>
               </div>
             </div>
