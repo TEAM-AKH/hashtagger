@@ -19,10 +19,10 @@ import { Label } from '@/components/ui/label';
 import AtomicConnectionCircles from '@/components/atomic-connection-circles';
 
 const initialCircles = [
-  { id: 1, name: "Alice", image: "https://picsum.photos/seed/1/100", members: ["Dave", "Eli", "George"] },
-  { id: 2, name: "Bob", image: "https://picsum.photos/seed/2/100", members: ["Frank", "Grace"] },
-  { id: 3, name: "Charlie", image: "https://picsum.photos/seed/3/100", members: ["Heidi", "Ivan", "Judy"] },
-  { id: 4, name: "Diana", image: "https://picsum.photos/seed/4/100", members: ["Karl", "Liam"] },
+  { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Dave", "Eli", "George", "Heidi"] },
+  { id: 2, name: "Close Friends", image: "https://picsum.photos/seed/2/100", members: ["Frank", "Grace", "Ivan"] },
+  { id: 3, name: "Gaming Squad", image: "https://picsum.photos/seed/3/100", members: ["Judy", "Karl", "Liam", "Mia"] },
+  { id: 4, name: "Family", image: "https://picsum.photos/seed/4/100", members: ["Nathan", "Olivia", "Paul"] },
 ];
 
 export default function ConnectionsPage() {
