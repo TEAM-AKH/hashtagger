@@ -1,43 +1,34 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Logo } from "./logo";
 
 type Circle = { id: number; name: string; image: string };
 
-const ELECTRON_SHELL_CAPACITIES = [2, 8, 8, 18, 18, 32, 32];
-
-const periodicTable: { [key: number]: { symbol: string, name: string } } = {
-  1: { symbol: 'H', name: 'Hydrogen' }, 2: { symbol: 'He', name: 'Helium' },
-  3: { symbol: 'Li', name: 'Lithium' }, 4: { symbol: 'Be', name: 'Beryllium' },
-  5: { symbol: 'B', name: 'Boron' }, 6: { symbol: 'C', name: 'Carbon' },
-  7: { symbol: 'N', name: 'Nitrogen' }, 8: { symbol: 'O', name: 'Oxygen' },
-  9: { symbol: 'F', name: 'Fluorine' }, 10: { symbol: 'Ne', name: 'Neon' },
-  11: { symbol: 'Na', name: 'Sodium' }, 12: { symbol: 'Mg', name: 'Magnesium' },
-  13: { symbol: 'Al', name: 'Aluminium' }, 14: { symbol: 'Si', name: 'Silicon' },
-  15: { symbol: 'P', name: 'Phosphorus' }, 16: { symbol: 'S', name: 'Sulfur' },
-  17: { symbol: 'Cl', name: 'Chlorine' }, 18: { symbol: 'Ar', name: 'Argon' },
-  19: { symbol: 'K', name: 'Potassium' }, 20: { symbol: 'Ca', name: 'Calcium' },
-  // Add more elements as needed
-};
-
-const getElementByAtomicNumber = (atomicNumber: number) => {
-    return periodicTable[atomicNumber] || { symbol: '?', name: 'Unknown' };
-}
+const SHELL_CAPACITIES = [4, 6, 8, 10, 12];
 
 const getElectronConfiguration = (electrons: number) => {
     const shells: number[] = [];
     let remainingElectrons = electrons;
-    for (const capacity of ELECTRON_SHELL_CAPACITIES) {
+    for (const capacity of SHELL_CAPACITIES) {
         if (remainingElectrons === 0) break;
         const electronsInShell = Math.min(remainingElectrons, capacity);
         shells.push(electronsInShell);
         remainingElectrons -= electronsInShell;
     }
-    if(remainingElectrons > 0) shells.push(remainingElectrons);
+    if (remainingElectrons > 0) {
+        let lastShellIndex = shells.length > 0 ? shells.length -1 : 0;
+        if(shells.length === 0) shells.push(0);
+        while(remainingElectrons > 0) {
+            shells[lastShellIndex]++;
+            remainingElectrons--;
+            lastShellIndex = (lastShellIndex + 1) % shells.length;
+        }
+    }
     return shells;
 };
 
@@ -50,12 +41,7 @@ export default function AtomicConnectionCircles({ circles, onCircleSelect }: Ato
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedDialogCircle, setSelectedDialogCircle] = useState<Circle | null>(null);
 
-  const { shells, element } = useMemo(() => {
-    const atomicNumber = circles.length;
-    const shells = getElectronConfiguration(atomicNumber);
-    const element = getElementByAtomicNumber(atomicNumber);
-    return { shells, element };
-  }, [circles]);
+  const shells = useMemo(() => getElectronConfiguration(circles.length), [circles.length]);
 
   const distributedCircles = useMemo(() => {
     const rings: Circle[][] = [];
@@ -67,16 +53,23 @@ export default function AtomicConnectionCircles({ circles, onCircleSelect }: Ato
     }
     return rings;
   }, [circles, shells]);
+  
+  useEffect(() => {
+    // Auto-expand on load for demonstration
+    const timer = setTimeout(() => setIsExpanded(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleCircleClick = (circle: Circle) => {
     setSelectedDialogCircle(circle);
     onCircleSelect(circle);
   }
 
-  const NUCLEUS_SIZE = 140;
-  const ELECTRON_SIZE = 50;
+  const NUCLEUS_SIZE = 120;
+  const ELECTRON_SIZE = 60;
   const BASE_RADIUS = 120;
-  const RADIUS_INCREMENT = 70;
+  const RADIUS_INCREMENT = 80;
+
   const containerSize = (BASE_RADIUS + (distributedCircles.length - 1) * RADIUS_INCREMENT) * 2 + ELECTRON_SIZE * 2;
   
   return (
@@ -85,28 +78,6 @@ export default function AtomicConnectionCircles({ circles, onCircleSelect }: Ato
           className="relative flex items-center justify-center transition-all duration-500" 
           style={{ height: containerSize, width: containerSize }}
       >
-        {/* Rings */}
-        <AnimatePresence>
-        {isExpanded && distributedCircles.map((_, ringIndex) => (
-            <motion.div
-                key={`ring-${ringIndex}`}
-                className="absolute border border-[#37B7C3] rounded-full"
-                initial={{ width: 0, height: 0, opacity: 0 }}
-                animate={{ 
-                    width: BASE_RADIUS * 2 + ringIndex * RADIUS_INCREMENT * 2, 
-                    height: BASE_RADIUS * 2 + ringIndex * RADIUS_INCREMENT * 2,
-                    opacity: 1
-                }}
-                exit={{ width: 0, height: 0, opacity: 0 }}
-                transition={{ duration: 0.5, ease: "easeInOut", delay: ringIndex * 0.1 }}
-                style={{
-                    top: `calc(50% - ${BASE_RADIUS + ringIndex * RADIUS_INCREMENT}px)`,
-                    left: `calc(50% - ${BASE_RADIUS + ringIndex * RADIUS_INCREMENT}px)`
-                }}
-            />
-        ))}
-        </AnimatePresence>
-
         {/* Electrons (Circles) */}
         {distributedCircles.map((ring, ringIndex) => {
           const radius = BASE_RADIUS + ringIndex * RADIUS_INCREMENT;
@@ -138,7 +109,7 @@ export default function AtomicConnectionCircles({ circles, onCircleSelect }: Ato
                     delay: isExpanded ? ringIndex * 0.1 + circleIndex * 0.05 : 0
                 }}
               >
-                <div className="relative rounded-full overflow-hidden bg-[#088395] shadow-lg w-full h-full border-2 border-[#37B7C3]">
+                <div className="relative rounded-full overflow-hidden bg-muted shadow-lg w-full h-full border-2 border-primary/50">
                   <Image src={circle.image} alt={circle.name} fill style={{ objectFit: 'cover' }} />
                 </div>
               </motion.button>
@@ -149,7 +120,7 @@ export default function AtomicConnectionCircles({ circles, onCircleSelect }: Ato
         {/* Nucleus */}
         <motion.button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="absolute z-20 rounded-full bg-[#EBF4F6] shadow-2xl cursor-pointer flex items-center justify-center text-gray-800"
+          className="absolute z-20 rounded-full bg-background shadow-2xl cursor-pointer flex items-center justify-center"
           style={{ 
               width: NUCLEUS_SIZE, 
               height: NUCLEUS_SIZE,
@@ -160,21 +131,7 @@ export default function AtomicConnectionCircles({ circles, onCircleSelect }: Ato
           transition={{ type: "spring", stiffness: 300 }}
           aria-expanded={isExpanded}
         >
-          <div className="text-center">
-            <div className="text-6xl font-serif font-bold">{element.symbol}</div>
-            <AnimatePresence>
-            {!isExpanded && (
-                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="text-sm font-semibold"
-                 >
-                    {element.name}
-                 </motion.div>
-            )}
-            </AnimatePresence>
-          </div>
+          <Logo className="h-20 w-20 text-primary" />
         </motion.button>
       </div>
 
