@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -60,9 +60,8 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState("");
   const [hoveredCircleId, setHoveredCircleId] = useState<number | null>(null);
+  const [newMemberName, setNewMemberName] = useState('');
   
-  const randomAnglesRef = useRef<Map<number, number[]>>(new Map());
-
   const shells = useMemo(() => getElectronConfiguration(circles.length), [circles.length]);
 
   const distributedCircles = useMemo(() => {
@@ -76,22 +75,6 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
     return rings;
   }, [circles, shells]);
   
-  useEffect(() => {
-    distributedCircles.forEach((ring, ringIndex) => {
-        const key = ring.map(c => c.id).join('-');
-        if (!randomAnglesRef.current.has(ringIndex)) {
-            const angles = ring.map(() => Math.random() * 2 * Math.PI);
-            randomAnglesRef.current.set(ringIndex, angles);
-        } else {
-            const existingAngles = randomAnglesRef.current.get(ringIndex)!;
-            if (existingAngles.length < ring.length) {
-                const newAngles = Array.from({ length: ring.length - existingAngles.length }, () => Math.random() * 2 * Math.PI);
-                randomAnglesRef.current.set(ringIndex, [...existingAngles, ...newAngles]);
-            }
-        }
-    });
-  }, [distributedCircles]);
-
   const handleBreathingAnimation = () => {
     setIsBreathing(prev => !prev);
   };
@@ -110,10 +93,23 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
       }
   };
 
+  const handleAddMember = () => {
+    if (selectedCircle && newMemberName) {
+        const updatedCircle = {
+            ...selectedCircle,
+            members: [...selectedCircle.members, newMemberName]
+        };
+        setCircles(prev => prev.map(c => c.id === selectedCircle.id ? updatedCircle : c));
+        setSelectedCircle(updatedCircle);
+        setNewMemberName('');
+    }
+  };
+
   const NUCLEUS_SIZE = 120;
   const BASE_RADIUS = 120;
   const RADIUS_INCREMENT = 80;
   const MAX_ELECTRON_SIZE = 60;
+  const MIN_ELECTRON_SIZE = 20;
 
   const containerSize = (BASE_RADIUS + (distributedCircles.length - 1) * RADIUS_INCREMENT) * 2 + MAX_ELECTRON_SIZE * 2;
   
@@ -129,8 +125,7 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
         {distributedCircles.map((ring, ringIndex) => {
           const radius = BASE_RADIUS + ringIndex * RADIUS_INCREMENT;
           const duration = 20 + ringIndex * 10;
-          const ringAngles = randomAnglesRef.current.get(ringIndex) || [];
-          const electronSize = Math.max(MAX_ELECTRON_SIZE - ringIndex * 8, 20);
+          const electronSize = Math.max(MAX_ELECTRON_SIZE - ringIndex * 8, MIN_ELECTRON_SIZE);
 
           return (
             <motion.div
@@ -152,7 +147,7 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                 }}
              >
               {ring.map((circle, circleIndex) => {
-                const angle = ringAngles[circleIndex] || 0;
+                const angle = (2 * Math.PI / ring.length) * circleIndex;
                 const x = radius * Math.cos(angle);
                 const y = radius * Math.sin(angle);
                 
@@ -207,6 +202,7 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                                     duration: duration,
                                     repeat: Infinity,
                                     repeatType: "loop",
+                                    animationPlayState: isPaused ? 'paused' : 'running',
                                 }}
                             >
                                 {circle.name}
@@ -292,9 +288,6 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                 <div className="py-4 space-y-4">
                     <div className="flex justify-between items-center">
                         <h4 className="font-semibold">Members</h4>
-                        {circles.findIndex(c => c.id === selectedCircle?.id) >= 4 && (
-                          <Button variant="outline" size="sm"><UserPlus className="mr-2"/>Add</Button>
-                        )}
                     </div>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                         {selectedCircle?.members.map(member => (
@@ -308,6 +301,17 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                          {selectedCircle?.members.length === 0 && (
                             <p className="text-sm text-muted-foreground text-center py-4">No members yet.</p>
                         )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Input 
+                            value={newMemberName} 
+                            onChange={(e) => setNewMemberName(e.target.value)} 
+                            placeholder="New member name..."
+                        />
+                        <Button onClick={handleAddMember} size="icon">
+                            <UserPlus />
+                            <span className="sr-only">Add Member</span>
+                        </Button>
                     </div>
                 </div>
                 <DialogFooter>
