@@ -20,13 +20,27 @@ const getElectronConfiguration = (electrons: number) => {
         shells.push(electronsInShell);
         remainingElectrons -= electronsInShell;
     }
+    // If there are more electrons than total capacity, distribute them among existing shells
     if (remainingElectrons > 0) {
         let lastShellIndex = shells.length > 0 ? shells.length -1 : 0;
         if(shells.length === 0) shells.push(0);
         while(remainingElectrons > 0) {
-            shells[lastShellIndex]++;
-            remainingElectrons--;
-            lastShellIndex = (lastShellIndex + 1) % shells.length;
+             if (shells.length < SHELL_CAPACITIES.length) {
+                shells.push(0);
+            }
+            let currentShell = shells.length - 1;
+            while(remainingElectrons > 0 && shells[currentShell] < SHELL_CAPACITIES[currentShell]) {
+                shells[currentShell]++;
+                remainingElectrons--;
+            }
+            if(remainingElectrons > 0) {
+                 //This logic is for when shells are full and we need to add more shells
+                 //for now we just add to the last shell
+                 if(shells.length >= SHELL_CAPACITIES.length) {
+                    shells[shells.length - 1]++;
+                    remainingElectrons--;
+                 }
+            }
         }
     }
     return shells;
