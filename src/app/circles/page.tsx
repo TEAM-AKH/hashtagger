@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MinusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,19 +19,22 @@ import { Label } from '@/components/ui/label';
 import AtomicConnectionCircles from '@/components/atomic-connection-circles';
 
 const initialCircles = [
-  { id: 1, name: "Alice", image: "https://picsum.photos/seed/1/100" },
-  { id: 2, name: "Bob", image: "https://picsum.photos/seed/2/100" },
-  { id: 3, name: "Charlie", image: "https://picsum.photos/seed/3/100" },
-  { id: 4, name: "Diana", image: "https://picsum.photos/seed/4/100" },
-  { id: 5, name: "Eve", image: "https://picsum.photos/seed/5/100" },
-  { id: 6, name: "Frank", image: "https://picsum.photos/seed/6/100" },
-  { id: 7, name: "Grace", image: "https://picsum.photos/seed/7/100" },
+  { id: 1, name: "Alice", image: "https://picsum.photos/seed/1/100", members: ["Dave", "Eli"] },
+  { id: 2, name: "Bob", image: "https://picsum.photos/seed/2/100", members: ["Frank", "Grace"] },
+  { id: 3, name: "Charlie", image: "https://picsum.photos/seed/3/100", members: ["Heidi", "Ivan"] },
+  { id: 4, name: "Diana", image: "https://picsum.photos/seed/4/100", members: ["Judy", "Karl"] },
+  { id: 5, name: "Eve", image: "https://picsum.photos/seed/5/100", members: ["Liam", "Mona"] },
+  { id: 6, name: "Frank", image: "https://picsum.photos/seed/6/100", members: ["Nate", "Olivia"] },
+  { id: 7, name: "Grace", image: "https://picsum.photos/seed/7/100", members: ["Pam", "Quinn"] },
+  { id: 8, name: "Hank", image: "https://picsum.photos/seed/8/100", members: ["Rachel", "Steve"] },
+  { id: 9, name: "Ivy", image: "https://picsum.photos/seed/9/100", members: ["Trent", "Ursula"] },
+  { id: 10, name: "Jack", image: "https://picsum.photos/seed/10/100", members: ["Vince", "Wendy"] },
+  { id: 11, name: "Karen", image: "https://picsum.photos/seed/11/100", members: ["Xavier", "Yara"] },
 ];
 
 export default function ConnectionsPage() {
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [circles, setCircles] = useState(initialCircles);
-    const [selectedCircle, setSelectedCircle] = useState<any>(null);
     const [newCircleName, setNewCircleName] = useState('');
 
     const handleAddCircle = () => {
@@ -40,18 +43,14 @@ export default function ConnectionsPage() {
                 id: Date.now(),
                 name: newCircleName,
                 image: `https://picsum.photos/seed/${Date.now()}/100`,
+                members: [],
             };
             setCircles(prevCircles => [...prevCircles, newCircle]);
             setIsCreateDialogOpen(false);
             setNewCircleName('');
         }
     };
-
-    const handleRemoveCircle = (circleId: number) => {
-        setCircles(prevCircles => prevCircles.filter(c => c.id !== circleId));
-    }
-
-
+    
   return (
     <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-12rem)] relative overflow-hidden bg-background">
         <div className="text-center mb-8 z-10">
@@ -61,13 +60,13 @@ export default function ConnectionsPage() {
                 </h1>
             </div>
             <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                An atomic view of your social circle. Click the nucleus to expand or contract.
+                An atomic view of your social circle. Hover on a connection to pause the orbit.
             </p>
         </div>
         
-        <AtomicConnectionCircles circles={circles} onCircleSelect={setSelectedCircle} />
+        <AtomicConnectionCircles circles={circles} setCircles={setCircles} />
 
-         <div className="absolute bottom-8 left-8">
+         <div className="absolute bottom-8 left-8 z-20">
              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
                     <Button>
@@ -98,34 +97,6 @@ export default function ConnectionsPage() {
                         </DialogClose>
                         <Button type="button" onClick={handleAddCircle}>Add</Button>
                     </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </div>
-
-         <div className="absolute bottom-8 right-8">
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button variant="destructive">
-                        <MinusCircle className="mr-2 h-4 w-4" />
-                        Remove Connection
-                    </Button>
-                </DialogTrigger>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Select a connection to remove</DialogTitle>
-                        <DialogDescription>
-                            This action cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-2 py-4 max-h-60 overflow-y-auto">
-                        {circles.map(circle => (
-                             <DialogClose key={circle.id} asChild>
-                                <Button variant="outline" onClick={() => handleRemoveCircle(circle.id)}>
-                                    {circle.name}
-                                </Button>
-                            </DialogClose>
-                        ))}
-                    </div>
                 </DialogContent>
             </Dialog>
         </div>
