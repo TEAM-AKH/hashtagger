@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dialog,
   DialogContent,
@@ -39,10 +39,19 @@ const getElectronConfiguration = (electrons: number) => {
         remainingElectrons -= electronsInShell;
     }
     if (remainingElectrons > 0) {
-        if (shells.length > 0) {
-            shells[shells.length - 1] += remainingElectrons;
-        } else {
-            shells.push(remainingElectrons);
+        let shellIndex = 0;
+        while(remainingElectrons > 0) {
+            if (shellIndex < shells.length) {
+                const space = SHELL_CAPACITIES[shellIndex] - shells[shellIndex];
+                const toAdd = Math.min(remainingElectrons, space);
+                shells[shellIndex] += toAdd;
+                remainingElectrons -= toAdd;
+            } else {
+                 const toAdd = Math.min(remainingElectrons, SHELL_CAPACITIES[shellIndex] || 12);
+                 shells.push(toAdd);
+                 remainingElectrons -= toAdd;
+            }
+            shellIndex++;
         }
     }
     return shells;
@@ -123,9 +132,12 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                 duration: duration,
                 repeat: Infinity,
                 repeatType: "loop",
-                paused: isPaused,
               }}
-              style={{ originX: '50%', originY: '50%' }}
+              style={{ 
+                originX: '50%', 
+                originY: '50%',
+                animationPlayState: isPaused ? 'paused' : 'running'
+              }}
             >
              <div className="absolute w-full h-full">
               {ring.map((circle, circleIndex) => {
@@ -143,6 +155,7 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                       height: ELECTRON_SIZE,
                       top: `calc(50% - ${ELECTRON_SIZE / 2}px)`,
                       left: `calc(50% - ${ELECTRON_SIZE / 2}px)`,
+                      transform: `rotate(${-360 * (isPaused ? 1 : 0)}deg)` // Counter-rotate hack
                     }}
                     initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
                     animate={{
@@ -150,7 +163,6 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                         y: isExpanded ? y : 0,
                         scale: isExpanded ? 1 : 0,
                         opacity: isExpanded ? 1 : 0,
-                        rotate: -360 // Counter-rotation
                     }}
                     whileHover={{ scale: isExpanded ? 1.2 : 0, zIndex: 50 }}
                     transition={{
@@ -160,9 +172,19 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                         delay: isExpanded ? ringIndex * 0.1 + circleIndex * 0.05 : 0
                     }}
                   >
-                    <div className="relative rounded-full overflow-hidden bg-muted shadow-lg w-full h-full border-2 border-primary/50">
+                    <motion.div 
+                        className="relative rounded-full overflow-hidden bg-muted shadow-lg w-full h-full border-2 border-primary/50"
+                        style={{ transform: `rotate(${-(ringIndex * 360)}deg)` }} // Static image
+                         animate={{ rotate: -360 }}
+                         transition={{
+                            ease: "linear",
+                            duration: duration,
+                            repeat: Infinity,
+                            repeatType: "loop",
+                         }}
+                    >
                       <Image src={circle.image} alt={circle.name} fill style={{ objectFit: 'cover' }} />
-                    </div>
+                    </motion.div>
                     <AnimatePresence>
                     <motion.div 
                         className="absolute -bottom-6 bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
@@ -179,21 +201,17 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
         })}
 
         {/* Nucleus */}
-        <motion.button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="absolute z-20 rounded-full bg-background shadow-2xl cursor-pointer flex items-center justify-center"
+        <motion.div
+          className="absolute z-20 rounded-full bg-background shadow-2xl flex items-center justify-center"
           style={{ 
               width: NUCLEUS_SIZE, 
               height: NUCLEUS_SIZE,
               top: `calc(50% - ${NUCLEUS_SIZE / 2}px)`,
               left: `calc(50% - ${NUCLEUS_SIZE / 2}px)`
           }}
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 300 }}
-          aria-expanded={isExpanded}
         >
           <Logo className="h-20 w-20 text-primary" />
-        </motion.button>
+        </motion.div>
       </div>
 
       <Dialog open={!!selectedCircle} onOpenChange={(isOpen) => {
@@ -225,7 +243,7 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                     <DropdownMenuItem onSelect={() => setIsRenaming(true)}>
                         <Edit className="mr-2"/> Rename Circle
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => selectedCircle && handleRemoveCircle(selectedCircle.id)} className="text-destructive">
+                    <DropdownMenuItem onSelect={() => selectedCircle && handleRemoveCircle(selectedCircle.id)} className="text-destructive focus:text-destructive focus:bg-destructive/10">
                         <Trash2 className="mr-2"/> Remove Circle
                     </DropdownMenuItem>
                 </DropdownMenuContent>
