@@ -71,8 +71,8 @@ export default function ConnectionsPage() {
 
 
   return (
-    <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-12rem)] relative">
-        <div className="text-center mb-8">
+    <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-12rem)] relative overflow-hidden">
+        <div className="text-center mb-8 z-10">
             <div className="flex items-center justify-center gap-4 mb-2">
                 <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-foreground/80 to-accent-foreground/70 pb-2">
                     Your Circles
@@ -82,13 +82,16 @@ export default function ConnectionsPage() {
                 Click on your profile to see your circles. Discover new connections and see what your friends are up to.
             </p>
         </div>
+        
         <ConnectionCircles circles={circles} onCircleSelect={setSelectedCircle} />
+
          <div className="absolute bottom-8 left-8">
             <Button onClick={() => setIsCreateDialogOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Create New Circle
             </Button>
         </div>
+
          <div className="absolute bottom-8 right-8">
             <Dialog>
                 <DialogTrigger asChild>
@@ -116,6 +119,7 @@ export default function ConnectionsPage() {
                 </DialogContent>
             </Dialog>
         </div>
+
          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

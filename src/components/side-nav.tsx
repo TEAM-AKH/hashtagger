@@ -1,14 +1,13 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Film,
   BrainCircuit,
-  Radio,
   History,
   Settings,
   User,
@@ -20,6 +19,30 @@ import { Logo } from './logo';
 import { cn } from '@/lib/utils';
 import { ChitChatIcon } from './chitchat-icon';
 
+type SideNavContextType = {
+  isExpanded: boolean;
+  setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const SideNavContext = createContext<SideNavContextType | undefined>(undefined);
+
+export const useSideNav = () => {
+    const context = useContext(SideNavContext);
+    if(context === undefined) {
+        throw new Error("useSideNav must be used within a SideNav provider");
+    }
+    return context;
+}
+
+export const SideNavProvider = ({ children }: { children: React.ReactNode }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    return (
+        <SideNavContext.Provider value={{ isExpanded, setIsExpanded }}>
+            {children}
+        </SideNavContext.Provider>
+    );
+}
+
 const navItems = [
   { href: '/circles', label: 'Circles', icon: Circle },
   { href: '/chat', label: 'ChitChat', icon: ChitChatIcon },
@@ -27,7 +50,6 @@ const navItems = [
   { href: '/hashflicks', label: 'HASHFLICKS', icon: Clapperboard },
   { href: '/home', label: 'Hastagger', icon: Logo, isCentral: true },
   { href: '/memory-bank', label: 'Memory Bank', icon: BrainCircuit },
-  { href: '/stream', label: 'Stream', icon: Radio },
   { href: '/instant-updates', label: 'Updates', icon: History },
   { href: '/dynamic-feeds', label: 'Dynamic Feeds', icon: Compass },
 ];
@@ -57,8 +79,8 @@ function useOnClickOutside(ref: React.RefObject<HTMLElement>, handler: (event: M
 
 export default function SideNav() {
   const pathname = usePathname();
+  const { isExpanded, setIsExpanded } = useSideNav();
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
   
   const navRef = useRef<HTMLElement>(null);
   const itemsRef = useRef<(HTMLAnchorElement | null)[]>([]);
@@ -66,7 +88,7 @@ export default function SideNav() {
   useOnClickOutside(navRef, () => setIsExpanded(false));
 
   const allItems = [...navItems, ...bottomNavItems];
-  const activeIndex = allItems.findIndex(item => item.href === pathname);
+  const activeIndex = allItems.findIndex(item => pathname.startsWith(item.href));
   const activeItem = allItems[activeIndex];
 
   const getHighlightStyle = () => {
@@ -96,20 +118,15 @@ export default function SideNav() {
   
   const labelVariants = {
     hidden: { opacity: 0, x: -10 },
-    hovered: (isActive: boolean) => ({ 
-        opacity: 1, 
-        x: isActive ? 5 : 0, 
-        y: isActive ? 0 : 35 
-    }),
-    active: { 
-        opacity: 1, 
-        x: 5, 
-        y: 0 
-    }
+    visible: { 
+        opacity: 1,
+        x: 0,
+        transition: { type: 'spring', stiffness: 260, damping: 20 }
+    },
   };
 
   const renderNavItem = (item: any, index: number, isBottom: boolean) => {
-    const isActive = pathname === item.href;
+    const isActive = activeIndex === (isBottom ? navItems.length + index : index);
     const isHovered = hoveredPath === item.href;
     const fullIndex = isBottom ? navItems.length + index : index;
 
@@ -122,7 +139,7 @@ export default function SideNav() {
           onClick={() => setIsExpanded(true)}
           className={cn(
             "relative flex items-center group py-2 w-full",
-            isExpanded ? "justify-start px-4 gap-2" : "justify-center"
+            isExpanded ? "justify-start px-4 gap-1" : "justify-center"
           )}
         >
           <motion.div
@@ -137,18 +154,25 @@ export default function SideNav() {
               <item.icon className={cn(item.isCentral ? 'h-12 w-12' : 'h-6 w-6')} />
           </motion.div>
           <AnimatePresence>
-            { (isHovered && !isExpanded) || (isActive && isExpanded) ? (
+            { isExpanded ? (
+               <motion.span
+                    variants={labelVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="text-sm font-bold whitespace-nowrap text-accent-foreground"
+                >
+                    {item.label}
+                </motion.span>
+            ) : isHovered ? (
               <motion.div
                 key={item.href}
-                variants={labelVariants}
-                initial="hidden"
-                animate={isActive && isExpanded ? 'active' : 'hovered'}
-                custom={isActive && isExpanded}
-                exit="hidden"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                 className={cn(
-                  "absolute text-sm font-bold whitespace-nowrap text-accent",
-                  isActive && isExpanded ? "left-[70px]" : "left-1/2 -translate-x-1/2"
+                  "absolute left-1/2 -translate-x-1/2 top-full mt-2 text-sm font-bold whitespace-nowrap bg-accent text-accent-foreground px-2 py-1 rounded-md"
                 )}
               >
                 {item.label}

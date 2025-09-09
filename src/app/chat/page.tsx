@@ -105,7 +105,7 @@ export default function ChitChatPage() {
                 <Input placeholder="Write a message..." className="flex-grow" />
                 <Button variant="ghost" size="icon"><Mic className="h-5 w-5" /></Button>
                 <Button variant="ghost" size="icon"><Camera className="h-5 w-5" /></Button>
-                <Button>Send</Button>
+                <Button size="sm">Send</Button>
               </div>
             </motion.div>
           ) : (
