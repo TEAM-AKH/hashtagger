@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -38,7 +38,6 @@ const getElectronConfiguration = (electrons: number) => {
         shells.push(electronsInShell);
         remainingElectrons -= electronsInShell;
     }
-    // If there are still electrons left, distribute them into available slots in existing shells
     if (remainingElectrons > 0) {
         for (let i = 0; i < shells.length; i++) {
             const spaceAvailable = SHELL_CAPACITIES[i] - shells[i];
@@ -48,7 +47,6 @@ const getElectronConfiguration = (electrons: number) => {
             if (remainingElectrons === 0) break;
         }
     }
-    // If there are still more, add new shells
     while (remainingElectrons > 0) {
         const capacity = SHELL_CAPACITIES[shells.length] || SHELL_CAPACITIES[SHELL_CAPACITIES.length - 1];
         const electronsInShell = Math.min(remainingElectrons, capacity);
@@ -65,12 +63,14 @@ interface AtomicConnectionCirclesProps {
 }
 
 export default function AtomicConnectionCircles({ circles, setCircles }: AtomicConnectionCirclesProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isBreathing, setIsBreathing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState("");
   const [hoveredCircleId, setHoveredCircleId] = useState<number | null>(null);
+  
+  const randomAnglesRef = useRef<Map<number, number[]>>(new Map());
 
   const shells = useMemo(() => getElectronConfiguration(circles.length), [circles.length]);
 
@@ -86,9 +86,24 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
   }, [circles, shells]);
   
   useEffect(() => {
-    const timer = setTimeout(() => setIsExpanded(true), 500);
-    return () => clearTimeout(timer);
-  }, []);
+    distributedCircles.forEach((ring, ringIndex) => {
+        if (!randomAnglesRef.current.has(ringIndex)) {
+            const angles = ring.map(() => Math.random() * 2 * Math.PI);
+            randomAnglesRef.current.set(ringIndex, angles);
+        } else {
+            const existingAngles = randomAnglesRef.current.get(ringIndex)!;
+            if (existingAngles.length < ring.length) {
+                const newAngles = Array.from({ length: ring.length - existingAngles.length }, () => Math.random() * 2 * Math.PI);
+                randomAnglesRef.current.set(ringIndex, [...existingAngles, ...newAngles]);
+            }
+        }
+    });
+  }, [distributedCircles]);
+
+  const handleBreathingAnimation = () => {
+    setIsBreathing(true);
+    setTimeout(() => setIsBreathing(false), 1000);
+  };
   
   const handleRemoveCircle = (id: number) => {
     setCircles(prev => prev.filter(c => c.id !== id));
@@ -124,28 +139,29 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
         {distributedCircles.map((ring, ringIndex) => {
           const radius = BASE_RADIUS + ringIndex * RADIUS_INCREMENT;
           const duration = 20 + ringIndex * 10;
+          const ringAngles = randomAnglesRef.current.get(ringIndex) || [];
 
           return (
             <motion.div
               key={ringIndex}
               className="absolute w-full h-full"
               style={{ originX: '50%', originY: '50%'}}
+              animate={{ rotate: 360 }}
+              transition={{
+                  ease: "linear",
+                  duration: duration,
+                  repeat: Infinity,
+                  repeatType: "loop",
+              }}
             >
              <motion.div 
                 className="absolute w-full h-full"
-                animate={{ rotate: 360 }}
-                transition={{
-                    ease: "linear",
-                    duration: duration,
-                    repeat: Infinity,
-                    repeatType: "loop",
-                }}
                 style={{
                     animationPlayState: isPaused ? 'paused' : 'running',
                 }}
              >
               {ring.map((circle, circleIndex) => {
-                const angle = (circleIndex / ring.length) * (2 * Math.PI) - (Math.PI / 2);
+                const angle = ringAngles[circleIndex] || 0;
                 const x = radius * Math.cos(angle);
                 const y = radius * Math.sin(angle);
                 
@@ -159,19 +175,18 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                       top: `calc(50% - ${ELECTRON_SIZE / 2}px)`,
                       left: `calc(50% - ${ELECTRON_SIZE / 2}px)`,
                     }}
-                    initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
+                    initial={{ x: 0, y: 0, scale: 0 }}
                     animate={{
-                        x: isExpanded ? x : 0,
-                        y: isExpanded ? y : 0,
-                        scale: isExpanded ? 1 : 0,
-                        opacity: isExpanded ? 1 : 0,
+                        x: isBreathing ? 0 : x,
+                        y: isBreathing ? 0 : y,
+                        scale: 1
                     }}
-                    whileHover={{ scale: isExpanded ? 1.2 : 0, zIndex: 50 }}
+                    whileHover={{ scale: 1.2, zIndex: 50 }}
                     transition={{
                         type: "spring",
                         stiffness: 100,
                         damping: 15,
-                        delay: isExpanded ? ringIndex * 0.1 + circleIndex * 0.05 : 0
+                        delay: ringIndex * 0.1 + circleIndex * 0.05
                     }}
                     onHoverStart={() => setHoveredCircleId(circle.id)}
                     onHoverEnd={() => setHoveredCircleId(null)}
@@ -179,16 +194,6 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                     <motion.button 
                         onClick={() => setSelectedCircle(circle)}
                         className="relative rounded-full overflow-hidden bg-muted shadow-lg w-full h-full border-2 border-primary/50"
-                        // Counter-rotation for the button itself to keep image upright
-                        style={{ rotate: 0 }}
-                        animate={{ rotate: -360 }}
-                        transition={{
-                            ease: "linear",
-                            duration: duration,
-                            repeat: Infinity,
-                            repeatType: "loop",
-                            animationPlayState: isPaused ? 'paused' : 'running',
-                        }}
                     >
                       <Image src={circle.image} alt={circle.name} fill style={{ objectFit: 'cover' }} />
                     </motion.button>
@@ -198,7 +203,17 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="absolute -bottom-6 bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded-md whitespace-nowrap"
+                            className="absolute top-full mt-2 bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded-md whitespace-nowrap"
+                            style={{ originX: '50%', originY: '50%'}}
+                             // Counter-rotate the label
+                            animate={{ rotate: -360 }}
+                            transition={{
+                                ease: "linear",
+                                duration: duration,
+                                repeat: Infinity,
+                                repeatType: "loop",
+                                animationPlayState: isPaused ? 'paused' : 'running',
+                            }}
                         >
                             {circle.name}
                         </motion.div>
@@ -213,17 +228,20 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
         })}
 
         {/* Nucleus */}
-        <motion.div
-          className="absolute z-20 rounded-full bg-background shadow-2xl flex items-center justify-center"
+        <motion.button
+          onClick={handleBreathingAnimation}
+          className="absolute z-20 rounded-full bg-background shadow-2xl flex items-center justify-center cursor-pointer"
           style={{ 
               width: NUCLEUS_SIZE, 
               height: NUCLEUS_SIZE,
               top: `calc(50% - ${NUCLEUS_SIZE / 2}px)`,
               left: `calc(50% - ${NUCLEUS_SIZE / 2}px)`
           }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
         >
           <Logo className="h-20 w-20 text-primary" />
-        </motion.div>
+        </motion.button>
       </div>
 
       <Dialog open={!!selectedCircle} onOpenChange={(isOpen) => {
@@ -233,7 +251,7 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
           }
       }}>
         <DialogContent className="sm:max-w-md">
-           <DialogHeader className="flex-row items-center justify-between">
+           <DialogHeader className="flex-row items-start justify-between">
               <div className="flex items-center gap-4">
                  <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
                     {selectedCircle && <Image src={selectedCircle.image} alt={selectedCircle.name} fill style={{ objectFit: 'cover' }} />}

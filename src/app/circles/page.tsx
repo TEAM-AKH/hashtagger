@@ -19,17 +19,17 @@ import { Label } from '@/components/ui/label';
 import AtomicConnectionCircles from '@/components/atomic-connection-circles';
 
 const initialCircles = [
-  { id: 1, name: "Alice", image: "https://picsum.photos/seed/1/100", members: ["Dave", "Eli"] },
+  { id: 1, name: "Alice", image: "https://picsum.photos/seed/1/100", members: ["Dave", "Eli", "George"] },
   { id: 2, name: "Bob", image: "https://picsum.photos/seed/2/100", members: ["Frank", "Grace"] },
-  { id: 3, name: "Charlie", image: "https://picsum.photos/seed/3/100", members: ["Heidi", "Ivan"] },
-  { id: 4, name: "Diana", image: "https://picsum.photos/seed/4/100", members: ["Judy", "Karl"] },
-  { id: 5, name: "Eve", image: "https://picsum.photos/seed/5/100", members: ["Liam", "Mona"] },
-  { id: 6, name: "Frank", image: "https://picsum.photos/seed/6/100", members: ["Nate", "Olivia"] },
-  { id: 7, name: "Grace", image: "https://picsum.photos/seed/7/100", members: ["Pam", "Quinn"] },
-  { id: 8, name: "Hank", image: "https://picsum.photos/seed/8/100", members: ["Rachel", "Steve"] },
-  { id: 9, name: "Ivy", image: "https://picsum.photos/seed/9/100", members: ["Trent", "Ursula"] },
-  { id: 10, name: "Jack", image: "https://picsum.photos/seed/10/100", members: ["Vince", "Wendy"] },
-  { id: 11, name: "Karen", image: "https://picsum.photos/seed/11/100", members: ["Xavier", "Yara"] },
+  { id: 3, name: "Charlie", image: "https://picsum.photos/seed/3/100", members: ["Heidi", "Ivan", "Judy"] },
+  { id: 4, name: "Diana", image: "https://picsum.photos/seed/4/100", members: ["Karl", "Liam"] },
+  { id: 5, name: "Eve", image: "https://picsum.photos/seed/5/100", members: ["Mona", "Nate", "Olivia"] },
+  { id: 6, name: "Frank", image: "https://picsum.photos/seed/6/100", members: ["Pam", "Quinn"] },
+  { id: 7, name: "Grace", image: "https://picsum.photos/seed/7/100", members: ["Rachel", "Steve"] },
+  { id: 8, name: "Hank", image: "https://picsum.photos/seed/8/100", members: ["Trent", "Ursula"] },
+  { id: 9, name: "Ivy", image: "https://picsum.photos/seed/9/100", members: ["Vince", "Wendy"] },
+  { id: 10, name: "Jack", image: "https://picsum.photos/seed/10/100", members: ["Xavier", "Yara", "Zane"] },
+  { id: 11, name: "Karen", image: "https://picsum.photos/seed/11/100", members: ["Aaron", "Betty"] },
 ];
 
 export default function ConnectionsPage() {
@@ -60,7 +60,7 @@ export default function ConnectionsPage() {
                 </h1>
             </div>
             <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                An atomic view of your social circle. Hover on a connection to pause the orbit.
+                A dynamic, atomic view of your social circle. Click the nucleus to see your universe breathe.
             </p>
         </div>
         
