@@ -38,24 +38,26 @@ const getElectronConfiguration = (electrons: number) => {
         shells.push(electronsInShell);
         remainingElectrons -= electronsInShell;
     }
+    // If there are still electrons left, distribute them into available slots in existing shells
     if (remainingElectrons > 0) {
-        let shellIndex = 0;
-        while(remainingElectrons > 0) {
-            if (shellIndex < shells.length) {
-                const space = SHELL_CAPACITIES[shellIndex] - shells[shellIndex];
-                const toAdd = Math.min(remainingElectrons, space);
-                shells[shellIndex] += toAdd;
-                remainingElectrons -= toAdd;
-            } else {
-                 const toAdd = Math.min(remainingElectrons, SHELL_CAPACITIES[shellIndex] || 12);
-                 shells.push(toAdd);
-                 remainingElectrons -= toAdd;
-            }
-            shellIndex++;
+        for (let i = 0; i < shells.length; i++) {
+            const spaceAvailable = SHELL_CAPACITIES[i] - shells[i];
+            const electronsToAdd = Math.min(remainingElectrons, spaceAvailable);
+            shells[i] += electronsToAdd;
+            remainingElectrons -= electronsToAdd;
+            if (remainingElectrons === 0) break;
         }
+    }
+    // If there are still more, add new shells
+    while (remainingElectrons > 0) {
+        const capacity = SHELL_CAPACITIES[shells.length] || SHELL_CAPACITIES[SHELL_CAPACITIES.length - 1];
+        const electronsInShell = Math.min(remainingElectrons, capacity);
+        shells.push(electronsInShell);
+        remainingElectrons -= electronsInShell;
     }
     return shells;
 };
+
 
 interface AtomicConnectionCirclesProps {
   circles: Circle[];
@@ -68,6 +70,7 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
   const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState("");
+  const [hoveredCircleId, setHoveredCircleId] = useState<number | null>(null);
 
   const shells = useMemo(() => getElectronConfiguration(circles.length), [circles.length]);
 
@@ -126,36 +129,35 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
             <motion.div
               key={ringIndex}
               className="absolute w-full h-full"
-              animate={{ rotate: 360 }}
-              transition={{
-                ease: "linear",
-                duration: duration,
-                repeat: Infinity,
-                repeatType: "loop",
-              }}
-              style={{ 
-                originX: '50%', 
-                originY: '50%',
-                animationPlayState: isPaused ? 'paused' : 'running'
-              }}
+              style={{ originX: '50%', originY: '50%'}}
             >
-             <div className="absolute w-full h-full">
+             <motion.div 
+                className="absolute w-full h-full"
+                animate={{ rotate: 360 }}
+                transition={{
+                    ease: "linear",
+                    duration: duration,
+                    repeat: Infinity,
+                    repeatType: "loop",
+                }}
+                style={{
+                    animationPlayState: isPaused ? 'paused' : 'running',
+                }}
+             >
               {ring.map((circle, circleIndex) => {
-                const angle = (circleIndex / ring.length) * 2 * Math.PI - (Math.PI / 2);
+                const angle = (circleIndex / ring.length) * (2 * Math.PI) - (Math.PI / 2);
                 const x = radius * Math.cos(angle);
                 const y = radius * Math.sin(angle);
                 
                 return (
-                  <motion.button
+                  <motion.div
                     key={circle.id}
-                    onClick={() => setSelectedCircle(circle)}
                     className="absolute flex flex-col items-center group cursor-pointer z-10"
                     style={{ 
                       width: ELECTRON_SIZE, 
                       height: ELECTRON_SIZE,
                       top: `calc(50% - ${ELECTRON_SIZE / 2}px)`,
                       left: `calc(50% - ${ELECTRON_SIZE / 2}px)`,
-                      transform: `rotate(${-360 * (isPaused ? 1 : 0)}deg)` // Counter-rotate hack
                     }}
                     initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
                     animate={{
@@ -171,31 +173,41 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                         damping: 15,
                         delay: isExpanded ? ringIndex * 0.1 + circleIndex * 0.05 : 0
                     }}
+                    onHoverStart={() => setHoveredCircleId(circle.id)}
+                    onHoverEnd={() => setHoveredCircleId(null)}
                   >
-                    <motion.div 
+                    <motion.button 
+                        onClick={() => setSelectedCircle(circle)}
                         className="relative rounded-full overflow-hidden bg-muted shadow-lg w-full h-full border-2 border-primary/50"
-                        style={{ transform: `rotate(${-(ringIndex * 360)}deg)` }} // Static image
-                         animate={{ rotate: -360 }}
-                         transition={{
+                        // Counter-rotation for the button itself to keep image upright
+                        style={{ rotate: 0 }}
+                        animate={{ rotate: -360 }}
+                        transition={{
                             ease: "linear",
                             duration: duration,
                             repeat: Infinity,
                             repeatType: "loop",
-                         }}
+                            animationPlayState: isPaused ? 'paused' : 'running',
+                        }}
                     >
                       <Image src={circle.image} alt={circle.name} fill style={{ objectFit: 'cover' }} />
-                    </motion.div>
+                    </motion.button>
                     <AnimatePresence>
-                    <motion.div 
-                        className="absolute -bottom-6 bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-                    >
-                        {circle.name}
-                    </motion.div>
+                    {hoveredCircleId === circle.id && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className="absolute -bottom-6 bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded-md whitespace-nowrap"
+                        >
+                            {circle.name}
+                        </motion.div>
+                    )}
                     </AnimatePresence>
-                  </motion.button>
+                  </motion.div>
                 );
               })}
-              </div>
+              </motion.div>
             </motion.div>
           );
         })}
@@ -240,7 +252,10 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                    <DropdownMenuItem onSelect={() => setIsRenaming(true)}>
+                    <DropdownMenuItem onSelect={() => {
+                        setIsRenaming(true)
+                        setNewName(selectedCircle?.name || '');
+                    }}>
                         <Edit className="mr-2"/> Rename Circle
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => selectedCircle && handleRemoveCircle(selectedCircle.id)} className="text-destructive focus:text-destructive focus:bg-destructive/10">
