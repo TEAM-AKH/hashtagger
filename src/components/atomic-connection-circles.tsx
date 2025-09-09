@@ -38,17 +38,8 @@ const getElectronConfiguration = (electrons: number) => {
         shells.push(electronsInShell);
         remainingElectrons -= electronsInShell;
     }
-    if (remainingElectrons > 0) {
-        for (let i = 0; i < shells.length; i++) {
-            const spaceAvailable = SHELL_CAPACITIES[i] - shells[i];
-            const electronsToAdd = Math.min(remainingElectrons, spaceAvailable);
-            shells[i] += electronsToAdd;
-            remainingElectrons -= electronsToAdd;
-            if (remainingElectrons === 0) break;
-        }
-    }
     while (remainingElectrons > 0) {
-        const capacity = SHELL_CAPACITIES[shells.length] || SHELL_CAPACITIES[SHELL_CAPACITIES.length - 1];
+        const capacity = SHELL_CAPACITIES[shells.length % SHELL_CAPACITIES.length];
         const electronsInShell = Math.min(remainingElectrons, capacity);
         shells.push(electronsInShell);
         remainingElectrons -= electronsInShell;
@@ -87,6 +78,7 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
   
   useEffect(() => {
     distributedCircles.forEach((ring, ringIndex) => {
+        const key = ring.map(c => c.id).join('-');
         if (!randomAnglesRef.current.has(ringIndex)) {
             const angles = ring.map(() => Math.random() * 2 * Math.PI);
             randomAnglesRef.current.set(ringIndex, angles);
@@ -101,8 +93,7 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
   }, [distributedCircles]);
 
   const handleBreathingAnimation = () => {
-    setIsBreathing(true);
-    setTimeout(() => setIsBreathing(false), 1000);
+    setIsBreathing(prev => !prev);
   };
   
   const handleRemoveCircle = (id: number) => {
@@ -119,13 +110,12 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
       }
   };
 
-
   const NUCLEUS_SIZE = 120;
-  const ELECTRON_SIZE = 60;
   const BASE_RADIUS = 120;
   const RADIUS_INCREMENT = 80;
+  const MAX_ELECTRON_SIZE = 60;
 
-  const containerSize = (BASE_RADIUS + (distributedCircles.length - 1) * RADIUS_INCREMENT) * 2 + ELECTRON_SIZE * 2;
+  const containerSize = (BASE_RADIUS + (distributedCircles.length - 1) * RADIUS_INCREMENT) * 2 + MAX_ELECTRON_SIZE * 2;
   
   return (
     <>
@@ -140,6 +130,7 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
           const radius = BASE_RADIUS + ringIndex * RADIUS_INCREMENT;
           const duration = 20 + ringIndex * 10;
           const ringAngles = randomAnglesRef.current.get(ringIndex) || [];
+          const electronSize = Math.max(MAX_ELECTRON_SIZE - ringIndex * 8, 20);
 
           return (
             <motion.div
@@ -170,16 +161,16 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                     key={circle.id}
                     className="absolute flex flex-col items-center group cursor-pointer z-10"
                     style={{ 
-                      width: ELECTRON_SIZE, 
-                      height: ELECTRON_SIZE,
-                      top: `calc(50% - ${ELECTRON_SIZE / 2}px)`,
-                      left: `calc(50% - ${ELECTRON_SIZE / 2}px)`,
+                      width: electronSize, 
+                      height: electronSize,
+                      top: `calc(50% - ${electronSize / 2}px)`,
+                      left: `calc(50% - ${electronSize / 2}px)`,
                     }}
                     initial={{ x: 0, y: 0, scale: 0 }}
                     animate={{
-                        x: isBreathing ? 0 : x,
-                        y: isBreathing ? 0 : y,
-                        scale: 1
+                        x: isBreathing ? x : 0,
+                        y: isBreathing ? y : 0,
+                        scale: isBreathing ? 1 : 0
                     }}
                     whileHover={{ scale: 1.2, zIndex: 50 }}
                     transition={{
@@ -204,18 +195,22 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
                             className="absolute top-full mt-2 bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded-md whitespace-nowrap"
-                            style={{ originX: '50%', originY: '50%'}}
-                             // Counter-rotate the label
-                            animate={{ rotate: -360 }}
-                            transition={{
-                                ease: "linear",
-                                duration: duration,
-                                repeat: Infinity,
-                                repeatType: "loop",
-                                animationPlayState: isPaused ? 'paused' : 'running',
-                            }}
                         >
-                            {circle.name}
+                            <motion.span
+                                style={{
+                                    display: 'inline-block',
+                                    transformOrigin: 'center center',
+                                }}
+                                animate={{ rotate: -360 }}
+                                transition={{
+                                    ease: "linear",
+                                    duration: duration,
+                                    repeat: Infinity,
+                                    repeatType: "loop",
+                                }}
+                            >
+                                {circle.name}
+                            </motion.span>
                         </motion.div>
                     )}
                     </AnimatePresence>
@@ -297,7 +292,9 @@ export default function AtomicConnectionCircles({ circles, setCircles }: AtomicC
                 <div className="py-4 space-y-4">
                     <div className="flex justify-between items-center">
                         <h4 className="font-semibold">Members</h4>
-                        <Button variant="outline" size="sm"><UserPlus className="mr-2"/>Add</Button>
+                        {circles.findIndex(c => c.id === selectedCircle?.id) >= 4 && (
+                          <Button variant="outline" size="sm"><UserPlus className="mr-2"/>Add</Button>
+                        )}
                     </div>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                         {selectedCircle?.members.map(member => (
