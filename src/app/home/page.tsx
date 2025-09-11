@@ -11,7 +11,10 @@ const posts = [
         content: "Just enjoying a beautiful day out! The weather is perfect for a walk in the park. ☀️ #nature #sunny #happy",
         image: { src: "https://picsum.photos/600/375?random=1", hint: "landscape nature" },
         likes: 12,
-        comments: 3,
+        comments: [
+            { author: 'Bob', text: 'Looks amazing!'},
+            { author: 'Charlie', text: 'I wish I was there!'},
+        ],
         circle: "Best Friends",
         isSaved: false,
     },
@@ -21,7 +24,9 @@ const posts = [
         content: "My new minimalist workspace setup is finally complete! Loving the clean and focused environment. What do you guys think? #wfh #setup #minimalism",
         image: { src: "https://picsum.photos/600/375?random=2", hint: "computer desk" },
         likes: 45,
-        comments: 12,
+        comments: [
+             { author: 'Alice', text: 'So clean! Where did you get that desk?'},
+        ],
         circle: "Organization",
         isSaved: true,
     },
@@ -30,8 +35,7 @@ const posts = [
         author: { name: "Charlie", avatar: "https://picsum.photos/seed/3/100", hint: "person nature" },
         content: "Exploring the hidden gems of the city. There's so much history and art in these streets! #citylife #urbanexplorer",
         likes: 23,
-        comments: 5,
-        circle: "Clubs",
+        comments: [],
         isSaved: false,
     },
 ];
