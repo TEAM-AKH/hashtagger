@@ -2,58 +2,49 @@
 'use client';
 
 import Image from "next/image";
+import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, Send, Bookmark, User, Circle } from "lucide-react";
+import { MessageCircle, Send, Bookmark, Circle, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type Comment = {
+    id: number;
     author: string;
     text: string;
+};
+
+type CircleInfo = {
+    id: number;
+    name: string;
 }
 
 type Post = {
     id: number;
-    author: { name: string; avatar: string, hint: string };
+    author: { name: string; avatar: string; hint: string };
     content: string;
-    image?: { src: string, hint: string };
+    image?: { src: string; hint: string };
     likes: number;
     comments: Comment[];
-    circles?: string[];
+    circles?: CircleInfo[];
     isSaved?: boolean;
 };
-
-const vibeVariants = {
-  hidden: { opacity: 0, scale: 0.5 },
-  visible: {
-    opacity: 1,
-    scale: 1.2,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 10,
-    },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0,
-    transition: { duration: 0.3 }
-  },
-};
-
 
 export default function PostCard({ post }: { post: Post }) {
   const [isSaved, setIsSaved] = useState(post.isSaved || false);
   const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState(post.comments);
+  const [comments, setComments] = useState<Comment[]>(post.comments);
   const [newComment, setNewComment] = useState("");
   const [showVibe, setShowVibe] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingText, setEditingText] = useState("");
 
   const handleSave = () => {
     setIsSaved(!isSaved);
@@ -66,10 +57,34 @@ export default function PostCard({ post }: { post: Post }) {
 
   const handleAddComment = () => {
       if (newComment.trim()) {
-          setComments([...comments, { author: 'You', text: newComment.trim() }]);
+          const newCommentObj = { 
+              id: Date.now(), 
+              author: 'You', 
+              text: newComment.trim() 
+          };
+          setComments([...comments, newCommentObj]);
           setNewComment('');
       }
-  }
+  };
+
+  const handleEditComment = (comment: Comment) => {
+    setEditingCommentId(comment.id);
+    setEditingText(comment.text);
+  };
+
+  const handleUpdateComment = () => {
+    if (editingCommentId === null) return;
+    setComments(comments.map(c => 
+        c.id === editingCommentId ? { ...c, text: editingText } : c
+    ));
+    setEditingCommentId(null);
+    setEditingText("");
+  };
+
+  const handleDeleteComment = (commentId: number) => {
+    setComments(comments.filter(c => c.id !== commentId));
+  };
+
 
   return (
     <Card className="overflow-hidden">
@@ -122,18 +137,28 @@ export default function PostCard({ post }: { post: Post }) {
                             >
                                 <Badge variant="secondary" className="bg-black/60 text-white border-white/40 backdrop-blur-sm cursor-pointer flex items-center gap-1.5 pl-2 pr-3 py-1">
                                     <Circle className="h-4 w-4" />
-                                    <span>{post.circles.length}</span>
                                 </Badge>
                             </motion.div>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto max-w-xs" side="top" align="start">
+                        <PopoverContent className="w-auto max-w-xs p-2" side="top" align="start">
                             <div className="space-y-2">
-                                <h4 className="font-medium leading-none">Shared in Circles</h4>
-                                <div className="flex flex-wrap gap-2 pt-1">
+                                <h4 className="font-medium leading-none px-2 py-1">Tagged Circles</h4>
+                                <div className="flex flex-col gap-1">
                                     {post.circles.map(circle => (
-                                        <Badge key={circle} variant="outline">{circle}</Badge>
+                                        <Link key={circle.id} href="/circles">
+                                            <div className="flex items-center gap-3 p-2 rounded-md hover:bg-muted cursor-pointer">
+                                                <Avatar className="h-8 w-8">
+                                                    <AvatarImage src={`https://picsum.photos/seed/${circle.id}/100`} />
+                                                    <AvatarFallback>{circle.name.charAt(0)}</AvatarFallback>
+                                                </Avatar>
+                                                <span className="font-semibold text-sm">{circle.name}</span>
+                                            </div>
+                                        </Link>
                                     ))}
                                 </div>
+                                <Button variant="link" size="sm" asChild className="w-full justify-center">
+                                    <Link href="/circles">Go to Circles</Link>
+                                </Button>
                             </div>
                         </PopoverContent>
                     </Popover>
@@ -170,15 +195,47 @@ export default function PostCard({ post }: { post: Post }) {
             >
               <div className="space-y-3 text-sm max-h-40 overflow-y-auto pr-2">
                 {comments.length === 0 && <p className="text-muted-foreground text-xs text-center py-2">No expressions yet. Be the first!</p>}
-                {comments.map((comment, index) => (
-                  <div key={index} className="flex gap-2">
+                {comments.map((comment) => (
+                  <div key={comment.id} className="flex gap-2 items-start group">
                      <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-xs">{comment.author.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="bg-muted/60 rounded-lg px-3 py-1.5 w-full">
-                        <span className="font-semibold text-xs">{comment.author}</span>
-                        <p className="text-muted-foreground text-sm">{comment.text}</p>
+                        {editingCommentId === comment.id ? (
+                            <div className="flex items-center gap-2">
+                                <Input 
+                                    value={editingText}
+                                    onChange={(e) => setEditingText(e.target.value)}
+                                    className="h-8"
+                                    onKeyDown={(e) => e.key === 'Enter' && handleUpdateComment()}
+                                />
+                                <Button size="sm" onClick={handleUpdateComment}>Save</Button>
+                                <Button size="sm" variant="ghost" onClick={() => setEditingCommentId(null)}>Cancel</Button>
+                            </div>
+                        ) : (
+                            <>
+                                <span className="font-semibold text-xs">{comment.author}</span>
+                                <p className="text-muted-foreground text-sm">{comment.text}</p>
+                            </>
+                        )}
                     </div>
+                     {comment.author === 'You' && editingCommentId !== comment.id && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => handleEditComment(comment)}>
+                                    <Edit className="mr-2 h-4 w-4" /> Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDeleteComment(comment.id)} className="text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                   </div>
                 ))}
               </div>

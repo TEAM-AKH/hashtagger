@@ -12,10 +12,10 @@ const posts = [
         image: { src: "https://picsum.photos/seed/post1/600/375", hint: "landscape nature" },
         likes: 12,
         comments: [
-            { author: 'Bob', text: 'Looks amazing!'},
-            { author: 'Charlie', text: 'I wish I was there!'},
+            { id: 1, author: 'Bob', text: 'Looks amazing!'},
+            { id: 2, author: 'Charlie', text: 'I wish I was there!'},
         ],
-        circles: ["Best Friends"],
+        circles: [{id: 1, name: "Best Friends"}],
         isSaved: false,
     },
     {
@@ -25,9 +25,9 @@ const posts = [
         image: { src: "https://picsum.photos/seed/post2/600/375", hint: "computer desk" },
         likes: 45,
         comments: [
-             { author: 'Alice', text: 'So clean! Where did you get that desk?'},
+             { id: 3, author: 'Alice', text: 'So clean! Where did you get that desk?'},
         ],
-        circles: ["Organization", "Clubs"],
+        circles: [{id: 2, name: "Organization"}, {id: 3, name: "Clubs"}],
         isSaved: true,
     },
     {
@@ -37,6 +37,7 @@ const posts = [
         image: { src: "https://picsum.photos/seed/post3/600/375", hint: "city street art" },
         likes: 23,
         comments: [],
+        circles: [],
         isSaved: false,
     },
      {
@@ -46,7 +47,7 @@ const posts = [
         image: { src: "https://picsum.photos/seed/post4/600/375", hint: "fresh bread" },
         likes: 78,
         comments: [],
-        circles: ["Family"],
+        circles: [{id: 4, name: "Family"}],
         isSaved: false,
     },
     {
@@ -59,9 +60,6 @@ const posts = [
         isSaved: true,
     },
 ];
-
-const availableCircles = ["Best Friends", "Family", "Organization", "Clubs", "Gaming Squad"];
-
 
 const containerVariants = {
   hidden: { opacity: 0 },
