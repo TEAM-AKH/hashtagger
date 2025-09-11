@@ -5,9 +5,8 @@ import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Flame, MessageCircle, Send } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Badge } from "./ui/badge";
+import { MessageCircle, Send, Bookmark, Circle, Check } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -19,6 +18,7 @@ type Post = {
     likes: number;
     comments: number;
     circle?: string;
+    isSaved?: boolean;
 };
 
 const circleColors: { [key: string]: string } = {
@@ -26,67 +26,31 @@ const circleColors: { [key: string]: string } = {
   "Family": "bg-blue-500",
   "Organization": "bg-purple-500",
   "Clubs": "bg-yellow-500",
+  "Gaming Squad": "bg-pink-500",
 }
 
-const bubbleVariants = {
-  hidden: { opacity: 0, scale: 0 },
-  visible: (i: number) => ({
-    opacity: 1,
-    scale: 1,
-    transition: {
-      delay: i * 0.1,
-      type: 'spring',
-      stiffness: 150,
-      damping: 10,
-    },
-  }),
-  exit: {
-    opacity: 0,
-    scale: 0,
-    transition: { duration: 0.3 }
-  }
-};
+export default function PostCard({ post, availableCircles }: { post: Post, availableCircles: string[] }) {
+  const [isSaved, setIsSaved] = useState(post.isSaved || false);
+  const [sharedCircle, setSharedCircle] = useState(post.circle);
 
-export default function PostCard({ post }: { post: Post }) {
-  const [isLiked, setIsLiked] = useState(false);
-  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
-  const [likes, setLikes] = useState(post.likes);
-
-  const handleLike = () => {
-    if (!isLiked) {
-      setIsLiked(true);
-      setLikes(likes + 1);
-      setShowLikeAnimation(true);
-      setTimeout(() => setShowLikeAnimation(false), 1200);
-    } else {
-      setIsLiked(false);
-      setLikes(likes - 1);
-    }
+  const handleSave = () => {
+    setIsSaved(!isSaved);
   };
-
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="flex flex-row items-center gap-4">
-        <Avatar>
-          <AvatarImage src={post.author.avatar} alt={post.author.name} data-ai-hint={post.author.hint} width={40} height={40} />
-          <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <div className="flex-grow">
-          <div className="font-semibold">{post.author.name}</div>
+      <CardHeader className="flex flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+            <Avatar>
+              <AvatarImage src={post.author.avatar} alt={post.author.name} data-ai-hint={post.author.hint} width={40} height={40} />
+              <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="font-semibold">{post.author.name}</div>
         </div>
-         {post.circle && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.3 }}
-          >
-            <Badge variant="outline" className="flex items-center gap-2">
-                <div className={cn("h-2 w-2 rounded-full", circleColors[post.circle] || "bg-gray-500")} />
-                {post.circle}
-            </Badge>
-          </motion.div>
-        )}
+         <Button variant="ghost" size="icon" onClick={handleSave} className="text-muted-foreground hover:text-primary">
+            <Bookmark className={cn("h-6 w-6", isSaved && "fill-primary text-primary")} />
+            <span className="sr-only">Save</span>
+        </Button>
       </CardHeader>
       <CardContent className="space-y-4 pt-0 relative">
         <p className="text-foreground/90">{post.content}</p>
@@ -95,42 +59,47 @@ export default function PostCard({ post }: { post: Post }) {
             <Image src={post.image.src} alt="Post image" fill style={{ objectFit: 'cover' }} data-ai-hint={post.image.hint} />
           </div>
         )}
-         <AnimatePresence>
-          {showLikeAnimation && (
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="absolute inset-0 flex items-center justify-center pointer-events-none"
-            >
-                <motion.div custom={0} variants={bubbleVariants} className="absolute">
-                    <Flame className="h-32 w-32 text-red-500/80" fill="currentColor" />
-                </motion.div>
-                <motion.div custom={1} variants={bubbleVariants} className="absolute" style={{ top: '30%', left: '25%', transform: 'rotate(-20deg)' }}>
-                    <Flame className="h-16 w-16 text-orange-400/80" fill="currentColor" />
-                </motion.div>
-                <motion.div custom={2} variants={bubbleVariants} className="absolute" style={{ bottom: '30%', right: '25%', transform: 'rotate(20deg)' }}>
-                    <Flame className="h-20 w-20 text-yellow-400/80" fill="currentColor" />
-                </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-between items-center">
+         <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
+                <Circle className="h-5 w-5" />
+                <span className="font-semibold">{sharedCircle}</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2">
+                <div className="flex flex-col gap-1">
+                    <p className="font-medium text-sm px-2 py-1">Share to Circle</p>
+                    {availableCircles.map(circle => (
+                        <Button 
+                            key={circle} 
+                            variant="ghost" 
+                            className="w-full justify-start gap-2"
+                            onClick={() => setSharedCircle(circle)}
+                        >
+                           <div className={cn("h-2 w-2 rounded-full", circleColors[circle] || "bg-gray-500")} />
+                           <span>{circle}</span>
+                           {sharedCircle === circle && <Check className="h-4 w-4 ml-auto text-primary"/>}
+                        </Button>
+                    ))}
+                </div>
+            </PopoverContent>
+          </Popover>
         <div className="flex gap-1 sm:gap-2">
-            <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground" onClick={handleLike}>
-                <Flame className={cn("h-5 w-5", isLiked ? "text-red-500 fill-current" : "")} />
-                <span>Lit ({likes})</span>
+            <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
+                <span>🥂</span>
+                <span>Vibe</span>
             </Button>
             <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
                 <MessageCircle className="h-5 w-5" />
-                <span>Express ({post.comments})</span>
+                <span>Express</span>
+            </Button>
+             <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
+                <Send className="h-5 w-5" />
+                <span>Share</span>
             </Button>
         </div>
-        <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground">
-            <Send className="h-5 w-5" />
-            <span>Circulate</span>
-        </Button>
       </CardFooter>
     </Card>
   );

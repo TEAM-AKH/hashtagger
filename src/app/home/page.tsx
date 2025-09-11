@@ -13,6 +13,7 @@ const posts = [
         likes: 12,
         comments: 3,
         circle: "Best Friends",
+        isSaved: false,
     },
     {
         id: 2,
@@ -22,6 +23,7 @@ const posts = [
         likes: 45,
         comments: 12,
         circle: "Organization",
+        isSaved: true,
     },
     {
         id: 3,
@@ -30,8 +32,12 @@ const posts = [
         likes: 23,
         comments: 5,
         circle: "Clubs",
+        isSaved: false,
     },
 ];
+
+const availableCircles = ["Best Friends", "Family", "Organization", "Clubs", "Gaming Squad"];
+
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -73,7 +79,7 @@ export default function HomePage() {
       >
         {posts.map(post => (
           <motion.div key={post.id} variants={itemVariants}>
-            <PostCard post={post} />
+            <PostCard post={post} availableCircles={availableCircles} />
           </motion.div>
         ))}
       </motion.div>
