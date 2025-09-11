@@ -6,11 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, Send, Bookmark } from "lucide-react";
+import { MessageCircle, Send, Bookmark, User, Circle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type Comment = {
     author: string;
@@ -29,22 +30,20 @@ type Post = {
 };
 
 const vibeVariants = {
-  hidden: { opacity: 0, scale: 0.5, rotate: -30 },
-  visible: (i: number) => ({
+  hidden: { opacity: 0, scale: 0.5 },
+  visible: {
     opacity: 1,
     scale: 1.2,
-    rotate: i === 0 ? 15 : -15,
     transition: {
       type: "spring",
-      stiffness: 260,
-      damping: 15,
-      delay: i * 0.1,
+      stiffness: 300,
+      damping: 10,
     },
-  }),
+  },
   exit: {
     opacity: 0,
     scale: 0,
-    transition: { duration: 0.4 }
+    transition: { duration: 0.3 }
   },
 };
 
@@ -92,23 +91,52 @@ export default function PostCard({ post }: { post: Post }) {
         <div className="relative">
              <AnimatePresence>
                 {showVibe && (
-                    <motion.div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none overflow-hidden">
-                         <motion.div variants={vibeVariants} initial="hidden" animate="visible" exit="exit" custom={0} className="text-6xl drop-shadow-lg origin-bottom-left" style={{ x: '-50%' }}>🥂</motion.div>
-                         <motion.div variants={vibeVariants} initial="hidden" animate="visible" exit="exit" custom={1} className="text-6xl drop-shadow-lg origin-bottom-right" style={{ x: '50%' }}>🥂</motion.div>
-                    </motion.div>
+                    <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none overflow-hidden">
+                         <motion.div 
+                            initial={{ opacity: 0, x: -100, y: 20, rotate: -30 }} 
+                            animate={{ opacity: 1, x: -20, y: 0, rotate: 15}} 
+                            exit={{ opacity: 0, x: -100, y: 20, rotate: -30}}
+                            transition={{ type: 'spring', stiffness: 200, damping: 12}}
+                            className="text-6xl drop-shadow-lg"
+                         >🥂</motion.div>
+                         <motion.div 
+                            initial={{ opacity: 0, x: 100, y: 20, rotate: 30 }}
+                            animate={{ opacity: 1, x: 20, y: 0, rotate: -15}}
+                            exit={{ opacity: 0, x: 100, y: 20, rotate: 30}}
+                            transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.1 }}
+                            className="text-6xl drop-shadow-lg"
+                        >🥂</motion.div>
+                    </div>
                 )}
               </AnimatePresence>
             {post.image && (
               <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg border">
                 <Image src={post.image.src} alt="Post image" fill style={{ objectFit: 'cover' }} data-ai-hint={post.image.hint} />
-                {post.circles && post.circles.length > 0 && (
-                    <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
-                        {post.circles.map(circle => (
-                            <Badge key={circle} variant="secondary" className="bg-black/60 text-white border-white/40 backdrop-blur-sm">
-                                {circle}
-                            </Badge>
-                        ))}
-                    </div>
+                 {post.circles && post.circles.length > 0 && (
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <motion.div 
+                                className="absolute bottom-3 left-3"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                            >
+                                <Badge variant="secondary" className="bg-black/60 text-white border-white/40 backdrop-blur-sm cursor-pointer flex items-center gap-1.5 pl-2 pr-3 py-1">
+                                    <Circle className="h-4 w-4" />
+                                    <span>{post.circles.length}</span>
+                                </Badge>
+                            </motion.div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto max-w-xs" side="top" align="start">
+                            <div className="space-y-2">
+                                <h4 className="font-medium leading-none">Shared in Circles</h4>
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                    {post.circles.map(circle => (
+                                        <Badge key={circle} variant="outline">{circle}</Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                 )}
               </div>
             )}
@@ -140,14 +168,19 @@ export default function PostCard({ post }: { post: Post }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
             >
-              <div className="space-y-2 text-sm max-h-32 overflow-y-auto pr-2">
+              <div className="space-y-3 text-sm max-h-40 overflow-y-auto pr-2">
+                {comments.length === 0 && <p className="text-muted-foreground text-xs text-center py-2">No expressions yet. Be the first!</p>}
                 {comments.map((comment, index) => (
-                  <div key={index}>
-                    <span className="font-semibold">{comment.author}</span>
-                    <span className="ml-2 text-muted-foreground">{comment.text}</span>
+                  <div key={index} className="flex gap-2">
+                     <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-xs">{comment.author.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="bg-muted/60 rounded-lg px-3 py-1.5 w-full">
+                        <span className="font-semibold text-xs">{comment.author}</span>
+                        <p className="text-muted-foreground text-sm">{comment.text}</p>
+                    </div>
                   </div>
                 ))}
-                {comments.length === 0 && <p className="text-muted-foreground text-xs">No expressions yet.</p>}
               </div>
               <div className="flex items-center gap-2 pt-2 border-t">
                 <Input 
@@ -155,8 +188,9 @@ export default function PostCard({ post }: { post: Post }) {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                  className="bg-muted/50 border-0"
                 />
-                <Button size="sm" onClick={handleAddComment}>Post</Button>
+                <Button size="sm" onClick={handleAddComment} disabled={!newComment.trim()}>Post</Button>
               </div>
             </motion.div>
           )}
