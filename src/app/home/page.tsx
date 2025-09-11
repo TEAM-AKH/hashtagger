@@ -9,34 +9,54 @@ const posts = [
         id: 1,
         author: { name: "Alice", avatar: "https://picsum.photos/seed/1/100", hint: "woman smiling" },
         content: "Just enjoying a beautiful day out! The weather is perfect for a walk in the park. ☀️ #nature #sunny #happy",
-        image: { src: "https://picsum.photos/600/375?random=1", hint: "landscape nature" },
+        image: { src: "https://picsum.photos/seed/post1/600/375", hint: "landscape nature" },
         likes: 12,
         comments: [
             { author: 'Bob', text: 'Looks amazing!'},
             { author: 'Charlie', text: 'I wish I was there!'},
         ],
-        circle: "Best Friends",
+        circles: ["Best Friends"],
         isSaved: false,
     },
     {
         id: 2,
         author: { name: "Bob", avatar: "https://picsum.photos/seed/2/100", hint: "man glasses" },
         content: "My new minimalist workspace setup is finally complete! Loving the clean and focused environment. What do you guys think? #wfh #setup #minimalism",
-        image: { src: "https://picsum.photos/600/375?random=2", hint: "computer desk" },
+        image: { src: "https://picsum.photos/seed/post2/600/375", hint: "computer desk" },
         likes: 45,
         comments: [
              { author: 'Alice', text: 'So clean! Where did you get that desk?'},
         ],
-        circle: "Organization",
+        circles: ["Organization", "Clubs"],
         isSaved: true,
     },
     {
         id: 3,
         author: { name: "Charlie", avatar: "https://picsum.photos/seed/3/100", hint: "person nature" },
         content: "Exploring the hidden gems of the city. There's so much history and art in these streets! #citylife #urbanexplorer",
+        image: { src: "https://picsum.photos/seed/post3/600/375", hint: "city street art" },
         likes: 23,
         comments: [],
         isSaved: false,
+    },
+     {
+        id: 4,
+        author: { name: "David", avatar: "https://picsum.photos/seed/4/100", hint: "man portrait" },
+        content: "Weekend baking project: success! Freshly baked sourdough bread. The smell is incredible. 🍞",
+        image: { src: "https://picsum.photos/seed/post4/600/375", hint: "fresh bread" },
+        likes: 78,
+        comments: [],
+        circles: ["Family"],
+        isSaved: false,
+    },
+    {
+        id: 5,
+        author: { name: "Eve", avatar: "https://picsum.photos/seed/5/100", hint: "woman nature" },
+        content: "Morning hike views. Totally worth the early start! #hiking #mountains #sunrise",
+        image: { src: "https://picsum.photos/seed/post5/600/375", hint: "mountain sunrise" },
+        likes: 102,
+        comments: [],
+        isSaved: true,
     },
 ];
 
@@ -83,7 +103,7 @@ export default function HomePage() {
       >
         {posts.map(post => (
           <motion.div key={post.id} variants={itemVariants}>
-            <PostCard post={post} availableCircles={availableCircles} />
+            <PostCard post={post} />
           </motion.div>
         ))}
       </motion.div>

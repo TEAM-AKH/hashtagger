@@ -6,8 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, Send, Bookmark, Circle, Check } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { MessageCircle, Send, Bookmark } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,44 +21,36 @@ type Post = {
     id: number;
     author: { name: string; avatar: string, hint: string };
     content: string;
-    image?: { src: string, hint: string, width?: number, height?: number };
+    image?: { src: string, hint: string };
     likes: number;
     comments: Comment[];
-    circle?: string;
+    circles?: string[];
     isSaved?: boolean;
 };
 
-const circleColors: { [key: string]: string } = {
-  "Best Friends": "bg-green-500",
-  "Family": "bg-blue-500",
-  "Organization": "bg-purple-500",
-  "Clubs": "bg-yellow-500",
-  "Gaming Squad": "bg-pink-500",
-}
-
 const vibeVariants = {
-  hidden: { opacity: 0, scale: 0.5 },
-  visible: (custom: {x: number, rotate: number}) => ({
+  hidden: { opacity: 0, scale: 0.5, rotate: -30 },
+  visible: (i: number) => ({
     opacity: 1,
-    scale: 1,
-    x: custom.x,
-    rotate: custom.rotate,
+    scale: 1.2,
+    rotate: i === 0 ? 15 : -15,
     transition: {
       type: "spring",
       stiffness: 260,
       damping: 15,
+      delay: i * 0.1,
     },
   }),
   exit: {
     opacity: 0,
     scale: 0,
-    transition: { duration: 0.3 }
+    transition: { duration: 0.4 }
   },
 };
 
-export default function PostCard({ post, availableCircles }: { post: Post, availableCircles?: string[] }) {
+
+export default function PostCard({ post }: { post: Post }) {
   const [isSaved, setIsSaved] = useState(post.isSaved || false);
-  const [sharedCircle, setSharedCircle] = useState(post.circle);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState(post.comments);
   const [newComment, setNewComment] = useState("");
@@ -101,40 +93,21 @@ export default function PostCard({ post, availableCircles }: { post: Post, avail
              <AnimatePresence>
                 {showVibe && (
                     <motion.div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none overflow-hidden">
-                         <motion.div variants={vibeVariants} initial={{x: -100, rotate: -30, ...vibeVariants.hidden}} animate="visible" exit="exit" custom={{x: -20, rotate: 15}} className="text-6xl drop-shadow-lg">🥂</motion.div>
-                         <motion.div variants={vibeVariants} initial={{x: 100, rotate: 30, ...vibeVariants.hidden}} animate="visible" exit="exit" custom={{x: 20, rotate: -15}} className="text-6xl drop-shadow-lg">🥂</motion.div>
+                         <motion.div variants={vibeVariants} initial="hidden" animate="visible" exit="exit" custom={0} className="text-6xl drop-shadow-lg origin-bottom-left" style={{ x: '-50%' }}>🥂</motion.div>
+                         <motion.div variants={vibeVariants} initial="hidden" animate="visible" exit="exit" custom={1} className="text-6xl drop-shadow-lg origin-bottom-right" style={{ x: '50%' }}>🥂</motion.div>
                     </motion.div>
                 )}
               </AnimatePresence>
             {post.image && (
               <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg border">
                 <Image src={post.image.src} alt="Post image" fill style={{ objectFit: 'cover' }} data-ai-hint={post.image.hint} />
-                 {sharedCircle && availableCircles && (
-                    <div className="absolute bottom-2 left-2">
-                        <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70 hover:text-white">
-                                <Circle className="h-5 w-5" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-2">
-                            <div className="flex flex-col gap-1">
-                                <p className="font-medium text-sm px-2 py-1">Shared to Circle</p>
-                                {availableCircles.map(circle => (
-                                    <Button 
-                                        key={circle} 
-                                        variant="ghost" 
-                                        className="w-full justify-start gap-2"
-                                        onClick={() => setSharedCircle(circle)}
-                                    >
-                                        <div className={cn("h-2 w-2 rounded-full", circleColors[circle] || "bg-gray-500")} />
-                                        <span>{circle}</span>
-                                        {sharedCircle === circle && <Check className="h-4 w-4 ml-auto text-primary"/>}
-                                    </Button>
-                                ))}
-                            </div>
-                        </PopoverContent>
-                        </Popover>
+                {post.circles && post.circles.length > 0 && (
+                    <div className="absolute bottom-2 left-2 flex flex-wrap gap-1">
+                        {post.circles.map(circle => (
+                            <Badge key={circle} variant="secondary" className="bg-black/60 text-white border-white/40 backdrop-blur-sm">
+                                {circle}
+                            </Badge>
+                        ))}
                     </div>
                 )}
               </div>
