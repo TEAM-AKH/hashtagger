@@ -37,26 +37,26 @@ const circleColors: { [key: string]: string } = {
 }
 
 const vibeVariants = {
-  hidden: { opacity: 0, scale: 0.5, rotate: -30 },
-  visible: (i: number) => ({
+  hidden: { opacity: 0, scale: 0.5 },
+  visible: (custom: {x: number, rotate: number}) => ({
     opacity: 1,
     scale: 1,
-    rotate: i === 0 ? 15 : -15,
+    x: custom.x,
+    rotate: custom.rotate,
     transition: {
       type: "spring",
-      stiffness: 300,
-      damping: 10,
-      delay: i * 0.1,
+      stiffness: 260,
+      damping: 15,
     },
   }),
   exit: {
     opacity: 0,
     scale: 0,
-    transition: { duration: 0.5 }
+    transition: { duration: 0.3 }
   },
 };
 
-export default function PostCard({ post, availableCircles }: { post: Post, availableCircles: string[] }) {
+export default function PostCard({ post, availableCircles }: { post: Post, availableCircles?: string[] }) {
   const [isSaved, setIsSaved] = useState(post.isSaved || false);
   const [sharedCircle, setSharedCircle] = useState(post.circle);
   const [showComments, setShowComments] = useState(false);
@@ -82,14 +82,6 @@ export default function PostCard({ post, availableCircles }: { post: Post, avail
 
   return (
     <Card className="overflow-hidden">
-      <AnimatePresence>
-        {showVibe && (
-            <motion.div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                 <motion.div variants={vibeVariants} initial="hidden" animate="visible" exit="exit" custom={0} className="text-5xl" style={{ x: -20 }}>🥂</motion.div>
-                 <motion.div variants={vibeVariants} initial="hidden" animate="visible" exit="exit" custom={1} className="text-5xl" style={{ x: 20 }}>🥂</motion.div>
-            </motion.div>
-        )}
-      </AnimatePresence>
       <CardHeader className="flex flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
             <Avatar>
@@ -105,41 +97,53 @@ export default function PostCard({ post, availableCircles }: { post: Post, avail
       </CardHeader>
       <CardContent className="space-y-4 pt-0 relative">
         <p className="text-foreground/90">{post.content}</p>
-        {post.image && (
-          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg border">
-            <Image src={post.image.src} alt="Post image" fill style={{ objectFit: 'cover' }} data-ai-hint={post.image.hint} />
-          </div>
-        )}
+        <div className="relative">
+             <AnimatePresence>
+                {showVibe && (
+                    <motion.div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none overflow-hidden">
+                         <motion.div variants={vibeVariants} initial={{x: -100, rotate: -30, ...vibeVariants.hidden}} animate="visible" exit="exit" custom={{x: -20, rotate: 15}} className="text-6xl drop-shadow-lg">🥂</motion.div>
+                         <motion.div variants={vibeVariants} initial={{x: 100, rotate: 30, ...vibeVariants.hidden}} animate="visible" exit="exit" custom={{x: 20, rotate: -15}} className="text-6xl drop-shadow-lg">🥂</motion.div>
+                    </motion.div>
+                )}
+              </AnimatePresence>
+            {post.image && (
+              <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg border">
+                <Image src={post.image.src} alt="Post image" fill style={{ objectFit: 'cover' }} data-ai-hint={post.image.hint} />
+                 {sharedCircle && availableCircles && (
+                    <div className="absolute bottom-2 left-2">
+                        <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-black/50 text-white hover:bg-black/70 hover:text-white">
+                                <Circle className="h-5 w-5" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-2">
+                            <div className="flex flex-col gap-1">
+                                <p className="font-medium text-sm px-2 py-1">Shared to Circle</p>
+                                {availableCircles.map(circle => (
+                                    <Button 
+                                        key={circle} 
+                                        variant="ghost" 
+                                        className="w-full justify-start gap-2"
+                                        onClick={() => setSharedCircle(circle)}
+                                    >
+                                        <div className={cn("h-2 w-2 rounded-full", circleColors[circle] || "bg-gray-500")} />
+                                        <span>{circle}</span>
+                                        {sharedCircle === circle && <Check className="h-4 w-4 ml-auto text-primary"/>}
+                                    </Button>
+                                ))}
+                            </div>
+                        </PopoverContent>
+                        </Popover>
+                    </div>
+                )}
+              </div>
+            )}
+        </div>
       </CardContent>
       <CardFooter className="flex flex-col items-start">
         <div className="flex justify-between items-center w-full">
-          {sharedCircle ? (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground -ml-2">
-                  <Circle className="h-5 w-5" />
-                  <span className="font-semibold">{sharedCircle}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-2">
-                  <div className="flex flex-col gap-1">
-                      <p className="font-medium text-sm px-2 py-1">Share to Circle</p>
-                      {availableCircles.map(circle => (
-                          <Button 
-                              key={circle} 
-                              variant="ghost" 
-                              className="w-full justify-start gap-2"
-                              onClick={() => setSharedCircle(circle)}
-                          >
-                            <div className={cn("h-2 w-2 rounded-full", circleColors[circle] || "bg-gray-500")} />
-                            <span>{circle}</span>
-                            {sharedCircle === circle && <Check className="h-4 w-4 ml-auto text-primary"/>}
-                          </Button>
-                      ))}
-                  </div>
-              </PopoverContent>
-            </Popover>
-          ) : <div />}
+          <div /> 
           <div className="flex gap-1 sm:gap-2">
               <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground" onClick={handleVibe}>
                   <span>🥂</span>
@@ -163,7 +167,7 @@ export default function PostCard({ post, availableCircles }: { post: Post, avail
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
             >
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2 text-sm max-h-32 overflow-y-auto pr-2">
                 {comments.map((comment, index) => (
                   <div key={index}>
                     <span className="font-semibold">{comment.author}</span>
@@ -172,7 +176,7 @@ export default function PostCard({ post, availableCircles }: { post: Post, avail
                 ))}
                 {comments.length === 0 && <p className="text-muted-foreground text-xs">No expressions yet.</p>}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 pt-2 border-t">
                 <Input 
                   placeholder="Add an expression..." 
                   value={newComment}
