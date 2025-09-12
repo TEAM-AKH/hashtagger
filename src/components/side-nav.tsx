@@ -1,16 +1,15 @@
 
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  Share2,
+  MessageSquareHeart,
   Film,
+  Clapperboard,
   BrainCircuit,
   Heart,
-  MessageSquareHeart,
-  Clapperboard,
-  Share2,
   Hash,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
