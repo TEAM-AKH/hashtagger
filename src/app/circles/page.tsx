@@ -10,7 +10,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const initialCircles = [
   { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"] },
@@ -25,7 +28,10 @@ export default function ConnectionsPage() {
   const [items, setItems] = useState(initialCircles);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [isCircleDetailsOpen, setIsCircleDetailsOpen] = useState(false);
   const [selectedCircle, setSelectedCircle] = useState<any>(null);
+  const [isRemovingMembers, setIsRemovingMembers] = useState(false);
+  const [membersToRemove, setMembersToRemove] = useState<string[]>([]);
 
   const ringLimits = [4, 6, 8, 10, 12];
 
@@ -55,7 +61,19 @@ export default function ConnectionsPage() {
   
   const removeCircle = (id: number) => {
     setItems(items.filter(item => item.id !== id));
+    setIsCircleDetailsOpen(false);
   };
+  
+  const openCircleDetails = (item: any) => {
+    setSelectedCircle(item);
+    setIsCircleDetailsOpen(true);
+  }
+  
+  const closeCircleDetails = () => {
+    setIsCircleDetailsOpen(false);
+    setIsRemovingMembers(false);
+    setMembersToRemove([]);
+  }
 
   const handleRenameSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -63,18 +81,25 @@ export default function ConnectionsPage() {
     const nameInput = form.elements.namedItem('name') as HTMLInputElement;
     if (nameInput.value && selectedCircle) {
       setItems(items.map(item => item.id === selectedCircle.id ? { ...item, name: nameInput.value } : item));
+      setSelectedCircle({ ...selectedCircle, name: nameInput.value });
       setIsRenameDialogOpen(false);
-      setSelectedCircle(null);
     }
   };
 
-  const openRenameDialog = (item: any) => {
-    setSelectedCircle(item);
+  const openRenameDialog = () => {
     setIsRenameDialogOpen(true);
   }
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
+  };
+  
+  const handleMemberSelection = (member: string, isChecked: boolean) => {
+    if (isChecked) {
+        setMembersToRemove([...membersToRemove, member]);
+    } else {
+        setMembersToRemove(membersToRemove.filter(m => m !== member));
+    }
   };
 
   return (
@@ -104,8 +129,6 @@ export default function ConnectionsPage() {
           {rings.map((ring, ringIndex) => {
             const radius = 120 + ringIndex * 90;
             const size = 80 - ringIndex * 10;
-            const duration = 20 + ringIndex * 10;
-            const direction = ringIndex % 2 === 0 ? 1 : -1;
 
             return (
               <motion.div
@@ -113,19 +136,13 @@ export default function ConnectionsPage() {
                 className="absolute"
                 style={{ width: radius * 2, height: radius * 2 }}
               >
-                 {/* Grid Line */}
                  <motion.div 
                     className="absolute w-full h-full rounded-full border border-dashed border-muted-foreground/30"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{
-                        opacity: { duration: 1, delay: 0.5 },
-                    }}
+                    transition={{ opacity: { duration: 1, delay: 0.5 } }}
                  />
-                {/* Orbiting Items */}
-                <motion.div
-                    className="absolute w-full h-full"
-                >
+                <motion.div className="absolute w-full h-full">
                 {ring.map((item, i) => {
                   const angle = (i / ring.length) * 2 * Math.PI;
                   const x = (radius - size / 2) + radius * Math.cos(angle);
@@ -135,15 +152,7 @@ export default function ConnectionsPage() {
                     <motion.div
                       key={item.id}
                       layout
-                      initial={{
-                        width: size,
-                        height: size,
-                        left: '50%',
-                        top: '50%',
-                        x: '-50%',
-                        y: '-50%',
-                        opacity: 0,
-                      }}
+                      initial={{ opacity: 0 }}
                       animate={{
                         width: size,
                         height: size,
@@ -153,35 +162,24 @@ export default function ConnectionsPage() {
                         y: isCollapsed ? '-50%' : 0,
                         opacity: 1,
                       }}
-                      exit={{
-                        opacity: 0,
-                        scale: 0,
-                        transition: { duration: 0.3 }
-                      }}
-                      transition={{
-                        layout: { type: 'spring', stiffness: 200, damping: 20 },
-                        opacity: { duration: 0.3 },
-                      }}
+                      exit={{ opacity: 0, scale: 0 }}
+                      transition={{ layout: { type: 'spring', stiffness: 200, damping: 20 }, opacity: { duration: 0.3 } }}
                       whileHover={{ scale: 1.1, zIndex: 20, shadow: "0 0 15px hsl(var(--primary))" }}
-                       className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
+                      className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
+                      onClick={() => openCircleDetails(item)}
                     >
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <div className="w-full h-full">
-                            <Image src={item.image} alt={item.name} fill className="object-cover" />
-                          </div>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
-                           <DropdownMenuItem onClick={() => openRenameDialog(item)}>
-                             <Edit className="mr-2 h-4 w-4" />
-                             Rename
-                           </DropdownMenuItem>
-                           <DropdownMenuItem onClick={() => removeCircle(item.id)} className="text-destructive">
-                             <Trash2 className="mr-2 h-4 w-4" />
-                             Remove
-                           </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="w-full h-full">
+                              <Image src={item.image} alt={item.name} fill className="object-cover" />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{item.name}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </motion.div>
                   );
                 })}
@@ -214,14 +212,62 @@ export default function ConnectionsPage() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <DialogClose asChild>
-                            <Button type="button" variant="secondary">
-                                Cancel
-                            </Button>
-                        </DialogClose>
+                        <Button type="button" variant="secondary" onClick={() => setIsRenameDialogOpen(false)}>
+                            Cancel
+                        </Button>
                         <Button type="submit">Save</Button>
                     </DialogFooter>
                 </form>
+            </DialogContent>
+        </Dialog>
+        
+       <Dialog open={isCircleDetailsOpen} onOpenChange={closeCircleDetails}>
+            <DialogContent className="sm:max-w-md p-0">
+                <DialogHeader className="p-6 pb-4 flex flex-row items-center justify-between">
+                    <DialogTitle className="text-2xl font-bold">{selectedCircle?.name}</DialogTitle>
+                    <div className="flex items-center gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon"><MoreHorizontal /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={openRenameDialog}>
+                                    <Edit className="mr-2" /> Rename Circle
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsRemovingMembers(true)}>
+                                    <UserX className="mr-2" /> Remove Members
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => removeCircle(selectedCircle.id)} className="text-destructive">
+                                    <Trash2 className="mr-2" /> Remove Circle
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <DialogClose asChild>
+                             <Button variant="ghost" size="icon"><X/></Button>
+                        </DialogClose>
+                    </div>
+                </DialogHeader>
+                <div className="px-6 pb-6 space-y-4 max-h-[50vh] overflow-y-auto">
+                    <h3 className="flex items-center gap-2 font-semibold text-muted-foreground"><Users /> Members ({selectedCircle?.members?.length})</h3>
+                    <ul className="space-y-3">
+                      {selectedCircle?.members.map((member: string) => (
+                        <li key={member} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${member}`} />
+                                <AvatarFallback>{member.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{member}</span>
+                          </div>
+                          {isRemovingMembers && <Checkbox onCheckedChange={(checked) => handleMemberSelection(member, !!checked)} />}
+                        </li>
+                      ))}
+                    </ul>
+                </div>
+                <DialogFooter className="p-4 border-t bg-muted/50 flex justify-between w-full">
+                    <Button variant="outline"><Plus className="mr-2" /> Add Member</Button>
+                    <Button onClick={closeCircleDetails}>Close</Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     </div>
