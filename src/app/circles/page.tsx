@@ -8,6 +8,7 @@ import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X } from 'lucide-react';
@@ -28,6 +29,7 @@ export default function ConnectionsPage() {
   const [items, setItems] = useState(initialCircles);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
   const [isCircleDetailsOpen, setIsCircleDetailsOpen] = useState(false);
   const [selectedCircle, setSelectedCircle] = useState<any>(null);
   const [isRemovingMembers, setIsRemovingMembers] = useState(false);
@@ -97,6 +99,24 @@ export default function ConnectionsPage() {
       setIsRenameDialogOpen(false);
     }
   };
+  
+  const handleAddMemberSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const nameInput = form.elements.namedItem('memberName') as HTMLInputElement;
+    if (nameInput.value && selectedCircle) {
+        const newMemberName = nameInput.value;
+        const updatedMembers = [...selectedCircle.members, newMemberName];
+        setItems(items.map(item =>
+            item.id === selectedCircle.id
+                ? { ...item, members: updatedMembers }
+                : item
+        ));
+        setSelectedCircle((prev: any) => ({ ...prev, members: updatedMembers }));
+        setIsAddMemberDialogOpen(false);
+    }
+};
+
 
   const openRenameDialog = () => {
     setIsRenameDialogOpen(true);
@@ -250,10 +270,31 @@ export default function ConnectionsPage() {
                 </form>
             </DialogContent>
         </Dialog>
+
+        <Dialog open={isAddMemberDialogOpen} onOpenChange={setIsAddMemberDialogOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Add New Member</DialogTitle>
+                    <DialogDescription>Enter the name of the new member to add to this circle.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddMemberSubmit}>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="memberName" className="text-right">Name</Label>
+                            <Input id="memberName" placeholder="e.g. John Doe" className="col-span-3" required />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                         <Button type="button" variant="secondary" onClick={() => setIsAddMemberDialogOpen(false)}>Cancel</Button>
+                         <Button type="submit">Add Member</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
         
-       <Dialog open={isCircleDetailsOpen} onOpenChange={closeCircleDetails}>
+       <Dialog open={isCircleDetailsOpen} onOpenChange={setIsCircleDetailsOpen}>
             <DialogContent className="sm:max-w-md p-0">
-                <DialogHeader className="p-6 pb-4 flex flex-row items-center justify-between">
+                <DialogHeader className="p-6 pb-4 flex flex-row items-start justify-between">
                     <DialogTitle className="text-2xl font-bold">{selectedCircle?.name}</DialogTitle>
                     <div className="flex items-center gap-2">
                         <DropdownMenu>
@@ -272,7 +313,7 @@ export default function ConnectionsPage() {
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <DialogClose asChild>
+                         <DialogClose asChild>
                              <Button variant="ghost" size="icon"><X/></Button>
                         </DialogClose>
                     </div>
@@ -298,13 +339,29 @@ export default function ConnectionsPage() {
                     {isRemovingMembers ? (
                         <>
                             <Button variant="secondary" onClick={() => { setIsRemovingMembers(false); setMembersToRemove([]); }}>Cancel</Button>
-                            <Button variant="destructive" onClick={confirmRemoveMembers} disabled={membersToRemove.length === 0}>
-                                Remove {membersToRemove.length} Member{membersToRemove.length !== 1 && 's'}
-                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" disabled={membersToRemove.length === 0}>
+                                        Remove {membersToRemove.length} Member{membersToRemove.length !== 1 && 's'}
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This will permanently remove {membersToRemove.length} member{membersToRemove.length !== 1 && 's'} from this circle. This action cannot be undone.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={confirmRemoveMembers}>Continue</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         </>
                     ) : (
                         <>
-                            <Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Member</Button>
+                            <Button variant="outline" onClick={() => setIsAddMemberDialogOpen(true)}><Plus className="mr-2 h-4 w-4" /> Add Member</Button>
                             <Button onClick={closeCircleDetails}>Close</Button>
                         </>
                     )}
@@ -314,3 +371,5 @@ export default function ConnectionsPage() {
     </div>
   );
 }
+
+    
