@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,14 +30,9 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.8rem;
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 263 90% 70%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96.1%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 263 90% 70%;
+    --sidebar-grad-start: #c98cf3;
+    --sidebar-grad-end: #9b66e0;
+    --sidebar-foreground: hsl(0 0% 100% / 0.7);
   }
 
   .dark {
@@ -59,14 +55,9 @@
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 50 90% 60%;
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 263 90% 70%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 263 90% 70%;
+    --sidebar-grad-start: #c98cf3;
+    --sidebar-grad-end: #9b66e0;
+    --sidebar-foreground: hsl(0 0% 100% / 0.7);
   }
 }
 
@@ -78,3 +69,5 @@
     @apply bg-background text-foreground;
   }
 }
+
+    

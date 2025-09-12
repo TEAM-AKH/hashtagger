@@ -2,19 +2,21 @@
 'use client';
 import type { ReactNode } from 'react';
 import Header from '@/components/header';
-import SideNav, { useSideNav, SideNavProvider } from './side-nav';
+import SideNav, { SideNavProvider } from './side-nav';
 import { motion } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 function Layout({ children }: { children: ReactNode }) {
-    const { isExpanded } = useSideNav();
+    const isMobile = useIsMobile();
+    const marginLeft = isMobile ? '72px' : '96px';
 
     return (
         <div className="flex min-h-screen">
             <SideNav />
             <motion.div
                 className="flex-1 flex flex-col"
-                initial={false}
-                animate={{ marginLeft: isExpanded ? '200px' : '80px' }}
+                initial={{ marginLeft: '0px' }}
+                animate={{ marginLeft }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
                 <Header />
@@ -31,3 +33,5 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     </SideNavProvider>
   );
 }
+
+    
