@@ -116,22 +116,15 @@ export default function ConnectionsPage() {
                  {/* Grid Line */}
                  <motion.div 
                     className="absolute w-full h-full rounded-full border border-dashed border-muted-foreground/30"
-                    initial={{ opacity: 0, rotate: 0 }}
-                    animate={{ opacity: 1, rotate: -360 * direction }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     transition={{
                         opacity: { duration: 1, delay: 0.5 },
-                        rotate: { repeat: Infinity, duration: duration * 1.5, ease: "linear" }
                     }}
                  />
                 {/* Orbiting Items */}
                 <motion.div
                     className="absolute w-full h-full"
-                     animate={{ rotate: 360 * direction }}
-                    transition={{
-                        repeat: Infinity,
-                        duration: duration,
-                        ease: "linear",
-                    }}
                 >
                 {ring.map((item, i) => {
                   const angle = (i / ring.length) * 2 * Math.PI;
@@ -159,7 +152,6 @@ export default function ConnectionsPage() {
                         x: isCollapsed ? '-50%' : 0,
                         y: isCollapsed ? '-50%' : 0,
                         opacity: 1,
-                        rotate: -360 * direction,
                       }}
                       exit={{
                         opacity: 0,
@@ -169,7 +161,6 @@ export default function ConnectionsPage() {
                       transition={{
                         layout: { type: 'spring', stiffness: 200, damping: 20 },
                         opacity: { duration: 0.3 },
-                        rotate: { repeat: Infinity, duration: duration, ease: "linear" }
                       }}
                       whileHover={{ scale: 1.1, zIndex: 20, shadow: "0 0 15px hsl(var(--primary))" }}
                        className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
