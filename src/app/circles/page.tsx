@@ -52,8 +52,8 @@ export default function ConnectionsPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] bg-background overflow-hidden">
-      <div className="text-center mb-4 z-10">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] bg-background overflow-hidden relative">
+      <div className="text-center mb-4 z-10 absolute top-0 pt-4">
         <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 pb-2">
           Your Connection Orbit
         </h1>
@@ -61,10 +61,7 @@ export default function ConnectionsPage() {
           A dynamic, atomic view of your social universe.
         </p>
       </div>
-      <Button onClick={addCircle} className="mb-4 z-10">
-        <Plus className="mr-2 h-4 w-4" /> Add Circle
-      </Button>
-
+      
       <div className="relative w-[700px] h-[700px] flex items-center justify-center">
         {/* Central Circle */}
         <motion.div
@@ -89,13 +86,27 @@ export default function ConnectionsPage() {
                 key={ringIndex}
                 className="absolute"
                 style={{ width: radius * 2, height: radius * 2 }}
-                animate={{ rotate: 360 * direction }}
-                transition={{
-                  repeat: Infinity,
-                  duration: duration,
-                  ease: "linear",
-                }}
               >
+                 {/* Grid Line */}
+                 <motion.div 
+                    className="absolute w-full h-full rounded-full border border-dashed border-muted-foreground/30"
+                    initial={{ opacity: 0, rotate: 0 }}
+                    animate={{ opacity: 1, rotate: -360 * direction }}
+                    transition={{
+                        opacity: { duration: 1, delay: 0.5 },
+                        rotate: { repeat: Infinity, duration: duration * 1.5, ease: "linear" }
+                    }}
+                 />
+                {/* Orbiting Items */}
+                <motion.div
+                    className="absolute w-full h-full"
+                     animate={{ rotate: 360 * direction }}
+                    transition={{
+                        repeat: Infinity,
+                        duration: duration,
+                        ease: "linear",
+                    }}
+                >
                 {ring.map((item, i) => {
                   const angle = (i / ring.length) * 2 * Math.PI;
                   const x = (radius - size / 2) + radius * Math.cos(angle);
@@ -141,11 +152,16 @@ export default function ConnectionsPage() {
                     </motion.div>
                   );
                 })}
+                </motion.div>
               </motion.div>
             );
           })}
         </AnimatePresence>
       </div>
+
+       <Button onClick={addCircle} className="absolute bottom-8 z-10">
+        <Plus className="mr-2 h-4 w-4" /> Add Circle
+      </Button>
     </div>
   );
 }
