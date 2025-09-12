@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '@/components/logo';
@@ -32,6 +32,13 @@ export default function ConnectionsPage() {
   const [selectedCircle, setSelectedCircle] = useState<any>(null);
   const [isRemovingMembers, setIsRemovingMembers] = useState(false);
   const [membersToRemove, setMembersToRemove] = useState<string[]>([]);
+  const [ringOffsets, setRingOffsets] = useState<number[]>([]);
+
+  useEffect(() => {
+    // Generate random angle offsets for each ring to break the linear pattern
+    setRingOffsets(Array.from({ length: 5 }, () => Math.random() * 2 * Math.PI));
+  }, []);
+
 
   const ringLimits = [4, 6, 8, 10, 12];
 
@@ -61,7 +68,7 @@ export default function ConnectionsPage() {
   
   const removeCircle = (id: number) => {
     setItems(items.filter(item => item.id !== id));
-    setIsCircleDetailsOpen(false);
+    closeCircleDetails();
   };
   
   const openCircleDetails = (item: any) => {
@@ -73,6 +80,10 @@ export default function ConnectionsPage() {
     setIsCircleDetailsOpen(false);
     setIsRemovingMembers(false);
     setMembersToRemove([]);
+    // A small delay to allow the dialog to close before resetting the selected circle
+    setTimeout(() => {
+        setSelectedCircle(null);
+    }, 300);
   }
 
   const handleRenameSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -80,8 +91,9 @@ export default function ConnectionsPage() {
     const form = event.currentTarget;
     const nameInput = form.elements.namedItem('name') as HTMLInputElement;
     if (nameInput.value && selectedCircle) {
-      setItems(items.map(item => item.id === selectedCircle.id ? { ...item, name: nameInput.value } : item));
-      setSelectedCircle({ ...selectedCircle, name: nameInput.value });
+      const newName = nameInput.value;
+      setItems(items.map(item => item.id === selectedCircle.id ? { ...item, name: newName } : item));
+      setSelectedCircle((prev: any) => ({ ...prev, name: newName }));
       setIsRenameDialogOpen(false);
     }
   };
@@ -94,12 +106,28 @@ export default function ConnectionsPage() {
     setIsCollapsed(!isCollapsed);
   };
   
-  const handleMemberSelection = (member: string, isChecked: boolean) => {
-    if (isChecked) {
-        setMembersToRemove([...membersToRemove, member]);
-    } else {
-        setMembersToRemove(membersToRemove.filter(m => m !== member));
-    }
+  const handleMemberSelection = (member: string) => {
+    setMembersToRemove(prev => 
+        prev.includes(member) 
+            ? prev.filter(m => m !== member)
+            : [...prev, member]
+    );
+  };
+
+  const confirmRemoveMembers = () => {
+    if (!selectedCircle) return;
+    const updatedMembers = selectedCircle.members.filter((m: string) => !membersToRemove.includes(m));
+    
+    setItems(items.map(item => 
+        item.id === selectedCircle.id 
+            ? { ...item, members: updatedMembers } 
+            : item
+    ));
+    
+    setSelectedCircle((prev: any) => ({ ...prev, members: updatedMembers }));
+    
+    setIsRemovingMembers(false);
+    setMembersToRemove([]);
   };
 
   return (
@@ -144,7 +172,8 @@ export default function ConnectionsPage() {
                  />
                 <motion.div className="absolute w-full h-full">
                 {ring.map((item, i) => {
-                  const angle = (i / ring.length) * 2 * Math.PI;
+                  const ringAngleOffset = ringOffsets[ringIndex] || 0;
+                  const angle = ringAngleOffset + (i / ring.length) * 2 * Math.PI;
                   const x = (radius - size / 2) + radius * Math.cos(angle);
                   const y = (radius - size / 2) + radius * Math.sin(angle);
                   
@@ -152,15 +181,16 @@ export default function ConnectionsPage() {
                     <motion.div
                       key={item.id}
                       layout
-                      initial={{ opacity: 0 }}
+                      initial={{ opacity: 0, scale: 0.5 }}
                       animate={{
                         width: size,
                         height: size,
                         left: isCollapsed ? '50%' : x,
                         top: isCollapsed ? '50%' : y,
-                        x: isCollapsed ? '-50%' : 0,
-                        y: isCollapsed ? '-50%' : 0,
+                        marginLeft: isCollapsed ? `-${size/2}px` : '0px',
+                        marginTop: isCollapsed ? `-${size/2}px` : '0px',
                         opacity: 1,
+                        scale: 1,
                       }}
                       exit={{ opacity: 0, scale: 0 }}
                       transition={{ layout: { type: 'spring', stiffness: 200, damping: 20 }, opacity: { duration: 0.3 } }}
@@ -172,7 +202,7 @@ export default function ConnectionsPage() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="w-full h-full">
-                              <Image src={item.image} alt={item.name} fill className="object-cover" />
+                              <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" />
                             </div>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -232,13 +262,13 @@ export default function ConnectionsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={openRenameDialog}>
-                                    <Edit className="mr-2" /> Rename Circle
+                                    <Edit className="mr-2 h-4 w-4" /> Rename Circle
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setIsRemovingMembers(true)}>
-                                    <UserX className="mr-2" /> Remove Members
+                                    <UserX className="mr-2 h-4 w-4" /> Remove Members
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => removeCircle(selectedCircle.id)} className="text-destructive">
-                                    <Trash2 className="mr-2" /> Remove Circle
+                                    <Trash2 className="mr-2 h-4 w-4" /> Remove Circle
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -248,7 +278,7 @@ export default function ConnectionsPage() {
                     </div>
                 </DialogHeader>
                 <div className="px-6 pb-6 space-y-4 max-h-[50vh] overflow-y-auto">
-                    <h3 className="flex items-center gap-2 font-semibold text-muted-foreground"><Users /> Members ({selectedCircle?.members?.length})</h3>
+                    <h3 className="flex items-center gap-2 font-semibold text-muted-foreground"><Users className="h-5 w-5" /> Members ({selectedCircle?.members?.length})</h3>
                     <ul className="space-y-3">
                       {selectedCircle?.members.map((member: string) => (
                         <li key={member} className="flex items-center justify-between">
@@ -259,14 +289,25 @@ export default function ConnectionsPage() {
                             </Avatar>
                             <span className="font-medium">{member}</span>
                           </div>
-                          {isRemovingMembers && <Checkbox onCheckedChange={(checked) => handleMemberSelection(member, !!checked)} />}
+                          {isRemovingMembers && <Checkbox checked={membersToRemove.includes(member)} onCheckedChange={() => handleMemberSelection(member)} />}
                         </li>
                       ))}
                     </ul>
                 </div>
                 <DialogFooter className="p-4 border-t bg-muted/50 flex justify-between w-full">
-                    <Button variant="outline"><Plus className="mr-2" /> Add Member</Button>
-                    <Button onClick={closeCircleDetails}>Close</Button>
+                    {isRemovingMembers ? (
+                        <>
+                            <Button variant="secondary" onClick={() => { setIsRemovingMembers(false); setMembersToRemove([]); }}>Cancel</Button>
+                            <Button variant="destructive" onClick={confirmRemoveMembers} disabled={membersToRemove.length === 0}>
+                                Remove {membersToRemove.length} Member{membersToRemove.length !== 1 && 's'}
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Add Member</Button>
+                            <Button onClick={closeCircleDetails}>Close</Button>
+                        </>
+                    )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>
