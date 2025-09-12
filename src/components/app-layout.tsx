@@ -14,7 +14,7 @@ function Layout({ children }: { children: ReactNode }) {
             <motion.div
                 className="flex-1 flex flex-col"
                 initial={false}
-                animate={{ marginLeft: isExpanded ? '180px' : '80px' }}
+                animate={{ marginLeft: isExpanded ? '200px' : '80px' }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
                 <Header />
