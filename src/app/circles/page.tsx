@@ -6,22 +6,27 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Plus, MoreVertical, Edit, Trash2 } from 'lucide-react';
 
 const initialCircles = [
-  { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100" },
-  { id: 2, name: "Close Friends", image: "https://picsum.photos/seed/2/100" },
-  { id: 3, name: "Gaming Squad", image: "https://picsum.photos/seed/3/100" },
-  { id: 4, name: "Family", image: "https://picsum.photos/seed/4/100" },
-  { id: 5, name: "Book Club", image: "https://picsum.photos/seed/5/100" },
-  { id: 6, name: "Hiking Group", image: "https://picsum.photos/seed/6/100" },
+  { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"] },
+  { id: 2, name: "Close Friends", image: "https://picsum.photos/seed/2/100", members: ["David", "Eve"] },
+  { id: 3, name: "Gaming Squad", image: "https://picsum.photos/seed/3/100", members: ["Frank", "Grace", "Heidi"] },
+  { id: 4, name: "Family", image: "https://picsum.photos/seed/4/100", members: ["Ivan", "Judy"] },
+  { id: 5, name: "Book Club", image: "https://picsum.photos/seed/5/100", members: ["Mallory", "Niaj"] },
+  { id: 6, name: "Hiking Group", image: "https://picsum.photos/seed/6/100", members: ["Oscar", "Peggy"] },
 ];
 
 export default function ConnectionsPage() {
   const [items, setItems] = useState(initialCircles);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [selectedCircle, setSelectedCircle] = useState<any>(null);
 
-  // Ring limits: 4, 6, 8, 10, 12
   const ringLimits = [4, 6, 8, 10, 12];
 
   const rings = useMemo(() => {
@@ -38,14 +43,35 @@ export default function ConnectionsPage() {
   }, [items]);
 
   const addCircle = () => {
-    const newId = items.length + 1;
+    const newId = (items.length > 0 ? Math.max(...items.map(i => i.id)) : 0) + 1;
     const newCircle = {
       id: newId,
       name: `New Circle ${newId}`,
       image: `https://picsum.photos/seed/${newId}/100`,
+      members: ["New Member"],
     };
     setItems([...items, newCircle]);
   };
+  
+  const removeCircle = (id: number) => {
+    setItems(items.filter(item => item.id !== id));
+  };
+
+  const handleRenameSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const nameInput = form.elements.namedItem('name') as HTMLInputElement;
+    if (nameInput.value && selectedCircle) {
+      setItems(items.map(item => item.id === selectedCircle.id ? { ...item, name: nameInput.value } : item));
+      setIsRenameDialogOpen(false);
+      setSelectedCircle(null);
+    }
+  };
+
+  const openRenameDialog = (item: any) => {
+    setSelectedCircle(item);
+    setIsRenameDialogOpen(true);
+  }
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
@@ -77,7 +103,7 @@ export default function ConnectionsPage() {
         <AnimatePresence>
           {rings.map((ring, ringIndex) => {
             const radius = 120 + ringIndex * 90;
-            const size = 80 - ringIndex * 8;
+            const size = 80 - ringIndex * 10;
             const duration = 20 + ringIndex * 10;
             const direction = ringIndex % 2 === 0 ? 1 : -1;
 
@@ -116,7 +142,6 @@ export default function ConnectionsPage() {
                     <motion.div
                       key={item.id}
                       layout
-                      className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden"
                       initial={{
                         width: size,
                         height: size,
@@ -138,8 +163,8 @@ export default function ConnectionsPage() {
                       }}
                       exit={{
                         opacity: 0,
-                        width: 0,
-                        height: 0,
+                        scale: 0,
+                        transition: { duration: 0.3 }
                       }}
                       transition={{
                         layout: { type: 'spring', stiffness: 200, damping: 20 },
@@ -147,8 +172,25 @@ export default function ConnectionsPage() {
                         rotate: { repeat: Infinity, duration: duration, ease: "linear" }
                       }}
                       whileHover={{ scale: 1.1, zIndex: 20, shadow: "0 0 15px hsl(var(--primary))" }}
+                       className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
                     >
-                      <Image src={item.image} alt={item.name} fill className="object-cover" />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <div className="w-full h-full">
+                            <Image src={item.image} alt={item.name} fill className="object-cover" />
+                          </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                           <DropdownMenuItem onClick={() => openRenameDialog(item)}>
+                             <Edit className="mr-2 h-4 w-4" />
+                             Rename
+                           </DropdownMenuItem>
+                           <DropdownMenuItem onClick={() => removeCircle(item.id)} className="text-destructive">
+                             <Trash2 className="mr-2 h-4 w-4" />
+                             Remove
+                           </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </motion.div>
                   );
                 })}
@@ -159,9 +201,38 @@ export default function ConnectionsPage() {
         </AnimatePresence>
       </div>
 
-       <Button onClick={addCircle} className="absolute bottom-8 z-10">
+       <Button onClick={addCircle} className="absolute bottom-8 left-8 z-10">
         <Plus className="mr-2 h-4 w-4" /> Add Circle
       </Button>
+
+       <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Rename Circle</DialogTitle>
+                    <DialogDescription>
+                       Give this circle a new name.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleRenameSubmit}>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">
+                                Name
+                            </Label>
+                            <Input id="name" defaultValue={selectedCircle?.name} className="col-span-3" required />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="secondary">
+                                Cancel
+                            </Button>
+                        </DialogClose>
+                        <Button type="submit">Save</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     </div>
   );
 }
