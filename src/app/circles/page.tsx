@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -11,11 +11,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, CalendarClock, CheckCircle, Save, Check } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, CalendarClock, CheckCircle, Save, ArrowLeft, GripHorizontal } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { events as eventData, addEvent } from '@/lib/events-data';
+import { events as eventData, addEvent, setEvents } from '@/lib/events-data';
 import Link from 'next/link';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -43,8 +43,106 @@ const initialCircles = [
 const MAX_INNER_RING = 6;
 const MAX_OUTER_RING = 8;
 
+const EventsDrawer = ({ events, setLocalEvents }: { events: typeof eventData, setLocalEvents: any }) => {
+    const ongoingEvents = events.filter(e => e.status === 'ongoing' || e.status === 'paused');
+    const concludedEvents = events.filter(e => e.status === 'concluded');
+    
+    const getDaysRemaining = (dateStr: string) => {
+        const endDate = new Date(dateStr);
+        const conclusionDate = new Date(endDate.setDate(endDate.getDate() + 30));
+        const now = new Date();
+        const diffTime = conclusionDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+    }
+
+    const saveToMemoryBank = (eventId: number) => {
+        console.log(`Saving event ${eventId} to Memory Bank`);
+    }
+    
+    return (
+        <Card className="h-full w-full bg-card/95 backdrop-blur-sm border-none rounded-t-2xl">
+            <CardHeader className="text-center">
+                <GripHorizontal className="h-6 w-6 text-muted-foreground mx-auto" />
+                <CardTitle>Your Events</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-8rem)]">
+              <ScrollArea className="h-full p-4">
+                  <div className="space-y-8">
+                     <section>
+                        <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+                            <CalendarClock className="text-primary"/>
+                            Ongoing Events
+                        </h2>
+                        {ongoingEvents.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {ongoingEvents.map(event => (
+                                    <Link href={`/events/${event.id}`} key={event.id}>
+                                        <Card className="hover:border-primary transition-colors h-full">
+                                            <CardHeader>
+                                                <CardTitle>{event.name}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <p className="text-sm text-muted-foreground">Ends: {new Date(event.endDate).toLocaleDateString()}</p>
+                                                <div className="flex items-center gap-1.5 mt-2">
+                                                    <div className={`h-2 w-2 rounded-full ${event.status === 'ongoing' ? 'bg-green-500' : 'bg-yellow-500'}`}/>
+                                                    <span className={`text-xs font-semibold ${event.status === 'ongoing' ? 'text-green-500' : 'text-yellow-500'}`}>{event.status === 'ongoing' ? 'Current' : 'Paused'}</span>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground text-center py-4">No ongoing events.</p>
+                        )}
+                    </section>
+
+                    <section>
+                        <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+                            <CheckCircle className="text-primary"/>
+                            Concluded Events
+                        </h2>
+                        {concludedEvents.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {concludedEvents.map(event => {
+                                    const daysRemaining = getDaysRemaining(event.endDate);
+                                    return (
+                                        <Card key={event.id} className={daysRemaining <= 0 ? 'opacity-50' : ''}>
+                                            <CardHeader>
+                                                <CardTitle>{event.name}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="space-y-3">
+                                                <p className="text-sm text-muted-foreground">Concluded on: {new Date(event.endDate).toLocaleDateString()}</p>
+                                                {daysRemaining > 0 ? (
+                                                    <p className="text-xs text-amber-600">Disappears in {daysRemaining} day{daysRemaining !== 1 && 's'}.</p>
+                                                ) : (
+                                                    <p className="text-xs text-red-600">This event has disappeared.</p>
+                                                )}
+                                                <Button size="sm" variant="outline" onClick={() => saveToMemoryBank(event.id)} disabled={daysRemaining <= 0}>
+                                                    <Save className="mr-2 h-4 w-4"/>
+                                                    Save to Memory Bank
+                                                </Button>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground text-center py-4">No concluded events yet.</p>
+                        )}
+                    </section>
+                  </div>
+              </ScrollArea>
+            </CardContent>
+        </Card>
+    );
+};
+
+
 export default function ConnectionsPage() {
   const [items, setItems] = useState(initialCircles);
+  const [localEvents, setLocalEvents] = useState(eventData);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
@@ -54,6 +152,7 @@ export default function ConnectionsPage() {
   const [isRemovingMembers, setIsRemovingMembers] = useState(false);
   const [membersToRemove, setMembersToRemove] = useState<string[]>([]);
   const [ringRandomOffsets] = useState([Math.random() * 360, Math.random() * 360]);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
   const isLargeScreen = useMediaQuery("(min-width: 1280px)");
@@ -69,18 +168,18 @@ export default function ConnectionsPage() {
 
     let baseOuterRadius, baseInnerRadius, baseOuterSize, baseInnerSize;
     if (isSmallScreen) {
-        baseOuterRadius = 180;
-        baseInnerRadius = 100;
+        baseOuterRadius = 160;
+        baseInnerRadius = 90;
         baseOuterSize = 50;
         baseInnerSize = 40;
     } else if (isLargeScreen) {
-        baseOuterRadius = 320;
-        baseInnerRadius = 180;
-        baseOuterSize = 90;
-        baseInnerSize = 70;
+        baseOuterRadius = 300;
+        baseInnerRadius = 170;
+        baseOuterSize = 80;
+        baseInnerSize = 65;
     } else { // Medium screens
-        baseOuterRadius = 250;
-        baseInnerRadius = 140;
+        baseOuterRadius = 240;
+        baseInnerRadius = 130;
         baseOuterSize = 70;
         baseInnerSize = 55;
     }
@@ -92,6 +191,13 @@ export default function ConnectionsPage() {
 
     return { rings: [innerRingItems, outerRingItems], sidebarItems, ringLayouts };
   }, [sortedItems, isSmallScreen, isLargeScreen]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setLocalEvents([...eventData]);
+        }, 60000);
+        return () => clearInterval(interval);
+    }, []);
 
   const handleCreateCircleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -156,7 +262,7 @@ export default function ConnectionsPage() {
         setSelectedCircle((prev: any) => ({ ...prev, members: updatedMembers }));
         setIsAddMemberDialogOpen(false);
     }
-};
+  };
 
   const openRenameDialog = () => {
     setIsRenameDialogOpen(true);
@@ -201,21 +307,23 @@ export default function ConnectionsPage() {
         status: 'ongoing',
     };
     addEvent(newEvent as any);
+    setLocalEvents(prev => [newEvent as any, ...prev]);
     setIsEventDialogOpen(false);
   }
+  
+  const onDrawerDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const shouldClose = info.velocity.y > 20 || (info.velocity.y >= 0 && info.point.y > 45);
+    if (shouldClose) {
+        setIsDrawerOpen(false);
+    }
+  };
+
+  const currentEvent = localEvents.find(e => e.status === 'ongoing');
 
 
   return (
-    <div className="grid grid-cols-12 gap-6 h-[calc(100vh-8rem)] relative">
+    <div className="grid grid-cols-12 gap-6 h-[calc(100vh-8rem)] relative overflow-hidden">
       <div className="col-span-12 xl:col-span-9 flex flex-col items-center justify-center relative w-full h-full">
-          <div className="text-center mb-4 z-10">
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 pb-2">
-              Your Connection Orbit
-            </h1>
-            <p className="max-w-[600px] text-muted-foreground md:text-xl">
-              A dynamic view of your social universe.
-            </p>
-          </div>
           
           <div className="relative w-full h-full flex items-center justify-center min-w-[360px] min-h-[360px] md:min-w-[500px] md:min-h-[500px] xl:min-w-[700px] xl:min-h-[700px]">
             {/* Central Circle */}
@@ -223,6 +331,7 @@ export default function ConnectionsPage() {
               className="absolute w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center bg-card shadow-xl border-4 border-primary/50 z-20"
               whileHover={{ scale: 1.1 }}
               transition={{ type: 'spring', stiffness: 300 }}
+              onClick={() => setIsDrawerOpen(false)}
             >
               <Logo className="h-16 w-16 md:h-20 md:w-20" />
             </motion.div>
@@ -239,28 +348,29 @@ export default function ConnectionsPage() {
                     key={`ring-${ringIndex}`}
                     className="absolute rounded-full border border-dashed border-muted-foreground/30"
                     style={{ width: radius * 2, height: radius * 2 }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ opacity: { duration: 1, delay: 0.5 } }}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    transition={{ opacity: { duration: 0.8 }, scale: {duration: 0.8} }}
                   >
                     {ring.map((item, i) => {
                       const angle = (i / ring.length) * 2 * Math.PI + angleOffset;
-                      const x = (radius - size / 2) + radius * Math.cos(angle);
-                      const y = (radius - size / 2) + radius * Math.sin(angle);
+                      const x = radius + radius * Math.cos(angle);
+                      const y = radius + radius * Math.sin(angle);
                       
                       return (
                         <motion.div
                           key={item.id}
                           layoutId={`circle-${item.id}`}
-                           initial={{ opacity: 0, scale: 0, x: radius, y: radius }}
+                           initial={{ x: '50%', y: '50%', scale: 0, opacity: 0 }}
                            animate={{
                               opacity: 1,
                               scale: 1,
-                              left: x,
-                              top: y,
+                              left: x - size / 2,
+                              top: y - size / 2,
                               width: size,
                               height: size,
-                              transition: { type: 'spring', stiffness: 260, damping: 20, delay: i * 0.05 }
+                              transition: { type: 'spring', stiffness: 260, damping: 20, delay: i * 0.05 + ringIndex * 0.1 }
                             }}
                           exit={{ opacity: 0, scale: 0, transition: { duration: 0.3 } }}
                           whileHover={{ scale: 1.1, zIndex: 20, boxShadow: "0 0 15px hsl(var(--primary))" }}
@@ -296,35 +406,36 @@ export default function ConnectionsPage() {
                 <Calendar className="mr-2 h-4 w-4" /> Create Event
             </Button>
           </div>
+          
+           <div className="absolute bottom-4 right-1/2 translate-x-1/2 z-30">
+               <Button onClick={() => setIsDrawerOpen(true)} variant="secondary" className="shadow-lg">
+                    View Events
+               </Button>
+           </div>
       </div>
 
        {/* Right Sidebar */}
        <div className="col-span-12 xl:col-span-3 h-full">
             <Card className="h-full flex flex-col">
                 <CardHeader>
-                    <CardTitle>More Connections</CardTitle>
-                    <CardDescription>Other circles you are part of.</CardDescription>
+                    <CardTitle>Connections</CardTitle>
                 </CardHeader>
-                <CardContent className="flex-grow p-2 overflow-hidden">
+                <CardContent className="flex-grow p-2 overflow-hidden flex flex-col gap-4">
+                   {currentEvent && (
+                       <div className="p-4">
+                        <h3 className="font-semibold text-muted-foreground px-2 mb-2">Current Event</h3>
+                        <Link href={`/events/${currentEvent.id}`}>
+                            <div className="p-3 rounded-md hover:bg-muted border cursor-pointer">
+                                <p className="font-bold text-sm">{currentEvent.name}</p>
+                                <p className="text-xs text-muted-foreground">Ends: {new Date(currentEvent.endDate).toLocaleDateString()}</p>
+                            </div>
+                        </Link>
+                       </div>
+                    )}
+
                    <ScrollArea className="h-full">
                         <div className="p-4 space-y-3">
-                            <h3 className="font-semibold text-muted-foreground px-2">Events</h3>
-                             <div className="space-y-2">
-                                {eventData.filter(e => e.status === 'ongoing').map(event => (
-                                    <Link href={`/events/${event.id}`} key={event.id}>
-                                        <div className="p-3 rounded-md hover:bg-muted border">
-                                            <p className="font-bold text-sm">{event.name}</p>
-                                            <p className="text-xs text-muted-foreground">Ends: {new Date(event.endDate).toLocaleDateString()}</p>
-                                        </div>
-                                    </Link>
-                                ))}
-                                {eventData.filter(e => e.status === 'ongoing').length === 0 && (
-                                    <p className="text-xs text-center text-muted-foreground py-2">No ongoing events.</p>
-                                )}
-                             </div>
-
-
-                             <h3 className="font-semibold text-muted-foreground px-2 pt-4">Circles</h3>
+                             <h3 className="font-semibold text-muted-foreground px-2">Other Circles</h3>
                             {sidebarItems.length > 0 ? sidebarItems.map(item => (
                                 <div key={item.id} className="flex items-center gap-4 p-2 rounded-md hover:bg-muted cursor-pointer" onClick={() => openCircleDetails(item)}>
                                     <Avatar className="h-10 w-10">
@@ -344,6 +455,24 @@ export default function ConnectionsPage() {
                 </CardContent>
             </Card>
        </div>
+       
+        <AnimatePresence>
+            {isDrawerOpen && (
+                <motion.div
+                    className="absolute bottom-0 left-0 right-0 z-40 h-[90%]"
+                    initial={{ y: "100%" }}
+                    animate={{ y: "0%" }}
+                    exit={{ y: "100%" }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    drag="y"
+                    dragConstraints={{ top: 0, bottom: 0 }}
+                    onDragEnd={onDrawerDragEnd}
+                    dragElastic={{ top: 0, bottom: 0.5 }}
+                >
+                    <EventsDrawer events={localEvents} setLocalEvents={setLocalEvents} />
+                </motion.div>
+            )}
+        </AnimatePresence>
 
 
        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
