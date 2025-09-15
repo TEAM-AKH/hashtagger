@@ -373,42 +373,40 @@ export default function ConnectionsPage() {
                         <motion.div
                           key={item.id}
                           layoutId={`circle-${item.id}`}
-                           initial={{ opacity: 0, scale: 0, x: 0, y: 0, rotate: 0 }}
+                           initial={{ opacity: 0, scale: 0, x: '50%', y: '50%' }}
                            animate={{
-                              opacity: 1,
-                              scale: 1,
-                              x: radius,
-                              rotate: angle,
-                              transition: { 
-                                type: 'spring', 
-                                stiffness: 260, 
-                                damping: 20, 
-                                delay: delay 
-                              }
+                                opacity: 1,
+                                scale: 1,
+                                rotate: angle,
+                                x: `calc(50% + ${radius * Math.cos(angle * Math.PI / 180)}px - ${size/2}px)`,
+                                y: `calc(50% + ${radius * Math.sin(angle * Math.PI / 180)}px - ${size/2}px)`,
+                                transition: { 
+                                  type: 'spring', 
+                                  stiffness: 260, 
+                                  damping: 20, 
+                                  delay: delay 
+                                }
                             }}
                           exit={{ 
                             opacity: 0, 
                             scale: 0, 
-                            x: 0,
-                            y: 0,
-                            rotate: 0,
+                            x: '50%',
+                            y: '50%',
                             transition: { 
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 30,
+                                duration: 0.3,
                                 delay: reverseDelay
                             } 
                           }}
                           whileHover={{ scale: 1.15, zIndex: 20, boxShadow: "0 0 20px hsl(var(--primary))" }}
                           className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
-                           style={{ width: size, height: size, transformOrigin: 'center center' }}
+                           style={{ width: size, height: size }}
                           onClick={() => openCircleDetails(item)}
                         >
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="w-full h-full rounded-full relative">
-                                  <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" style={{ rotate: `-${angle}deg` }}/>
+                                  <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" />
                                    {isEraseMode && (
                                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                                             <Checkbox
