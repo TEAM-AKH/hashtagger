@@ -154,6 +154,8 @@ export default function ConnectionsPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isEraseMode, setIsEraseMode] = useState(false);
   const [circlesToErase, setCirclesToErase] = useState<number[]>([]);
+  const [showRings, setShowRings] = useState(false);
+
 
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
   const isLargeScreen = useMediaQuery("(min-width: 1280px)");
@@ -347,16 +349,18 @@ export default function ConnectionsPage() {
           <div className="relative w-full h-full flex items-center justify-center min-w-[320px] min-h-[320px] md:min-w-[500px] md:min-h-[500px] xl:min-w-[650px] xl:min-h-[650px]">
             {/* Central Circle */}
              <motion.div
-                className="absolute w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center bg-card shadow-xl border-4 border-primary/50 z-20"
+                className="absolute w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center bg-card shadow-xl border-4 border-primary/50 z-20 cursor-pointer"
                 whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 transition={{ type: 'spring', stiffness: 300 }}
+                onClick={() => setShowRings(!showRings)}
               >
               <Logo className="h-16 w-16 md:h-20 md:w-20" />
             </motion.div>
 
             {/* Orbiting Rings */}
             <AnimatePresence>
-              {rings.map((ring, ringIndex) => {
+              {showRings && rings.map((ring, ringIndex) => {
                 if (!ringLayouts[ringIndex]) return null;
                 const { radius, size, angleOffset } = ringLayouts[ringIndex];
 
@@ -369,15 +373,16 @@ export default function ConnectionsPage() {
                         <motion.div
                           key={item.id}
                           layoutId={`circle-${item.id}`}
-                           initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
+                           initial={{ x: 0, y: 0, scale: 0, opacity: 0, rotate: 0 }}
                            animate={{
                               opacity: 1,
                               scale: 1,
                               x,
                               y,
+                              rotate: 360,
                               transition: { type: 'spring', stiffness: 260, damping: 20, delay: i * 0.05 + ringIndex * 0.1 }
                             }}
-                          exit={{ opacity: 0, scale: 0, transition: { duration: 0.3 } }}
+                          exit={{ opacity: 0, scale: 0, x:0, y:0, rotate: -360, transition: { duration: 0.3 } }}
                           whileHover={{ scale: 1.15, zIndex: 20, boxShadow: "0 0 20px hsl(var(--primary))" }}
                           className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
                            style={{ width: size, height: size }}
@@ -412,44 +417,10 @@ export default function ConnectionsPage() {
           </div>
 
           <div className="absolute bottom-4 left-4 z-30 flex gap-4">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="secondary" size="icon" className="rounded-full h-12 w-12 shadow-lg"><MoreVertical /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => setIsCreateDialogOpen(true)}><Plus className="mr-2"/> Add Circle</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setIsEventDialogOpen(true)}><Calendar className="mr-2"/> Create Event</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => { setIsEraseMode(true); setCirclesToErase([]); }}><Trash2 className="mr-2"/> Erase Circles</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-                {isEraseMode && (
-                    <div className="flex gap-2 items-center">
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" disabled={circlesToErase.length === 0}>
-                                    Delete ({circlesToErase.length})
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This will permanently delete {circlesToErase.length} circle{circlesToErase.length !== 1 && 's'}.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={confirmEraseCircles}>Delete</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                        <Button variant="ghost" onClick={() => setIsEraseMode(false)}>Cancel</Button>
-                    </div>
-                )}
+                <Button onClick={() => setIsCreateDialogOpen(true)} variant="secondary" size="icon" className="rounded-full h-12 w-12 shadow-lg"><Plus /></Button>
           </div>
           
-           <div className="absolute bottom-4 right-1/2 translate-x-1/2 z-30">
+           <div className="absolute bottom-4 right-4 z-30">
                <Button onClick={() => setIsDrawerOpen(true)} variant="secondary" className="shadow-lg">
                     View Events
                </Button>
@@ -459,8 +430,43 @@ export default function ConnectionsPage() {
        {/* Right Sidebar */}
        <div className="col-span-12 xl:col-span-3 h-full">
             <Card className="h-full flex flex-col">
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Connections</CardTitle>
+                    <div className="flex gap-2 items-center">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon"><MoreVertical /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => setIsEventDialogOpen(true)}><Calendar className="mr-2"/> Create Event</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setIsEraseMode(true); setCirclesToErase([]); }}><Trash2 className="mr-2"/> Erase Circles</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                         {isEraseMode && (
+                            <div className="flex gap-2 items-center">
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" size="sm" disabled={circlesToErase.length === 0}>
+                                            Delete ({circlesToErase.length})
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This will permanently delete {circlesToErase.length} circle{circlesToErase.length !== 1 && 's'}.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={confirmEraseCircles}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                                <Button variant="ghost" size="sm" onClick={() => setIsEraseMode(false)}>Cancel</Button>
+                            </div>
+                        )}
+                    </div>
                 </CardHeader>
                 <CardContent className="flex-grow p-2 overflow-hidden flex flex-col gap-4">
                    {currentEvent && (
