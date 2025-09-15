@@ -50,23 +50,23 @@ export default function ConnectionsPage() {
       
       let i = 0;
       while (tempItems.length > 0) {
-          if (i === 0) {
+          const firstRingSize = rings.length > 0 ? rings[0].length : 0;
+          if (firstRingSize === 0) {
               const firstRingItems = tempItems.splice(0, MAX_CIRCLES_PER_RING);
               rings.push(firstRingItems);
-          } else {
-              const innerRingItems = rings[0].splice(0, Math.floor(rings[0].length / 2));
+          } else if (firstRingSize > MAX_CIRCLES_PER_RING / 2) {
+              const innerRingItems = rings[0].splice(0, Math.floor(firstRingSize / 2));
               rings.unshift(innerRingItems);
               const nextRingItems = tempItems.splice(0, MAX_CIRCLES_PER_RING);
               rings[1] = [...rings[1], ...nextRingItems];
+          } else {
+             const nextRingItems = tempItems.splice(0, MAX_CIRCLES_PER_RING);
+             rings[0] = [...rings[0], ...nextRingItems];
           }
           i++;
-          if (rings[0].length > MAX_CIRCLES_PER_RING) {
-              // This condition triggers the split
-              continue;
-          }
       }
       
-      const baseRadius = isSmallScreen ? 140 : 180;
+      const baseRadius = isSmallScreen ? 120 : 240;
       const radiusIncrement = isSmallScreen ? 70 : 100;
       const baseSize = isSmallScreen ? 50 : 80;
       const sizeDecrement = isSmallScreen ? 10 : 15;
@@ -231,19 +231,22 @@ export default function ConnectionsPage() {
                     <motion.div
                       key={item.id}
                       layout
-                      initial={{ opacity: 0, scale: 0.5 }}
+                      initial={{ opacity: 0, scale: 0, left: '50%', top: '50%', x: '-50%', y: '-50%', rotate: -180 }}
                       animate={{
-                        width: size,
-                        height: size,
                         left: isCollapsed ? '50%' : x,
                         top: isCollapsed ? '50%' : y,
-                        marginLeft: isCollapsed ? `-${size/2}px` : '0px',
-                        marginTop: isCollapsed ? `-${size/2}px` : '0px',
+                        x: isCollapsed ? '-50%' : '0%',
+                        y: isCollapsed ? '-50%' : '0%',
+                        marginLeft: 0,
+                        marginTop: 0,
+                        width: size,
+                        height: size,
                         opacity: 1,
                         scale: 1,
+                        rotate: 0,
                       }}
-                      exit={{ opacity: 0, scale: 0 }}
-                      transition={{ layout: { type: 'spring', stiffness: 200, damping: 20 }, opacity: { duration: 0.3 } }}
+                      exit={{ opacity: 0, scale: 0, rotate: 180, transition: { duration: 0.5 } }}
+                      transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                       whileHover={{ scale: 1.1, zIndex: 20, boxShadow: "0 0 15px hsl(var(--primary))" }}
                       className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
                       onClick={() => openCircleDetails(item)}
@@ -464,12 +467,22 @@ export default function ConnectionsPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="event-date">Event Date</Label>
-                            <Input id="event-date" type="date"/>
+                            <Label htmlFor="start-date">Start Date</Label>
+                            <Input id="start-date" type="date"/>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="event-time">Event Time</Label>
-                            <Input id="event-time" type="time"/>
+                            <Label htmlFor="start-time">Start Time</Label>
+                            <Input id="start-time" type="time"/>
+                        </div>
+                    </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="end-date">End Date</Label>
+                            <Input id="end-date" type="date"/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="end-time">End Time</Label>
+                            <Input id="end-time" type="time"/>
                         </div>
                     </div>
                      <div className="space-y-2">
@@ -506,3 +519,5 @@ export default function ConnectionsPage() {
     </div>
   );
 }
+
+    
