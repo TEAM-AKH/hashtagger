@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -137,6 +137,28 @@ const EventsDrawer = ({ events, setLocalEvents }: { events: typeof eventData, se
     );
 };
 
+const containerVariants = {
+  visible: (i: number = 0) => ({
+    transition: { staggerChildren: 0.1, delayChildren: i * 0.3 },
+  }),
+};
+
+const childVariants = {
+  hidden: { y: 0, x: 0, opacity: 0, scale: 0 },
+  visible: (radius: number) => ({
+    opacity: 1,
+    scale: 1,
+    transition: {
+      type: "spring",
+      damping: 12,
+      stiffness: 100,
+      repeat: Infinity,
+      repeatType: "reverse",
+      duration: 2,
+    },
+  }),
+};
+
 
 export default function ConnectionsPage() {
   const [items, setItems] = useState(initialCircles);
@@ -186,8 +208,8 @@ export default function ConnectionsPage() {
     }
     
     const ringLayouts = [
-      { radius: baseInnerRadius, size: baseInnerSize },
-      { radius: baseOuterRadius, size: baseOuterSize }
+      { radius: baseInnerRadius, size: baseInnerSize, items: innerRingItems },
+      { radius: baseOuterRadius, size: baseOuterSize, items: outerRingItems }
     ];
 
     return { rings: [innerRingItems, outerRingItems], sidebarItems, ringLayouts };
@@ -358,68 +380,72 @@ export default function ConnectionsPage() {
 
             {/* Orbiting Rings */}
             <AnimatePresence>
-              {showRings && rings.map((ring, ringIndex) => {
-                if (!ringLayouts[ringIndex]) return null;
-                const { radius, size } = ringLayouts[ringIndex];
-
-                return ring.map((item, i) => {
-                    const angle = (i / ring.length) * 360;
-                    const delay = i * 0.08;
+              {showRings && ringLayouts.map((layout, ringIndex) => (
+                <motion.div
+                  key={ringIndex}
+                  className="absolute w-full h-full"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  {layout.items.map((item, i) => {
+                    const angle = (i / layout.items.length) * 2 * Math.PI - Math.PI / 2;
+                    const x = layout.radius * Math.cos(angle);
+                    const y = layout.radius * Math.sin(angle);
                     
                     return (
-                        <motion.div
-                          key={item.id}
-                          layoutId={`circle-${item.id}`}
-                           initial={{ opacity: 0, scale: 0, x: '50%', y: '50%' }}
-                           animate={{
-                                opacity: 1,
-                                scale: 1,
-                                rotate: angle,
-                                x: `calc(50% + ${radius * Math.cos(angle * Math.PI / 180)}px - ${size/2}px)`,
-                                y: `calc(50% + ${radius * Math.sin(angle * Math.PI / 180)}px - ${size/2}px)`,
-                            }}
-                            exit={{ 
-                                opacity: 0, 
-                                scale: 0,
-                                x: '50%',
-                                y: '50%',
-                            }}
-                            transition={{
-                                type: 'spring',
-                                stiffness: 260,
-                                damping: 20,
-                                delay: showRings ? delay : (ring.length - i - 1) * 0.06,
-                            }}
-                          whileHover={{ scale: 1.15, zIndex: 20, boxShadow: "0 0 20px hsl(var(--primary))" }}
-                          className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
-                           style={{ width: size, height: size, transformOrigin: 'center' }}
-                          onClick={() => openCircleDetails(item)}
-                        >
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="w-full h-full rounded-full relative">
-                                  <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" />
-                                   {isEraseMode && (
-                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                            <Checkbox
-                                                checked={circlesToErase.includes(item.id)}
-                                                onCheckedChange={() => handleEraseSelection(item.id)}
-                                                className="h-6 w-6"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{item.name}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </motion.div>
+                      <motion.div
+                        key={item.id}
+                        className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
+                        style={{
+                            width: layout.size,
+                            height: layout.size,
+                            top: '50%',
+                            left: '50%',
+                            translateX: '-50%',
+                            translateY: '-50%',
+                        }}
+                        initial={{ scale: 0, x: 0, y: 0 }}
+                        animate={{ scale: 1, x, y }}
+                        exit={{ scale: 0, x: 0, y: 0 }}
+                        transition={{
+                            type: 'spring',
+                            stiffness: 260,
+                            damping: 20,
+                            delay: i * 0.1,
+                            repeat: Infinity,
+                            repeatType: 'reverse',
+                            duration: 2,
+                        }}
+                        whileHover={{ scale: 1.15, zIndex: 20, boxShadow: "0 0 20px hsl(var(--primary))" }}
+                        onClick={() => openCircleDetails(item)}
+                      >
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="w-full h-full rounded-full relative">
+                                <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" />
+                                {isEraseMode && (
+                                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                    <Checkbox
+                                      checked={circlesToErase.includes(item.id)}
+                                      onCheckedChange={() => handleEraseSelection(item.id)}
+                                      className="h-6 w-6"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{item.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </motion.div>
                     );
-                });
-              })}
+                  })}
+                </motion.div>
+              ))}
             </AnimatePresence>
           </div>
 
@@ -529,7 +555,6 @@ export default function ConnectionsPage() {
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     drag="y"
                     dragConstraints={{ top: 0, bottom: 0 }}
-                    onDragEnd={onDrawerDragEnd}
                     dragElastic={{ top: 0, bottom: 0.5 }}
                 >
                     <EventsDrawer events={localEvents} setLocalEvents={setLocalEvents} />
