@@ -36,8 +36,6 @@ const initialCircles = [
   { id: 12, name: "Artists", image: "https://picsum.photos/seed/12/100", members: ["Amy", "Ben"], lastVisited: Date.now() - 120000 },
   { id: 13, name: "Entrepreneurs", image: "https://picsum.photos/seed/13/100", members: ["Carla", "Dan"], lastVisited: Date.now() - 130000 },
   { id: 14, name: "Volunteers", image: "https://picsum.photos/seed/14/100", members: ["Ethan", "Fiona"], lastVisited: Date.now() - 140000 },
-  { id: 15, name: "Photographers", image: "https://picsum.photos/seed/15/100", members: ["George", "Hannah"], lastVisited: Date.now() - 150000 },
-  { id: 16, name: "Local Guides", image: "https://picsum.photos/seed/16/100", members: ["Ian", "Jane"], lastVisited: Date.now() - 160000 },
 ];
 
 const MAX_INNER_RING = 6;
@@ -367,7 +365,6 @@ export default function ConnectionsPage() {
                 return ring.map((item, i) => {
                     const angle = (i / ring.length) * 360;
                     const delay = i * 0.08;
-                    const reverseDelay = (ring.length - 1 - i) * 0.06;
                     
                     return (
                         <motion.div
@@ -380,26 +377,22 @@ export default function ConnectionsPage() {
                                 rotate: angle,
                                 x: `calc(50% + ${radius * Math.cos(angle * Math.PI / 180)}px - ${size/2}px)`,
                                 y: `calc(50% + ${radius * Math.sin(angle * Math.PI / 180)}px - ${size/2}px)`,
-                                transition: { 
-                                  type: 'spring', 
-                                  stiffness: 260, 
-                                  damping: 20, 
-                                  delay: delay 
-                                }
                             }}
-                          exit={{ 
-                            opacity: 0, 
-                            scale: 0, 
-                            x: '50%',
-                            y: '50%',
-                            transition: { 
-                                duration: 0.3,
-                                delay: reverseDelay
-                            } 
-                          }}
+                            exit={{ 
+                                opacity: 0, 
+                                scale: 0,
+                                x: '50%',
+                                y: '50%',
+                            }}
+                            transition={{
+                                type: 'spring',
+                                stiffness: 260,
+                                damping: 20,
+                                delay: showRings ? delay : (ring.length - i - 1) * 0.06,
+                            }}
                           whileHover={{ scale: 1.15, zIndex: 20, boxShadow: "0 0 20px hsl(var(--primary))" }}
                           className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
-                           style={{ width: size, height: size }}
+                           style={{ width: size, height: size, transformOrigin: 'center' }}
                           onClick={() => openCircleDetails(item)}
                         >
                           <TooltipProvider>
