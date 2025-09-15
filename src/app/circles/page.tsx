@@ -137,29 +137,6 @@ const EventsDrawer = ({ events, setLocalEvents }: { events: typeof eventData, se
     );
 };
 
-const containerVariants = {
-  visible: (i: number = 0) => ({
-    transition: { staggerChildren: 0.1, delayChildren: i * 0.3 },
-  }),
-};
-
-const childVariants = {
-  hidden: { y: 0, x: 0, opacity: 0, scale: 0 },
-  visible: (radius: number) => ({
-    opacity: 1,
-    scale: 1,
-    transition: {
-      type: "spring",
-      damping: 12,
-      stiffness: 100,
-      repeat: Infinity,
-      repeatType: "reverse",
-      duration: 2,
-    },
-  }),
-};
-
-
 export default function ConnectionsPage() {
   const [items, setItems] = useState(initialCircles);
   const [localEvents, setLocalEvents] = useState(eventData);
@@ -384,9 +361,9 @@ export default function ConnectionsPage() {
                 <motion.div
                   key={ringIndex}
                   className="absolute w-full h-full"
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
+                  initial={{ opacity: 0}}
+                  animate={{ opacity: 1}}
+                  exit={{ opacity: 0}}
                 >
                   {layout.items.map((item, i) => {
                     const angle = (i / layout.items.length) * 2 * Math.PI - Math.PI / 2;
@@ -412,10 +389,7 @@ export default function ConnectionsPage() {
                             type: 'spring',
                             stiffness: 260,
                             damping: 20,
-                            delay: i * 0.1,
-                            repeat: Infinity,
-                            repeatType: 'reverse',
-                            duration: 2,
+                            delay: i * 0.05,
                         }}
                         whileHover={{ scale: 1.15, zIndex: 20, boxShadow: "0 0 20px hsl(var(--primary))" }}
                         onClick={() => openCircleDetails(item)}
