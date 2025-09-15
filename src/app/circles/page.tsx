@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -178,8 +178,8 @@ export default function ConnectionsPage() {
     const innerRingItems = sortedItems.slice(0, MAX_INNER_RING);
     const outerRingItems = sortedItems.slice(MAX_INNER_RING, MAX_INNER_RING + MAX_OUTER_RING);
     
-    const baseOuterRadius = isSmallScreen ? 180 : 320;
-    const baseInnerRadius = isSmallScreen ? 90 : 160;
+    const baseOuterRadius = isSmallScreen ? 200 : 320;
+    const baseInnerRadius = isSmallScreen ? 110 : 180;
     
     const baseOuterSize = isSmallScreen ? 60 : 90;
     const baseInnerSize = isSmallScreen ? 45 : 70;
@@ -360,7 +360,7 @@ export default function ConnectionsPage() {
                               width: size,
                               height: size,
                             }}
-                          exit={{ opacity: 0, scale: 0, x: radius - size / 2, y: radius - size / 2, transition: { duration: 0.5 } }}
+                          exit={{ opacity: 0, scale: 0, transition: { duration: 0.5 } }}
                           transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                           whileHover={{ scale: 1.1, zIndex: 20, boxShadow: "0 0 15px hsl(var(--primary))" }}
                           className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
