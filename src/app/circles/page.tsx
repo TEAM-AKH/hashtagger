@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -11,11 +11,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, CalendarClock, CheckCircle, Save, ArrowLeft, GripHorizontal } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, CalendarClock, CheckCircle, Save, ArrowLeft, GripHorizontal, MoreVertical } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { events as eventData, addEvent, setEvents } from '@/lib/events-data';
+import { events as eventData, addEvent } from '@/lib/events-data';
 import Link from 'next/link';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -62,7 +62,7 @@ const EventsDrawer = ({ events, setLocalEvents }: { events: typeof eventData, se
     
     return (
         <Card className="h-full w-full bg-card/95 backdrop-blur-sm border-none rounded-t-2xl">
-            <CardHeader className="text-center">
+            <CardHeader className="text-center cursor-grab active:cursor-grabbing">
                 <GripHorizontal className="h-6 w-6 text-muted-foreground mx-auto" />
                 <CardTitle>Your Events</CardTitle>
             </CardHeader>
@@ -151,8 +151,9 @@ export default function ConnectionsPage() {
   const [selectedCircle, setSelectedCircle] = useState<any>(null);
   const [isRemovingMembers, setIsRemovingMembers] = useState(false);
   const [membersToRemove, setMembersToRemove] = useState<string[]>([]);
-  const [ringRandomOffsets] = useState([Math.random() * 360, Math.random() * 360]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isEraseMode, setIsEraseMode] = useState(false);
+  const [circlesToErase, setCirclesToErase] = useState<number[]>([]);
 
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
   const isLargeScreen = useMediaQuery("(min-width: 1280px)");
@@ -168,25 +169,25 @@ export default function ConnectionsPage() {
 
     let baseOuterRadius, baseInnerRadius, baseOuterSize, baseInnerSize;
     if (isSmallScreen) {
-        baseOuterRadius = 160;
-        baseInnerRadius = 90;
-        baseOuterSize = 50;
-        baseInnerSize = 40;
+        baseOuterRadius = 150;
+        baseInnerRadius = 80;
+        baseOuterSize = 40;
+        baseInnerSize = 35;
     } else if (isLargeScreen) {
-        baseOuterRadius = 300;
-        baseInnerRadius = 170;
-        baseOuterSize = 80;
-        baseInnerSize = 65;
-    } else { // Medium screens
-        baseOuterRadius = 240;
-        baseInnerRadius = 130;
+        baseOuterRadius = 280;
+        baseInnerRadius = 160;
         baseOuterSize = 70;
         baseInnerSize = 55;
+    } else { // Medium screens
+        baseOuterRadius = 220;
+        baseInnerRadius = 120;
+        baseOuterSize = 60;
+        baseInnerSize = 50;
     }
     
     const ringLayouts = [
-      { radius: baseInnerRadius, size: baseInnerSize },
-      { radius: baseOuterRadius, size: baseOuterSize }
+      { radius: baseInnerRadius, size: baseInnerSize, angleOffset: 20 },
+      { radius: baseOuterRadius, size: baseOuterSize, angleOffset: 50 }
     ];
 
     return { rings: [innerRingItems, outerRingItems], sidebarItems, ringLayouts };
@@ -223,6 +224,10 @@ export default function ConnectionsPage() {
   };
   
   const openCircleDetails = (item: any) => {
+    if (isEraseMode) {
+        handleEraseSelection(item.id);
+        return;
+    }
     setItems(prev => prev.map(i => i.id === item.id ? { ...i, lastVisited: Date.now() } : i));
     setSelectedCircle(item);
     setIsCircleDetailsOpen(true);
@@ -312,10 +317,24 @@ export default function ConnectionsPage() {
   }
   
   const onDrawerDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const shouldClose = info.velocity.y > 20 || (info.velocity.y >= 0 && info.point.y > 45);
+    const shouldClose = info.velocity.y > 20 || (info.velocity.y >= 0 && info.point.y > window.innerHeight * 0.7);
     if (shouldClose) {
         setIsDrawerOpen(false);
     }
+  };
+  
+  const handleEraseSelection = (circleId: number) => {
+    setCirclesToErase(prev => 
+        prev.includes(circleId) 
+            ? prev.filter(id => id !== circleId)
+            : [...prev, circleId]
+    );
+  };
+  
+  const confirmEraseCircles = () => {
+    setItems(items.filter(item => !circlesToErase.includes(item.id)));
+    setIsEraseMode(false);
+    setCirclesToErase([]);
   };
 
   const currentEvent = localEvents.find(e => e.status === 'ongoing');
@@ -325,14 +344,13 @@ export default function ConnectionsPage() {
     <div className="grid grid-cols-12 gap-6 h-[calc(100vh-8rem)] relative overflow-hidden">
       <div className="col-span-12 xl:col-span-9 flex flex-col items-center justify-center relative w-full h-full">
           
-          <div className="relative w-full h-full flex items-center justify-center min-w-[360px] min-h-[360px] md:min-w-[500px] md:min-h-[500px] xl:min-w-[700px] xl:min-h-[700px]">
+          <div className="relative w-full h-full flex items-center justify-center min-w-[320px] min-h-[320px] md:min-w-[500px] md:min-h-[500px] xl:min-w-[650px] xl:min-h-[650px]">
             {/* Central Circle */}
-            <motion.div
-              className="absolute w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center bg-card shadow-xl border-4 border-primary/50 z-20"
-              whileHover={{ scale: 1.1 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              onClick={() => setIsDrawerOpen(false)}
-            >
+             <motion.div
+                className="absolute w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center bg-card shadow-xl border-4 border-primary/50 z-20"
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
               <Logo className="h-16 w-16 md:h-20 md:w-20" />
             </motion.div>
 
@@ -340,48 +358,45 @@ export default function ConnectionsPage() {
             <AnimatePresence>
               {rings.map((ring, ringIndex) => {
                 if (!ringLayouts[ringIndex]) return null;
-                const { radius, size } = ringLayouts[ringIndex];
-                const angleOffset = ringRandomOffsets[ringIndex];
+                const { radius, size, angleOffset } = ringLayouts[ringIndex];
 
-                return (
-                  <motion.div
-                    key={`ring-${ringIndex}`}
-                    className="absolute rounded-full border border-dashed border-muted-foreground/30"
-                    style={{ width: radius * 2, height: radius * 2 }}
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.5, opacity: 0 }}
-                    transition={{ opacity: { duration: 0.8 }, scale: {duration: 0.8} }}
-                  >
-                    {ring.map((item, i) => {
-                      const angle = (i / ring.length) * 2 * Math.PI + angleOffset;
-                      const x = radius + radius * Math.cos(angle);
-                      const y = radius + radius * Math.sin(angle);
-                      
-                      return (
+                return ring.map((item, i) => {
+                    const angle = (i / ring.length) * 2 * Math.PI + angleOffset;
+                    const x = radius * Math.cos(angle);
+                    const y = radius * Math.sin(angle);
+                    
+                    return (
                         <motion.div
                           key={item.id}
                           layoutId={`circle-${item.id}`}
-                           initial={{ x: '50%', y: '50%', scale: 0, opacity: 0 }}
+                           initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
                            animate={{
                               opacity: 1,
                               scale: 1,
-                              left: x - size / 2,
-                              top: y - size / 2,
-                              width: size,
-                              height: size,
+                              x,
+                              y,
                               transition: { type: 'spring', stiffness: 260, damping: 20, delay: i * 0.05 + ringIndex * 0.1 }
                             }}
                           exit={{ opacity: 0, scale: 0, transition: { duration: 0.3 } }}
-                          whileHover={{ scale: 1.1, zIndex: 20, boxShadow: "0 0 15px hsl(var(--primary))" }}
+                          whileHover={{ scale: 1.15, zIndex: 20, boxShadow: "0 0 20px hsl(var(--primary))" }}
                           className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
+                           style={{ width: size, height: size }}
                           onClick={() => openCircleDetails(item)}
                         >
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="w-full h-full rounded-full">
+                                <div className="w-full h-full rounded-full relative">
                                   <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" />
+                                   {isEraseMode && (
+                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                            <Checkbox
+                                                checked={circlesToErase.includes(item.id)}
+                                                onCheckedChange={() => handleEraseSelection(item.id)}
+                                                className="h-6 w-6"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -390,21 +405,48 @@ export default function ConnectionsPage() {
                             </Tooltip>
                           </TooltipProvider>
                         </motion.div>
-                      );
-                    })}
-                  </motion.div>
-                );
+                    );
+                });
               })}
             </AnimatePresence>
           </div>
 
-          <div className="absolute bottom-4 left-4 z-10 flex gap-4">
-              <Button onClick={() => setIsCreateDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Add Circle
-              </Button>
-               <Button onClick={() => setIsEventDialogOpen(true)} variant="secondary">
-                <Calendar className="mr-2 h-4 w-4" /> Create Event
-            </Button>
+          <div className="absolute bottom-4 left-4 z-30 flex gap-4">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="secondary" size="icon" className="rounded-full h-12 w-12 shadow-lg"><MoreVertical /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => setIsCreateDialogOpen(true)}><Plus className="mr-2"/> Add Circle</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setIsEventDialogOpen(true)}><Calendar className="mr-2"/> Create Event</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => { setIsEraseMode(true); setCirclesToErase([]); }}><Trash2 className="mr-2"/> Erase Circles</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                {isEraseMode && (
+                    <div className="flex gap-2 items-center">
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" disabled={circlesToErase.length === 0}>
+                                    Delete ({circlesToErase.length})
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This will permanently delete {circlesToErase.length} circle{circlesToErase.length !== 1 && 's'}.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={confirmEraseCircles}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                        <Button variant="ghost" onClick={() => setIsEraseMode(false)}>Cancel</Button>
+                    </div>
+                )}
           </div>
           
            <div className="absolute bottom-4 right-1/2 translate-x-1/2 z-30">
@@ -437,8 +479,16 @@ export default function ConnectionsPage() {
                         <div className="p-4 space-y-3">
                              <h3 className="font-semibold text-muted-foreground px-2">Other Circles</h3>
                             {sidebarItems.length > 0 ? sidebarItems.map(item => (
-                                <div key={item.id} className="flex items-center gap-4 p-2 rounded-md hover:bg-muted cursor-pointer" onClick={() => openCircleDetails(item)}>
-                                    <Avatar className="h-10 w-10">
+                                <div key={item.id} className="flex items-center gap-4 p-2 rounded-md hover:bg-muted cursor-pointer relative" onClick={() => openCircleDetails(item)}>
+                                     {isEraseMode && (
+                                        <div className="absolute left-1 top-1/2 -translate-y-1/2">
+                                            <Checkbox
+                                                checked={circlesToErase.includes(item.id)}
+                                                onCheckedChange={() => handleEraseSelection(item.id)}
+                                            />
+                                        </div>
+                                    )}
+                                    <Avatar className={`h-10 w-10 ${isEraseMode ? 'ml-6' : ''}`}>
                                         <AvatarImage src={item.image} alt={item.name}/>
                                         <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
