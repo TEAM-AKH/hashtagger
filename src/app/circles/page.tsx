@@ -151,7 +151,7 @@ export default function ConnectionsPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isEraseMode, setIsEraseMode] = useState(false);
   const [circlesToErase, setCirclesToErase] = useState<number[]>([]);
-  const [showRings, setShowRings] = useState(false);
+  const [showRings, setShowRings] = useState(true);
 
 
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
@@ -315,7 +315,7 @@ export default function ConnectionsPage() {
     setIsEventDialogOpen(false);
   }
   
-  const onDrawerDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const onDrawerDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
     const shouldClose = info.velocity.y > 20 || (info.velocity.y >= 0 && info.point.y > window.innerHeight * 0.7);
     if (shouldClose) {
         setIsDrawerOpen(false);
@@ -530,6 +530,7 @@ export default function ConnectionsPage() {
                     drag="y"
                     dragConstraints={{ top: 0, bottom: 0 }}
                     dragElastic={{ top: 0, bottom: 0.5 }}
+                    onDragEnd={onDrawerDragEnd}
                 >
                     <EventsDrawer events={localEvents} setLocalEvents={setLocalEvents} />
                 </motion.div>
@@ -760,5 +761,7 @@ export default function ConnectionsPage() {
     </div>
   );
 }
+
+    
 
     
