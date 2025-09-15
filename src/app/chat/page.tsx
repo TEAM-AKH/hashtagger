@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bell, Bot, Search, Settings, Smile, Mic, Camera, Phone, Video, X } from 'lucide-react';
+import { Bell, Bot, Search, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 const chats = [
@@ -82,9 +82,14 @@ export default function ChitChatPage() {
                 </Avatar>
                 <div className="ml-4">
                   <p className="font-semibold">{selectedChat.name}</p>
-                  <p className="text-xs text-muted-foreground">{selectedChat.online ? 'Active now' : 'Offline'}</p>
+                   <div className="flex items-center gap-4 mt-2">
+                      <Button variant="ghost" size="icon" className="h-8 w-8"><User className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8"><BellOff className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8"><ShieldAlert className="h-4 w-4" /></Button>
+                  </div>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
+                  <Button variant="ghost" size="icon"><History className="h-5 w-5"/></Button>
                   <Button variant="ghost" size="icon"><Phone className="h-5 w-5"/></Button>
                   <Button variant="ghost" size="icon"><Video className="h-5 w-5"/></Button>
                   <Button variant="ghost" size="icon" onClick={closeChat}><X className="h-5 w-5" /></Button>
@@ -102,6 +107,7 @@ export default function ChitChatPage() {
               </div>
               <div className="p-4 border-t flex items-center gap-2 bg-background">
                 <Button variant="ghost" size="icon"><Smile className="h-5 w-5" /></Button>
+                 <Button variant="ghost" size="icon"><Languages className="h-5 w-5" /></Button>
                 <Input placeholder="Write a message..." className="flex-grow" />
                 <Button variant="ghost" size="icon"><Mic className="h-5 w-5" /></Button>
                 <Button variant="ghost" size="icon"><Camera className="h-5 w-5" /></Button>

@@ -11,10 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, Download, Save } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 const initialCircles = [
   { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"] },
@@ -25,37 +27,62 @@ const initialCircles = [
   { id: 6, name: "Hiking Group", image: "https://picsum.photos/seed/6/100", members: ["Oscar", "Peggy"] },
 ];
 
+const MAX_CIRCLES_PER_RING = 12;
+const FIRST_RING_SPLIT = 6;
+
 export default function ConnectionsPage() {
   const [items, setItems] = useState(initialCircles);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
+  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [isCircleDetailsOpen, setIsCircleDetailsOpen] = useState(false);
   const [selectedCircle, setSelectedCircle] = useState<any>(null);
   const [isRemovingMembers, setIsRemovingMembers] = useState(false);
   const [membersToRemove, setMembersToRemove] = useState<string[]>([]);
   const [ringOffsets, setRingOffsets] = useState<number[]>([]);
 
-  useEffect(() => {
-    // Generate random angle offsets for each ring to break the linear pattern
-    setRingOffsets(Array.from({ length: 5 }, () => Math.random() * 2 * Math.PI));
-  }, []);
+  const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
+  const { rings, ringLayouts } = useMemo(() => {
+    let tempItems = [...items];
+    const rings = [];
+    
+    // Create the first ring with up to 12 items
+    const firstRing = tempItems.splice(0, MAX_CIRCLES_PER_RING);
+    if (firstRing.length > 0) rings.push(firstRing);
 
-  const ringLimits = [4, 6, 8, 10, 12];
-
-  const rings = useMemo(() => {
-    let distributedRings = [];
-    let index = 0;
-    for (let i = 0; i < ringLimits.length; i++) {
-      const slice = items.slice(index, index + ringLimits[i]);
-      if (slice.length > 0) {
-        distributedRings.push(slice);
-      }
-      index += ringLimits[i];
+    // If the first ring was full, and there are more items, split it
+    if (firstRing.length === MAX_CIRCLES_PER_RING && tempItems.length > 0) {
+        const toMove = firstRing.splice(0, FIRST_RING_SPLIT);
+        rings.unshift(toMove); // Add the split items as a new inner ring
     }
-    return distributedRings;
-  }, [items]);
+    
+    // Handle remaining items, creating new rings as needed
+    while (tempItems.length > 0) {
+      const nextRingItems = tempItems.splice(0, MAX_CIRCLES_PER_RING);
+      rings.push(nextRingItems);
+    }
+    
+    const baseRadius = isSmallScreen ? 80 : 120;
+    const radiusIncrement = isSmallScreen ? 60 : 90;
+    const baseSize = isSmallScreen ? 50 : 80;
+    const sizeDecrement = isSmallScreen ? 8 : 10;
+    
+    const ringLayouts = rings.map((_, ringIndex) => {
+        return {
+            radius: baseRadius + ringIndex * radiusIncrement,
+            size: Math.max(20, baseSize - ringIndex * sizeDecrement)
+        };
+    });
+
+    return { rings, ringLayouts };
+
+  }, [items, isSmallScreen]);
+
+  useEffect(() => {
+    setRingOffsets(Array.from({ length: rings.length }, () => Math.random() * 2 * Math.PI));
+  }, [rings.length]);
 
   const addCircle = () => {
     const newId = (items.length > 0 ? Math.max(...items.map(i => i.id)) : 0) + 1;
@@ -65,7 +92,7 @@ export default function ConnectionsPage() {
       image: `https://picsum.photos/seed/${newId}/100`,
       members: ["New Member"],
     };
-    setItems([...items, newCircle]);
+    setItems(prevItems => [...prevItems, newCircle]);
   };
   
   const removeCircle = (id: number) => {
@@ -82,10 +109,7 @@ export default function ConnectionsPage() {
     setIsCircleDetailsOpen(false);
     setIsRemovingMembers(false);
     setMembersToRemove([]);
-    // A small delay to allow the dialog to close before resetting the selected circle
-    setTimeout(() => {
-        setSelectedCircle(null);
-    }, 300);
+    setTimeout(() => setSelectedCircle(null), 300);
   }
 
   const handleRenameSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -117,14 +141,11 @@ export default function ConnectionsPage() {
     }
 };
 
-
   const openRenameDialog = () => {
     setIsRenameDialogOpen(true);
   }
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
   
   const handleMemberSelection = (member: string) => {
     setMembersToRemove(prev => 
@@ -151,17 +172,17 @@ export default function ConnectionsPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] bg-background overflow-hidden relative">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] bg-background overflow-hidden relative p-4">
       <div className="text-center mb-4 z-10 absolute top-0 pt-4">
         <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 pb-2">
           Your Connection Orbit
         </h1>
         <p className="max-w-[600px] text-muted-foreground md:text-xl">
-          A dynamic, atomic view of your social universe.
+          A dynamic view of your social universe.
         </p>
       </div>
       
-      <div className="relative w-[700px] h-[700px] flex items-center justify-center">
+      <div className="relative w-full h-full flex items-center justify-center" style={{ minWidth: '700px', minHeight: '700px' }}>
         {/* Central Circle */}
         <motion.div
           className="absolute w-28 h-28 rounded-full flex items-center justify-center bg-card shadow-xl border-4 border-primary/50 z-20 cursor-pointer"
@@ -175,12 +196,11 @@ export default function ConnectionsPage() {
         {/* Orbiting Rings */}
         <AnimatePresence>
           {rings.map((ring, ringIndex) => {
-            const radius = 120 + ringIndex * 90;
-            const size = 80 - ringIndex * 10;
+            const { radius, size } = ringLayouts[ringIndex];
 
             return (
               <motion.div
-                key={ringIndex}
+                key={`ring-${ringIndex}`}
                 className="absolute"
                 style={{ width: radius * 2, height: radius * 2 }}
               >
@@ -221,7 +241,7 @@ export default function ConnectionsPage() {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="w-full h-full">
+                            <div className="w-full h-full rounded-full">
                               <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" />
                             </div>
                           </TooltipTrigger>
@@ -242,6 +262,10 @@ export default function ConnectionsPage() {
 
        <Button onClick={addCircle} className="absolute bottom-8 left-8 z-10">
         <Plus className="mr-2 h-4 w-4" /> Add Circle
+      </Button>
+
+      <Button onClick={() => setIsEventDialogOpen(true)} className="absolute bottom-8 right-8 z-10">
+        <Calendar className="mr-2 h-4 w-4" /> Create Event
       </Button>
 
        <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
@@ -292,31 +316,45 @@ export default function ConnectionsPage() {
             </DialogContent>
         </Dialog>
         
-       <Dialog open={isCircleDetailsOpen} onOpenChange={setIsCircleDetailsOpen}>
+       <Dialog open={isCircleDetailsOpen} onOpenChange={closeCircleDetails}>
             <DialogContent className="sm:max-w-md p-0">
                 <DialogHeader className="p-6 pb-4 flex flex-row items-start justify-between">
-                    <DialogTitle className="text-2xl font-bold">{selectedCircle?.name}</DialogTitle>
-                    <div className="flex items-center gap-2">
-                        <DropdownMenu>
+                    <div className="flex items-center gap-4">
+                        <DialogTitle className="text-2xl font-bold">{selectedCircle?.name}</DialogTitle>
+                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon"><MoreHorizontal /></Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="start">
                                 <DropdownMenuItem onClick={openRenameDialog}>
                                     <Edit className="mr-2 h-4 w-4" /> Rename Circle
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setIsRemovingMembers(true)}>
                                     <UserX className="mr-2 h-4 w-4" /> Remove Members
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => removeCircle(selectedCircle.id)} className="text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" /> Remove Circle
-                                </DropdownMenuItem>
+                                 <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                                          <Trash2 className="mr-2 h-4 w-4" /> Remove Circle
+                                      </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>This action will permanently delete the "{selectedCircle?.name}" circle.</AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => removeCircle(selectedCircle.id)}>Confirm</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                         <DialogClose asChild>
-                             <Button variant="ghost" size="icon"><X/></Button>
-                        </DialogClose>
                     </div>
+                     <DialogClose asChild>
+                         <Button variant="ghost" size="icon"><X/></Button>
+                    </DialogClose>
                 </DialogHeader>
                 <div className="px-6 pb-6 space-y-4 max-h-[50vh] overflow-y-auto">
                     <h3 className="flex items-center gap-2 font-semibold text-muted-foreground"><Users className="h-5 w-5" /> Members ({selectedCircle?.members?.length})</h3>
@@ -368,8 +406,72 @@ export default function ConnectionsPage() {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <Dialog open={isEventDialogOpen} onOpenChange={setIsEventDialogOpen}>
+            <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>Create a New Event</DialogTitle>
+                    <DialogDescription>Organize a get-together for your circles and friends.</DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="event-name">Event Name</Label>
+                        <Input id="event-name" placeholder="e.g. Summer BBQ"/>
+                    </div>
+                     <div className="space-y-2">
+                        <Label>Convene People or Circles</Label>
+                         <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className="w-full justify-start font-normal">
+                                    <Plus className="mr-2 h-4 w-4"/> Add Members or Circles
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[300px]">
+                                <p className="p-4 text-center text-sm text-muted-foreground">Functionality to add members and circles coming soon.</p>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="event-date">Event Date</Label>
+                            <Input id="event-date" type="date"/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="event-time">Event Time</Label>
+                            <Input id="event-time" type="time"/>
+                        </div>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="event-location">Location</Label>
+                        <div className="relative">
+                            <Input id="event-location" placeholder="e.g. Central Park"/>
+                            <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-2 pt-2">
+                        <Checkbox id="live-location-check" />
+                        <label htmlFor="live-location-check" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            Automatically check-in attendees via live location
+                        </label>
+                    </div>
+                     <div className="space-y-2 pt-2">
+                        <Label>Event Hashtag Media</Label>
+                        <div className="flex gap-2">
+                            <Button variant="outline" className="w-full"><Plus className="mr-2"/>Upload Media</Button>
+                            <Button variant="outline" size="icon"><Download/></Button>
+                            <Button variant="outline" size="icon"><Save/></Button>
+                        </div>
+                         <p className="text-xs text-muted-foreground">
+                           Media will be downloadable and can be saved to your Memory Bank. Event details will be auto-saved for the organizer.
+                         </p>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="secondary" onClick={() => setIsEventDialogOpen(false)}>Cancel</Button>
+                    <Button type="submit">Create Event</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
   );
 }
-
-    
