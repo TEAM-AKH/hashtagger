@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarClock, CheckCircle, Save } from 'lucide-react';
+import { CalendarClock, CheckCircle, Save, ArrowLeft } from 'lucide-react';
 import { events as eventData, setEvents } from '@/lib/events-data';
 
 export default function EventsPage() {
@@ -38,7 +38,15 @@ export default function EventsPage() {
 
     return (
         <div className="container mx-auto p-4 space-y-8">
-            <h1 className="text-4xl font-bold tracking-tight">Events</h1>
+             <div className="flex justify-between items-center">
+                <h1 className="text-4xl font-bold tracking-tight">Events</h1>
+                <Button variant="outline" asChild>
+                    <Link href="/circles">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Circles
+                    </Link>
+                </Button>
+            </div>
 
             <section>
                 <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
@@ -106,3 +114,5 @@ export default function EventsPage() {
         </div>
     );
 }
+
+    

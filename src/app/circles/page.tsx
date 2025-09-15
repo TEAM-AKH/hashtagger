@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -11,13 +11,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, Download, Save, ArrowRight } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, Checkbox, CalendarClock, CheckCircle, Save } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { events, addEvent } from '@/lib/events-data';
+import { events as eventData, addEvent } from '@/lib/events-data';
 import Link from 'next/link';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 
@@ -35,12 +33,126 @@ const initialCircles = [
   { id: 11, name: "Foodies", image: "https://picsum.photos/seed/11/100", members: ["Yara", "Zane"], lastVisited: Date.now() - 110000 },
   { id: 12, name: "Artists", image: "https://picsum.photos/seed/12/100", members: ["Amy", "Ben"], lastVisited: Date.now() - 120000 },
   { id: 13, name: "Entrepreneurs", image: "https://picsum.photos/seed/13/100", members: ["Carla", "Dan"], lastVisited: Date.now() - 130000 },
-  { id: 14, name: "Volunteers", image: "https://picsum.photos/seed/14/100", members: ["Eli", "Fiona"], lastVisited: Date.now() - 140000 },
-  { id: 15, name: "Yoga Class", image: "https://picsum.photos/seed/15/100", members: ["George", "Hannah"], lastVisited: Date.now() - 150000 },
 ];
 
 const MAX_INNER_RING = 6;
 const MAX_OUTER_RING = 8;
+
+function EventsPanel({ onOpenChange }: { onOpenChange: (isOpen: boolean) => void }) {
+    const [events, setLocalEvents] = useState(eventData);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setLocalEvents([...eventData]);
+        }, 60000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const ongoingEvents = events.filter(e => e.status === 'ongoing' || e.status === 'paused');
+    const concludedEvents = events.filter(e => e.status === 'concluded');
+
+    const getDaysRemaining = (dateStr: string) => {
+        const endDate = new Date(dateStr);
+        const conclusionDate = new Date(endDate.setDate(endDate.getDate() + 30));
+        const now = new Date();
+        const diffTime = conclusionDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+    }
+
+    const saveToMemoryBank = (eventId: number) => {
+        console.log(`Saving event ${eventId} to Memory Bank`);
+    }
+
+    return (
+        <motion.div
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0.1}
+            onDragEnd={(event, info) => {
+                if (info.offset.y > 100) { // dragging down
+                    onOpenChange(false);
+                } else if (info.offset.y < -100) { // dragging up
+                    onOpenChange(true);
+                }
+            }}
+            className="absolute bottom-0 left-0 right-0 h-full bg-card/80 backdrop-blur-lg border-t rounded-t-2xl shadow-2xl z-20 cursor-grab"
+        >
+            <div className="flex justify-center p-2">
+                <div className="w-16 h-1.5 bg-muted-foreground/50 rounded-full" />
+            </div>
+            <div className="p-4 space-y-8 overflow-y-auto h-[calc(100%-2rem)]">
+                 <Link href="/events" className="text-primary hover:underline text-sm float-right">View All</Link>
+                 <h1 className="text-3xl font-bold tracking-tight">Events</h1>
+                
+                <section>
+                    <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+                        <CalendarClock className="text-primary"/>
+                        Ongoing Events
+                    </h2>
+                    {ongoingEvents.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {ongoingEvents.map(event => (
+                                <Link href={`/events/${event.id}`} key={event.id}>
+                                    <Card className="hover:border-primary transition-colors h-full">
+                                        <CardHeader>
+                                            <CardTitle>{event.name}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-muted-foreground">Ends: {new Date(event.endDate).toLocaleDateString()}</p>
+                                            <div className="flex items-center gap-1.5 mt-2">
+                                                <div className={`h-2 w-2 rounded-full ${event.status === 'ongoing' ? 'bg-green-500' : 'bg-yellow-500'}`}/>
+                                                <span className={`text-xs font-semibold ${event.status === 'ongoing' ? 'text-green-500' : 'text-yellow-500'}`}>{event.status === 'ongoing' ? 'Current' : 'Paused'}</span>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-muted-foreground">No ongoing events.</p>
+                    )}
+                </section>
+
+                <section>
+                    <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+                        <CheckCircle className="text-primary"/>
+                        Concluded Events
+                    </h2>
+                    {concludedEvents.length > 0 ? (
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {concludedEvents.map(event => {
+                                 const daysRemaining = getDaysRemaining(event.endDate);
+                                 return (
+                                    <Card key={event.id} className={daysRemaining <= 0 ? 'opacity-50' : ''}>
+                                        <CardHeader>
+                                            <CardTitle>{event.name}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3">
+                                            <p className="text-sm text-muted-foreground">Concluded on: {new Date(event.endDate).toLocaleDateString()}</p>
+                                            {daysRemaining > 0 ? (
+                                                <p className="text-xs text-amber-600">Disappears in {daysRemaining} day{daysRemaining !== 1 && 's'}.</p>
+                                            ) : (
+                                                <p className="text-xs text-red-600">This event has disappeared.</p>
+                                            )}
+                                            <Button size="sm" variant="outline" onClick={() => saveToMemoryBank(event.id)} disabled={daysRemaining <= 0}>
+                                                <Save className="mr-2 h-4 w-4"/>
+                                                Save to Memory Bank
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                )
+                            })}
+                        </div>
+                    ) : (
+                        <p className="text-muted-foreground">No concluded events yet.</p>
+                    )}
+                </section>
+            </div>
+
+        </motion.div>
+    );
+}
 
 export default function ConnectionsPage() {
   const [items, setItems] = useState(initialCircles);
@@ -52,6 +164,7 @@ export default function ConnectionsPage() {
   const [selectedCircle, setSelectedCircle] = useState<any>(null);
   const [isRemovingMembers, setIsRemovingMembers] = useState(false);
   const [membersToRemove, setMembersToRemove] = useState<string[]>([]);
+  const [isEventsPanelOpen, setIsEventsPanelOpen] = useState(false);
 
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
@@ -185,15 +298,15 @@ export default function ConnectionsPage() {
         attendees: [],
         status: 'ongoing',
     };
-    addEvent(newEvent);
+    addEvent(newEvent as any);
     setIsEventDialogOpen(false);
   }
 
 
   return (
-    <div className="flex justify-between items-start min-h-[calc(100vh-8rem)] bg-background overflow-hidden relative p-4 gap-4">
-      <div className="flex-grow flex flex-col items-center justify-center relative w-full h-full">
-          <div className="text-center mb-4 z-10 absolute top-0 pt-4">
+    <div className="flex justify-between items-start min-h-screen bg-background overflow-hidden relative p-4 gap-4">
+      <div className="flex-grow flex flex-col items-center justify-center relative w-full h-full pt-16">
+          <div className="text-center mb-8 z-10">
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 pb-2">
               Your Connection Orbit
             </h1>
@@ -235,8 +348,8 @@ export default function ConnectionsPage() {
                       return (
                         <motion.div
                           key={item.id}
-                          layout
-                          initial={{ opacity: 0, scale: 0, x: radius, y: radius, rotate: 0 }}
+                          layoutId={`circle-${item.id}`}
+                          initial={{ opacity: 0, scale: 0, x: radius, y: radius, rotate: (angle * 180 / Math.PI) }}
                            animate={{
                               left: x,
                               top: y,
@@ -244,11 +357,11 @@ export default function ConnectionsPage() {
                               height: size,
                               opacity: 1,
                               scale: 1,
-                              rotate: [0, 360],
+                              rotate: 0,
                               x:0,
                               y:0
                             }}
-                          exit={{ opacity: 0, scale: 0, x: radius, y: radius, rotate: 0, transition: { duration: 0.5 } }}
+                          exit={{ opacity: 0, scale: 0, x: radius, y: radius, rotate: (angle * 180 / Math.PI), transition: { duration: 0.5 } }}
                           transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                           whileHover={{ scale: 1.1, zIndex: 20, boxShadow: "0 0 15px hsl(var(--primary))" }}
                           className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
@@ -275,67 +388,33 @@ export default function ConnectionsPage() {
             </AnimatePresence>
           </div>
 
-          <Button onClick={() => setIsCreateDialogOpen(true)} className="absolute bottom-8 left-8 z-10">
-            <Plus className="mr-2 h-4 w-4" /> Add Circle
-          </Button>
+          <div className="absolute bottom-8 left-8 z-10 flex gap-4">
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Add Circle
+              </Button>
+               <Button onClick={() => setIsEventDialogOpen(true)}>
+                <Calendar className="mr-2 h-4 w-4" /> Create Event
+            </Button>
+          </div>
 
-          <Button onClick={() => setIsEventDialogOpen(true)} className="absolute bottom-8 right-8 z-10">
-            <Calendar className="mr-2 h-4 w-4" /> Create Event
+          <Button onClick={() => setIsEventsPanelOpen(true)} className="absolute bottom-8 right-8 z-10">
+            <CalendarClock className="mr-2 h-4 w-4" /> View Events
           </Button>
       </div>
 
-      <aside className="w-80 h-[calc(100vh-9rem)] sticky top-20 flex-shrink-0">
-          <Card className="h-full w-full overflow-y-auto">
-              <CardHeader>
-                  <CardTitle>Events & Circles</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-semibold text-muted-foreground mb-2">Ongoing Events</h3>
-                   {events.filter(e => e.status === 'ongoing').length > 0 ? (
-                      <div className="space-y-2">
-                        {events.filter(e => e.status === 'ongoing').map(event => (
-                           <Link href={`/events/${event.id}`} key={event.id}>
-                              <div className="p-3 rounded-md border hover:bg-muted cursor-pointer">
-                                 <p className="font-semibold">{event.name}</p>
-                                 <p className="text-xs text-muted-foreground">Ends: {new Date(event.endDate).toLocaleDateString()}</p>
-                                  <div className="flex items-center gap-1.5 text-green-500 mt-1">
-                                      <div className="h-2 w-2 rounded-full bg-green-500"/>
-                                      <span className="text-xs font-semibold">Current</span>
-                                  </div>
-                              </div>
-                           </Link>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-muted-foreground text-center py-4">No ongoing events.</p>
-                    )}
-                     <Button variant="link" size="sm" asChild className="w-full mt-2">
-                        <Link href="/events">View All Events</Link>
-                    </Button>
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-muted-foreground mb-2">More Circles</h3>
-                   {sidebarItems.length > 0 ? (
-                      <div className="space-y-2">
-                        {sidebarItems.map(item => (
-                          <div key={item.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted cursor-pointer" onClick={() => openCircleDetails(item)}>
-                              <Avatar className="h-8 w-8">
-                                  <AvatarImage src={item.image} />
-                                  <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              <span className="font-medium text-sm">{item.name}</span>
-                              <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground"/>
-                          </div>
-                        ))}
-                      </div>
-                   ) : (
-                      <p className="text-xs text-muted-foreground text-center py-4">All your circles are in orbit.</p>
-                   )}
-                </div>
-              </CardContent>
-          </Card>
-      </aside>
+       <AnimatePresence>
+            {isEventsPanelOpen && (
+                <motion.div
+                    initial={{ y: "100%" }}
+                    animate={{ y: "0%" }}
+                    exit={{ y: "100%" }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    style={{ position: 'fixed', top: '10vh', left: '10vw', right: '10vw', bottom: '0', zIndex: 50}}
+                >
+                    <EventsPanel onOpenChange={setIsEventsPanelOpen} />
+                </motion.div>
+            )}
+        </AnimatePresence>
 
        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogContent className="sm:max-w-[425px]">
@@ -509,19 +588,7 @@ export default function ConnectionsPage() {
                             <Label htmlFor="event-name">Event Name</Label>
                             <Input id="event-name" name="event-name" placeholder="e.g. Summer BBQ" required />
                         </div>
-                        <div className="space-y-2">
-                            <Label>Convene People or Circles</Label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant="outline" className="w-full justify-start font-normal">
-                                        <Plus className="mr-2 h-4 w-4"/> Add Members or Circles
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[300px]">
-                                    <p className="p-4 text-center text-sm text-muted-foreground">Functionality to add members and circles coming soon.</p>
-                                </PopoverContent>
-                            </Popover>
-                        </div>
+                        
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="start-date">Start Date</Label>
@@ -566,3 +633,5 @@ export default function ConnectionsPage() {
     </div>
   );
 }
+
+    
