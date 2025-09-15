@@ -11,27 +11,39 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, Download, Save } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, Download, Save, ArrowRight } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { events, addEvent } from '@/lib/events-data';
+import Link from 'next/link';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 
 const initialCircles = [
-  { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"] },
-  { id: 2, name: "Close Friends", image: "https://picsum.photos/seed/2/100", members: ["David", "Eve"] },
-  { id: 3, name: "Gaming Squad", image: "https://picsum.photos/seed/3/100", members: ["Frank", "Grace", "Heidi"] },
-  { id: 4, name: "Family", image: "https://picsum.photos/seed/4/100", members: ["Ivan", "Judy"] },
-  { id: 5, name: "Book Club", image: "https://picsum.photos/seed/5/100", members: ["Mallory", "Niaj"] },
-  { id: 6, name: "Hiking Group", image: "https://picsum.photos/seed/6/100", members: ["Oscar", "Peggy"] },
+  { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"], lastVisited: Date.now() - 10000 },
+  { id: 2, name: "Close Friends", image: "https://picsum.photos/seed/2/100", members: ["David", "Eve"], lastVisited: Date.now() - 20000 },
+  { id: 3, name: "Gaming Squad", image: "https://picsum.photos/seed/3/100", members: ["Frank", "Grace", "Heidi"], lastVisited: Date.now() - 30000 },
+  { id: 4, name: "Family", image: "https://picsum.photos/seed/4/100", members: ["Ivan", "Judy"], lastVisited: Date.now() - 40000 },
+  { id: 5, name: "Book Club", image: "https://picsum.photos/seed/5/100", members: ["Mallory", "Niaj"], lastVisited: Date.now() - 50000 },
+  { id: 6, name: "Hiking Group", image: "https://picsum.photos/seed/6/100", members: ["Oscar", "Peggy"], lastVisited: Date.now() - 60000 },
+  { id: 7, name: "Travel Buddies", image: "https://picsum.photos/seed/7/100", members: ["Quentin", "Rachel"], lastVisited: Date.now() - 70000 },
+  { id: 8, name: "Movie Buffs", image: "https://picsum.photos/seed/8/100", members: ["Steve", "Tina"], lastVisited: Date.now() - 80000 },
+  { id: 9, name: "Coders", image: "https://picsum.photos/seed/9/100", members: ["Ursula", "Vince"], lastVisited: Date.now() - 90000 },
+  { id: 10, name: "Musicians", image: "https://picsum.photos/seed/10/100", members: ["Walter", "Xena"], lastVisited: Date.now() - 100000 },
+  { id: 11, name: "Foodies", image: "https://picsum.photos/seed/11/100", members: ["Yara", "Zane"], lastVisited: Date.now() - 110000 },
+  { id: 12, name: "Artists", image: "https://picsum.photos/seed/12/100", members: ["Amy", "Ben"], lastVisited: Date.now() - 120000 },
+  { id: 13, name: "Entrepreneurs", image: "https://picsum.photos/seed/13/100", members: ["Carla", "Dan"], lastVisited: Date.now() - 130000 },
+  { id: 14, name: "Volunteers", image: "https://picsum.photos/seed/14/100", members: ["Eli", "Fiona"], lastVisited: Date.now() - 140000 },
+  { id: 15, name: "Yoga Class", image: "https://picsum.photos/seed/15/100", members: ["George", "Hannah"], lastVisited: Date.now() - 150000 },
 ];
 
-const MAX_CIRCLES_PER_RING = 12;
+const MAX_INNER_RING = 6;
+const MAX_OUTER_RING = 8;
 
 export default function ConnectionsPage() {
   const [items, setItems] = useState(initialCircles);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
@@ -40,52 +52,31 @@ export default function ConnectionsPage() {
   const [selectedCircle, setSelectedCircle] = useState<any>(null);
   const [isRemovingMembers, setIsRemovingMembers] = useState(false);
   const [membersToRemove, setMembersToRemove] = useState<string[]>([]);
-  const [ringOffsets, setRingOffsets] = useState<number[]>([]);
 
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
-  const { rings, ringLayouts } = useMemo(() => {
-      let tempItems = [...items];
-      const rings = [];
-      
-      let i = 0;
-      while (tempItems.length > 0) {
-          const firstRingSize = rings.length > 0 ? rings[0].length : 0;
-          if (firstRingSize === 0) {
-              const firstRingItems = tempItems.splice(0, MAX_CIRCLES_PER_RING);
-              rings.push(firstRingItems);
-          } else if (firstRingSize > MAX_CIRCLES_PER_RING / 2) {
-              const innerRingItems = rings[0].splice(0, Math.floor(firstRingSize / 2));
-              rings.unshift(innerRingItems);
-              const nextRingItems = tempItems.splice(0, MAX_CIRCLES_PER_RING);
-              rings[1] = [...rings[1], ...nextRingItems];
-          } else {
-             const nextRingItems = tempItems.splice(0, MAX_CIRCLES_PER_RING);
-             rings[0] = [...rings[0], ...nextRingItems];
-          }
-          i++;
-      }
-      
-      const baseRadius = isSmallScreen ? 120 : 240;
-      const radiusIncrement = isSmallScreen ? 70 : 100;
-      const baseSize = isSmallScreen ? 50 : 80;
-      const sizeDecrement = isSmallScreen ? 10 : 15;
-      
-      const ringLayouts = rings.map((_, ringIndex) => {
-          const reversedIndex = rings.length - 1 - ringIndex;
-          return {
-              radius: baseRadius + reversedIndex * radiusIncrement,
-              size: Math.max(20, baseSize - reversedIndex * sizeDecrement)
-          };
-      }).reverse();
+  const sortedItems = useMemo(() => {
+    return [...items].sort((a, b) => b.lastVisited - a.lastVisited);
+  }, [items]);
 
-      return { rings, ringLayouts };
+  const { rings, sidebarItems, ringLayouts } = useMemo(() => {
+    const innerRingItems = sortedItems.slice(0, MAX_INNER_RING);
+    const outerRingItems = sortedItems.slice(MAX_INNER_RING, MAX_INNER_RING + MAX_OUTER_RING);
+    const sidebarItems = sortedItems.slice(MAX_INNER_RING + MAX_OUTER_RING);
 
-  }, [items, isSmallScreen]);
+    const baseOuterRadius = isSmallScreen ? 180 : 320;
+    const baseInnerRadius = isSmallScreen ? 90 : 160;
+    
+    const baseOuterSize = isSmallScreen ? 60 : 90;
+    const baseInnerSize = isSmallScreen ? 45 : 70;
 
-  useEffect(() => {
-    setRingOffsets(Array.from({ length: rings.length }, () => Math.random() * 2 * Math.PI));
-  }, [rings.length]);
+    const ringLayouts = [
+      { radius: baseInnerRadius, size: baseInnerSize },
+      { radius: baseOuterRadius, size: baseOuterSize }
+    ];
+
+    return { rings: [innerRingItems, outerRingItems], sidebarItems, ringLayouts };
+  }, [sortedItems, isSmallScreen]);
 
   const handleCreateCircleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -98,8 +89,9 @@ export default function ConnectionsPage() {
           name: nameInput.value,
           image: `https://picsum.photos/seed/${newId}/100`,
           members: ["You"],
+          lastVisited: Date.now(),
         };
-        setItems(prevItems => [...prevItems, newCircle]);
+        setItems(prevItems => [newCircle, ...prevItems].sort((a,b) => b.lastVisited - a.lastVisited));
         setIsCreateDialogOpen(false);
     }
   };
@@ -110,6 +102,7 @@ export default function ConnectionsPage() {
   };
   
   const openCircleDetails = (item: any) => {
+    setItems(prev => prev.map(i => i.id === item.id ? { ...i, lastVisited: Date.now() } : i));
     setSelectedCircle(item);
     setIsCircleDetailsOpen(true);
   }
@@ -153,8 +146,6 @@ export default function ConnectionsPage() {
   const openRenameDialog = () => {
     setIsRenameDialogOpen(true);
   }
-
-  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
   
   const handleMemberSelection = (member: string) => {
     setMembersToRemove(prev => 
@@ -180,106 +171,171 @@ export default function ConnectionsPage() {
     setMembersToRemove([]);
   };
 
+  const handleCreateEvent = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const newEvent = {
+        id: Date.now(),
+        name: formData.get('event-name') as string,
+        location: formData.get('event-location') as string,
+        startDate: formData.get('start-date') as string,
+        startTime: formData.get('start-time') as string,
+        endDate: formData.get('end-date') as string,
+        endTime: formData.get('end-time') as string,
+        attendees: [],
+        status: 'ongoing',
+    };
+    addEvent(newEvent);
+    setIsEventDialogOpen(false);
+  }
+
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] bg-background overflow-hidden relative p-4">
-      <div className="text-center mb-4 z-10 absolute top-0 pt-4">
-        <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 pb-2">
-          Your Connection Orbit
-        </h1>
-        <p className="max-w-[600px] text-muted-foreground md:text-xl">
-          A dynamic view of your social universe.
-        </p>
-      </div>
-      
-      <div className="relative w-full h-full flex items-center justify-center" style={{ minWidth: '800px', minHeight: '800px' }}>
-        {/* Central Circle */}
-        <motion.div
-          className="absolute w-28 h-28 rounded-full flex items-center justify-center bg-card shadow-xl border-4 border-primary/50 z-20 cursor-pointer"
-          onClick={toggleCollapse}
-          whileHover={{ scale: 1.1 }}
-          transition={{ type: 'spring', stiffness: 300 }}
-        >
-          <Logo className="h-20 w-20" />
-        </motion.div>
+    <div className="flex justify-between items-start min-h-[calc(100vh-8rem)] bg-background overflow-hidden relative p-4 gap-4">
+      <div className="flex-grow flex flex-col items-center justify-center relative w-full h-full">
+          <div className="text-center mb-4 z-10 absolute top-0 pt-4">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 pb-2">
+              Your Connection Orbit
+            </h1>
+            <p className="max-w-[600px] text-muted-foreground md:text-xl">
+              A dynamic view of your social universe.
+            </p>
+          </div>
+          
+          <div className="relative w-full h-full flex items-center justify-center min-w-[400px] min-h-[400px] md:min-w-[800px] md:min-h-[800px]">
+            {/* Central Circle */}
+            <motion.div
+              className="absolute w-28 h-28 rounded-full flex items-center justify-center bg-card shadow-xl border-4 border-primary/50 z-20"
+              whileHover={{ scale: 1.1 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+            >
+              <Logo className="h-20 w-20" />
+            </motion.div>
 
-        {/* Orbiting Rings */}
-        <AnimatePresence>
-          {rings.map((ring, ringIndex) => {
-            if (!ringLayouts[ringIndex]) return null;
-            const { radius, size } = ringLayouts[ringIndex];
+            {/* Orbiting Rings */}
+            <AnimatePresence>
+              {rings.map((ring, ringIndex) => {
+                if (!ringLayouts[ringIndex]) return null;
+                const { radius, size } = ringLayouts[ringIndex];
 
-            return (
-              <motion.div
-                key={`ring-${ringIndex}`}
-                className="absolute"
-                style={{ width: radius * 2, height: radius * 2 }}
-              >
-                 <motion.div 
-                    className="absolute w-full h-full rounded-full border border-dashed border-muted-foreground/30"
+                return (
+                  <motion.div
+                    key={`ring-${ringIndex}`}
+                    className="absolute rounded-full border border-dashed border-muted-foreground/30"
+                    style={{ width: radius * 2, height: radius * 2 }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ opacity: { duration: 1, delay: 0.5 } }}
-                 />
-                <motion.div className="absolute w-full h-full">
-                {ring.map((item, i) => {
-                  const ringAngleOffset = ringOffsets[ringIndex] || 0;
-                  const angle = ringAngleOffset + (i / ring.length) * 2 * Math.PI;
-                  const x = (radius - size / 2) + radius * Math.cos(angle);
-                  const y = (radius - size / 2) + radius * Math.sin(angle);
-                  
-                  return (
-                    <motion.div
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0, left: '50%', top: '50%', x: '-50%', y: '-50%', rotate: -180 }}
-                      animate={{
-                        left: isCollapsed ? '50%' : x,
-                        top: isCollapsed ? '50%' : y,
-                        x: isCollapsed ? '-50%' : '0%',
-                        y: isCollapsed ? '-50%' : '0%',
-                        marginLeft: 0,
-                        marginTop: 0,
-                        width: size,
-                        height: size,
-                        opacity: 1,
-                        scale: 1,
-                        rotate: 0,
-                      }}
-                      exit={{ opacity: 0, scale: 0, rotate: 180, transition: { duration: 0.5 } }}
-                      transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                      whileHover={{ scale: 1.1, zIndex: 20, boxShadow: "0 0 15px hsl(var(--primary))" }}
-                      className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
-                      onClick={() => openCircleDetails(item)}
-                    >
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="w-full h-full rounded-full">
-                              <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{item.name}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </motion.div>
-                  );
-                })}
-                </motion.div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+                  >
+                    {ring.map((item, i) => {
+                      const angle = (i / ring.length) * 2 * Math.PI;
+                      const x = (radius - size / 2) + radius * Math.cos(angle);
+                      const y = (radius - size / 2) + radius * Math.sin(angle);
+                      
+                      return (
+                        <motion.div
+                          key={item.id}
+                          layout
+                          initial={{ opacity: 0, scale: 0, x: radius, y: radius, rotate: 0 }}
+                           animate={{
+                              left: x,
+                              top: y,
+                              width: size,
+                              height: size,
+                              opacity: 1,
+                              scale: 1,
+                              rotate: [0, 360],
+                              x:0,
+                              y:0
+                            }}
+                          exit={{ opacity: 0, scale: 0, x: radius, y: radius, rotate: 0, transition: { duration: 0.5 } }}
+                          transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                          whileHover={{ scale: 1.1, zIndex: 20, boxShadow: "0 0 15px hsl(var(--primary))" }}
+                          className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
+                          onClick={() => openCircleDetails(item)}
+                        >
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="w-full h-full rounded-full">
+                                  <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{item.name}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </motion.div>
+                      );
+                    })}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+
+          <Button onClick={() => setIsCreateDialogOpen(true)} className="absolute bottom-8 left-8 z-10">
+            <Plus className="mr-2 h-4 w-4" /> Add Circle
+          </Button>
+
+          <Button onClick={() => setIsEventDialogOpen(true)} className="absolute bottom-8 right-8 z-10">
+            <Calendar className="mr-2 h-4 w-4" /> Create Event
+          </Button>
       </div>
 
-       <Button onClick={() => setIsCreateDialogOpen(true)} className="absolute bottom-8 left-8 z-10">
-        <Plus className="mr-2 h-4 w-4" /> Add Circle
-      </Button>
-
-      <Button onClick={() => setIsEventDialogOpen(true)} className="absolute bottom-8 right-8 z-10">
-        <Calendar className="mr-2 h-4 w-4" /> Create Event
-      </Button>
+      <aside className="w-80 h-[calc(100vh-9rem)] sticky top-20 flex-shrink-0">
+          <Card className="h-full w-full overflow-y-auto">
+              <CardHeader>
+                  <CardTitle>Events & Circles</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-2">Ongoing Events</h3>
+                   {events.filter(e => e.status === 'ongoing').length > 0 ? (
+                      <div className="space-y-2">
+                        {events.filter(e => e.status === 'ongoing').map(event => (
+                           <Link href={`/events/${event.id}`} key={event.id}>
+                              <div className="p-3 rounded-md border hover:bg-muted cursor-pointer">
+                                 <p className="font-semibold">{event.name}</p>
+                                 <p className="text-xs text-muted-foreground">Ends: {new Date(event.endDate).toLocaleDateString()}</p>
+                                  <div className="flex items-center gap-1.5 text-green-500 mt-1">
+                                      <div className="h-2 w-2 rounded-full bg-green-500"/>
+                                      <span className="text-xs font-semibold">Current</span>
+                                  </div>
+                              </div>
+                           </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground text-center py-4">No ongoing events.</p>
+                    )}
+                     <Button variant="link" size="sm" asChild className="w-full mt-2">
+                        <Link href="/events">View All Events</Link>
+                    </Button>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-2">More Circles</h3>
+                   {sidebarItems.length > 0 ? (
+                      <div className="space-y-2">
+                        {sidebarItems.map(item => (
+                          <div key={item.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted cursor-pointer" onClick={() => openCircleDetails(item)}>
+                              <Avatar className="h-8 w-8">
+                                  <AvatarImage src={item.image} />
+                                  <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium text-sm">{item.name}</span>
+                              <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground"/>
+                          </div>
+                        ))}
+                      </div>
+                   ) : (
+                      <p className="text-xs text-muted-foreground text-center py-4">All your circles are in orbit.</p>
+                   )}
+                </div>
+              </CardContent>
+          </Card>
+      </aside>
 
        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogContent className="sm:max-w-[425px]">
@@ -447,77 +503,66 @@ export default function ConnectionsPage() {
                     <DialogTitle>Create a New Event</DialogTitle>
                     <DialogDescription>Organize a get-together for your circles and friends.</DialogDescription>
                 </DialogHeader>
-                <div className="py-4 space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="event-name">Event Name</Label>
-                        <Input id="event-name" placeholder="e.g. Summer BBQ"/>
-                    </div>
-                     <div className="space-y-2">
-                        <Label>Convene People or Circles</Label>
-                         <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline" className="w-full justify-start font-normal">
-                                    <Plus className="mr-2 h-4 w-4"/> Add Members or Circles
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[300px]">
-                                <p className="p-4 text-center text-sm text-muted-foreground">Functionality to add members and circles coming soon.</p>
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={handleCreateEvent}>
+                    <div className="py-4 space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="start-date">Start Date</Label>
-                            <Input id="start-date" type="date"/>
+                            <Label htmlFor="event-name">Event Name</Label>
+                            <Input id="event-name" name="event-name" placeholder="e.g. Summer BBQ" required />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="start-time">Start Time</Label>
-                            <Input id="start-time" type="time"/>
+                            <Label>Convene People or Circles</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" className="w-full justify-start font-normal">
+                                        <Plus className="mr-2 h-4 w-4"/> Add Members or Circles
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[300px]">
+                                    <p className="p-4 text-center text-sm text-muted-foreground">Functionality to add members and circles coming soon.</p>
+                                </PopoverContent>
+                            </Popover>
                         </div>
-                    </div>
-                     <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="start-date">Start Date</Label>
+                                <Input id="start-date" name="start-date" type="date" required/>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="start-time">Start Time</Label>
+                                <Input id="start-time" name="start-time" type="time" required/>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="end-date">End Date</Label>
+                                <Input id="end-date" name="end-date" type="date" required/>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="end-time">End Time</Label>
+                                <Input id="end-time" name="end-time" type="time" required/>
+                            </div>
+                        </div>
                         <div className="space-y-2">
-                            <Label htmlFor="end-date">End Date</Label>
-                            <Input id="end-date" type="date"/>
+                            <Label htmlFor="event-location">Location</Label>
+                            <div className="relative">
+                                <Input id="event-location" name="event-location" placeholder="e.g. Central Park" required/>
+                                <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="end-time">End Time</Label>
-                            <Input id="end-time" type="time"/>
-                        </div>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="event-location">Location</Label>
-                        <div className="relative">
-                            <Input id="event-location" placeholder="e.g. Central Park"/>
-                            <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
+                        <div className="flex items-center space-x-2 pt-2">
+                            <Checkbox id="live-location-check" />
+                            <label htmlFor="live-location-check" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                Automatically check-in attendees via live location
+                            </label>
                         </div>
                     </div>
-                    <div className="flex items-center space-x-2 pt-2">
-                        <Checkbox id="live-location-check" />
-                        <label htmlFor="live-location-check" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            Automatically check-in attendees via live location
-                        </label>
-                    </div>
-                     <div className="space-y-2 pt-2">
-                        <Label>Event Hashtag Media</Label>
-                        <div className="flex gap-2">
-                            <Button variant="outline" className="w-full"><Plus className="mr-2"/>Upload Media</Button>
-                            <Button variant="outline" size="icon"><Download/></Button>
-                            <Button variant="outline" size="icon"><Save/></Button>
-                        </div>
-                         <p className="text-xs text-muted-foreground">
-                           Media will be downloadable and can be saved to your Memory Bank. Event details will be auto-saved for the organizer.
-                         </p>
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button type="button" variant="secondary" onClick={() => setIsEventDialogOpen(false)}>Cancel</Button>
-                    <Button type="submit">Create Event</Button>
-                </DialogFooter>
+                    <DialogFooter>
+                        <Button type="button" variant="secondary" onClick={() => setIsEventDialogOpen(false)}>Cancel</Button>
+                        <Button type="submit">Create Event</Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     </div>
   );
 }
-
-    
