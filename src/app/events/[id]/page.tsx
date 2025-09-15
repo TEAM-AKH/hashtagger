@@ -6,7 +6,7 @@ import { events, setEventStatus } from '@/lib/events-data';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Users, Map, Clock, Upload, Download, Save, Play, Pause, XCircle } from 'lucide-react';
+import { ChevronLeft, Users, Map, Clock, Upload, Download, Save, Play, Pause, XCircle, Plus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function EventDetailPage() {
