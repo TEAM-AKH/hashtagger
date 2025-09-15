@@ -188,8 +188,8 @@ export default function ConnectionsPage() {
     }
     
     const ringLayouts = [
-      { radius: baseInnerRadius, size: baseInnerSize, angleOffset: 20 },
-      { radius: baseOuterRadius, size: baseOuterSize, angleOffset: 50 }
+      { radius: baseInnerRadius, size: baseInnerSize },
+      { radius: baseOuterRadius, size: baseOuterSize }
     ];
 
     return { rings: [innerRingItems, outerRingItems], sidebarItems, ringLayouts };
@@ -362,37 +362,53 @@ export default function ConnectionsPage() {
             <AnimatePresence>
               {showRings && rings.map((ring, ringIndex) => {
                 if (!ringLayouts[ringIndex]) return null;
-                const { radius, size, angleOffset } = ringLayouts[ringIndex];
+                const { radius, size } = ringLayouts[ringIndex];
 
                 return ring.map((item, i) => {
-                    const angle = (i / ring.length) * 2 * Math.PI + angleOffset;
-                    const x = radius * Math.cos(angle);
-                    const y = radius * Math.sin(angle);
+                    const angle = (i / ring.length) * 360;
+                    const delay = i * 0.08;
+                    const reverseDelay = (ring.length - 1 - i) * 0.06;
                     
                     return (
                         <motion.div
                           key={item.id}
                           layoutId={`circle-${item.id}`}
-                           initial={{ x: 0, y: 0, scale: 0, opacity: 0, rotate: 0 }}
+                           initial={{ opacity: 0, scale: 0, x: 0, y: 0, rotate: 0 }}
                            animate={{
                               opacity: 1,
                               scale: 1,
-                              x,
-                              y,
-                              rotate: 360,
-                              transition: { type: 'spring', stiffness: 260, damping: 20, delay: i * 0.05 + ringIndex * 0.1 }
+                              x: radius,
+                              rotate: angle,
+                              transition: { 
+                                type: 'spring', 
+                                stiffness: 260, 
+                                damping: 20, 
+                                delay: delay 
+                              }
                             }}
-                          exit={{ opacity: 0, scale: 0, x:0, y:0, rotate: -360, transition: { duration: 0.3 } }}
+                          exit={{ 
+                            opacity: 0, 
+                            scale: 0, 
+                            x: 0,
+                            y: 0,
+                            rotate: 0,
+                            transition: { 
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 30,
+                                delay: reverseDelay
+                            } 
+                          }}
                           whileHover={{ scale: 1.15, zIndex: 20, boxShadow: "0 0 20px hsl(var(--primary))" }}
                           className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
-                           style={{ width: size, height: size }}
+                           style={{ width: size, height: size, transformOrigin: 'center center' }}
                           onClick={() => openCircleDetails(item)}
                         >
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="w-full h-full rounded-full relative">
-                                  <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" />
+                                  <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" style={{ rotate: `-${angle}deg` }}/>
                                    {isEraseMode && (
                                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                                             <Checkbox
