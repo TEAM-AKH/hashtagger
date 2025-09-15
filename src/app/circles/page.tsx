@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -11,13 +11,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, Checkbox, CalendarClock, CheckCircle, Save } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, CalendarClock, CheckCircle, Save, Check } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { events as eventData, addEvent } from '@/lib/events-data';
 import Link from 'next/link';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const initialCircles = [
   { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"], lastVisited: Date.now() - 10000 },
@@ -165,6 +166,7 @@ export default function ConnectionsPage() {
   const [isRemovingMembers, setIsRemovingMembers] = useState(false);
   const [membersToRemove, setMembersToRemove] = useState<string[]>([]);
   const [isEventsPanelOpen, setIsEventsPanelOpen] = useState(false);
+  const [ringRandomOffsets] = useState([Math.random() * 360, Math.random() * 360]);
 
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
@@ -172,11 +174,10 @@ export default function ConnectionsPage() {
     return [...items].sort((a, b) => b.lastVisited - a.lastVisited);
   }, [items]);
 
-  const { rings, sidebarItems, ringLayouts } = useMemo(() => {
+  const { rings, ringLayouts } = useMemo(() => {
     const innerRingItems = sortedItems.slice(0, MAX_INNER_RING);
     const outerRingItems = sortedItems.slice(MAX_INNER_RING, MAX_INNER_RING + MAX_OUTER_RING);
-    const sidebarItems = sortedItems.slice(MAX_INNER_RING + MAX_OUTER_RING);
-
+    
     const baseOuterRadius = isSmallScreen ? 180 : 320;
     const baseInnerRadius = isSmallScreen ? 90 : 160;
     
@@ -188,7 +189,7 @@ export default function ConnectionsPage() {
       { radius: baseOuterRadius, size: baseOuterSize }
     ];
 
-    return { rings: [innerRingItems, outerRingItems], sidebarItems, ringLayouts };
+    return { rings: [innerRingItems, outerRingItems], ringLayouts };
   }, [sortedItems, isSmallScreen]);
 
   const handleCreateCircleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -330,6 +331,7 @@ export default function ConnectionsPage() {
               {rings.map((ring, ringIndex) => {
                 if (!ringLayouts[ringIndex]) return null;
                 const { radius, size } = ringLayouts[ringIndex];
+                const angleOffset = ringRandomOffsets[ringIndex];
 
                 return (
                   <motion.div
@@ -341,7 +343,7 @@ export default function ConnectionsPage() {
                     transition={{ opacity: { duration: 1, delay: 0.5 } }}
                   >
                     {ring.map((item, i) => {
-                      const angle = (i / ring.length) * 2 * Math.PI;
+                      const angle = (i / ring.length) * 2 * Math.PI + angleOffset;
                       const x = (radius - size / 2) + radius * Math.cos(angle);
                       const y = (radius - size / 2) + radius * Math.sin(angle);
                       
@@ -349,19 +351,16 @@ export default function ConnectionsPage() {
                         <motion.div
                           key={item.id}
                           layoutId={`circle-${item.id}`}
-                          initial={{ opacity: 0, scale: 0, x: radius, y: radius, rotate: (angle * 180 / Math.PI) }}
+                           initial={{ opacity: 0, scale: 0, x: radius - size / 2, y: radius - size / 2 }}
                            animate={{
+                              opacity: 1,
+                              scale: 1,
                               left: x,
                               top: y,
                               width: size,
                               height: size,
-                              opacity: 1,
-                              scale: 1,
-                              rotate: 0,
-                              x:0,
-                              y:0
                             }}
-                          exit={{ opacity: 0, scale: 0, x: radius, y: radius, rotate: (angle * 180 / Math.PI), transition: { duration: 0.5 } }}
+                          exit={{ opacity: 0, scale: 0, x: radius - size / 2, y: radius - size / 2, transition: { duration: 0.5 } }}
                           transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                           whileHover={{ scale: 1.1, zIndex: 20, boxShadow: "0 0 15px hsl(var(--primary))" }}
                           className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
