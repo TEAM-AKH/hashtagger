@@ -28,11 +28,11 @@ const initialCircles = [
 ];
 
 const MAX_CIRCLES_PER_RING = 12;
-const FIRST_RING_SPLIT = 6;
 
 export default function ConnectionsPage() {
   const [items, setItems] = useState(initialCircles);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
@@ -45,38 +45,41 @@ export default function ConnectionsPage() {
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
   const { rings, ringLayouts } = useMemo(() => {
-    let tempItems = [...items];
-    const rings = [];
-    
-    // Create the first ring with up to 12 items
-    const firstRing = tempItems.splice(0, MAX_CIRCLES_PER_RING);
-    if (firstRing.length > 0) rings.push(firstRing);
+      let tempItems = [...items];
+      const rings = [];
+      
+      let i = 0;
+      while (tempItems.length > 0) {
+          if (i === 0) {
+              const firstRingItems = tempItems.splice(0, MAX_CIRCLES_PER_RING);
+              rings.push(firstRingItems);
+          } else {
+              const innerRingItems = rings[0].splice(0, Math.floor(rings[0].length / 2));
+              rings.unshift(innerRingItems);
+              const nextRingItems = tempItems.splice(0, MAX_CIRCLES_PER_RING);
+              rings[1] = [...rings[1], ...nextRingItems];
+          }
+          i++;
+          if (rings[0].length > MAX_CIRCLES_PER_RING) {
+              // This condition triggers the split
+              continue;
+          }
+      }
+      
+      const baseRadius = isSmallScreen ? 140 : 180;
+      const radiusIncrement = isSmallScreen ? 70 : 100;
+      const baseSize = isSmallScreen ? 50 : 80;
+      const sizeDecrement = isSmallScreen ? 10 : 15;
+      
+      const ringLayouts = rings.map((_, ringIndex) => {
+          const reversedIndex = rings.length - 1 - ringIndex;
+          return {
+              radius: baseRadius + reversedIndex * radiusIncrement,
+              size: Math.max(20, baseSize - reversedIndex * sizeDecrement)
+          };
+      }).reverse();
 
-    // If the first ring was full, and there are more items, split it
-    if (firstRing.length === MAX_CIRCLES_PER_RING && tempItems.length > 0) {
-        const toMove = firstRing.splice(0, FIRST_RING_SPLIT);
-        rings.unshift(toMove); // Add the split items as a new inner ring
-    }
-    
-    // Handle remaining items, creating new rings as needed
-    while (tempItems.length > 0) {
-      const nextRingItems = tempItems.splice(0, MAX_CIRCLES_PER_RING);
-      rings.push(nextRingItems);
-    }
-    
-    const baseRadius = isSmallScreen ? 80 : 120;
-    const radiusIncrement = isSmallScreen ? 60 : 90;
-    const baseSize = isSmallScreen ? 50 : 80;
-    const sizeDecrement = isSmallScreen ? 8 : 10;
-    
-    const ringLayouts = rings.map((_, ringIndex) => {
-        return {
-            radius: baseRadius + ringIndex * radiusIncrement,
-            size: Math.max(20, baseSize - ringIndex * sizeDecrement)
-        };
-    });
-
-    return { rings, ringLayouts };
+      return { rings, ringLayouts };
 
   }, [items, isSmallScreen]);
 
@@ -84,15 +87,21 @@ export default function ConnectionsPage() {
     setRingOffsets(Array.from({ length: rings.length }, () => Math.random() * 2 * Math.PI));
   }, [rings.length]);
 
-  const addCircle = () => {
-    const newId = (items.length > 0 ? Math.max(...items.map(i => i.id)) : 0) + 1;
-    const newCircle = {
-      id: newId,
-      name: `New Circle ${newId}`,
-      image: `https://picsum.photos/seed/${newId}/100`,
-      members: ["New Member"],
-    };
-    setItems(prevItems => [...prevItems, newCircle]);
+  const handleCreateCircleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const nameInput = form.elements.namedItem('circleName') as HTMLInputElement;
+    if (nameInput.value) {
+        const newId = (items.length > 0 ? Math.max(...items.map(i => i.id)) : 0) + 1;
+        const newCircle = {
+          id: newId,
+          name: nameInput.value,
+          image: `https://picsum.photos/seed/${newId}/100`,
+          members: ["You"],
+        };
+        setItems(prevItems => [...prevItems, newCircle]);
+        setIsCreateDialogOpen(false);
+    }
   };
   
   const removeCircle = (id: number) => {
@@ -182,7 +191,7 @@ export default function ConnectionsPage() {
         </p>
       </div>
       
-      <div className="relative w-full h-full flex items-center justify-center" style={{ minWidth: '700px', minHeight: '700px' }}>
+      <div className="relative w-full h-full flex items-center justify-center" style={{ minWidth: '800px', minHeight: '800px' }}>
         {/* Central Circle */}
         <motion.div
           className="absolute w-28 h-28 rounded-full flex items-center justify-center bg-card shadow-xl border-4 border-primary/50 z-20 cursor-pointer"
@@ -196,6 +205,7 @@ export default function ConnectionsPage() {
         {/* Orbiting Rings */}
         <AnimatePresence>
           {rings.map((ring, ringIndex) => {
+            if (!ringLayouts[ringIndex]) return null;
             const { radius, size } = ringLayouts[ringIndex];
 
             return (
@@ -234,7 +244,7 @@ export default function ConnectionsPage() {
                       }}
                       exit={{ opacity: 0, scale: 0 }}
                       transition={{ layout: { type: 'spring', stiffness: 200, damping: 20 }, opacity: { duration: 0.3 } }}
-                      whileHover={{ scale: 1.1, zIndex: 20, shadow: "0 0 15px hsl(var(--primary))" }}
+                      whileHover={{ scale: 1.1, zIndex: 20, boxShadow: "0 0 15px hsl(var(--primary))" }}
                       className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
                       onClick={() => openCircleDetails(item)}
                     >
@@ -260,13 +270,34 @@ export default function ConnectionsPage() {
         </AnimatePresence>
       </div>
 
-       <Button onClick={addCircle} className="absolute bottom-8 left-8 z-10">
+       <Button onClick={() => setIsCreateDialogOpen(true)} className="absolute bottom-8 left-8 z-10">
         <Plus className="mr-2 h-4 w-4" /> Add Circle
       </Button>
 
       <Button onClick={() => setIsEventDialogOpen(true)} className="absolute bottom-8 right-8 z-10">
         <Calendar className="mr-2 h-4 w-4" /> Create Event
       </Button>
+
+       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Create New Circle</DialogTitle>
+                    <DialogDescription>Give your new circle a name to get started.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleCreateCircleSubmit}>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="circleName" className="text-right">Name</Label>
+                            <Input id="circleName" placeholder="e.g. Hiking Crew" className="col-span-3" required />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="secondary" onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
+                        <Button type="submit">Create</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
 
        <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
             <DialogContent className="sm:max-w-[425px]">

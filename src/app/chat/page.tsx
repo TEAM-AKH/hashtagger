@@ -7,8 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bell, Bot, Search, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages } from 'lucide-react';
+import { Bell, Bot, Search, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, Timer } from 'lucide-react';
 import { Logo } from '@/components/logo';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const chats = [
   { id: 1, name: 'Alex Starr', lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', online: true },
@@ -76,18 +77,28 @@ export default function ChitChatPage() {
               className="w-full h-full flex flex-col bg-card"
             >
               <div className="flex items-center p-4 border-b">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={`https://picsum.photos/seed/${selectedChat.id}/100`} alt={selectedChat.name} />
-                  <AvatarFallback>{selectedChat.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="ml-4">
-                  <p className="font-semibold">{selectedChat.name}</p>
-                   <div className="flex items-center gap-4 mt-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8"><User className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8"><BellOff className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8"><ShieldAlert className="h-4 w-4" /></Button>
-                  </div>
-                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <div className="flex items-center cursor-pointer group">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={`https://picsum.photos/seed/${selectedChat.id}/100`} alt={selectedChat.name} />
+                        <AvatarFallback>{selectedChat.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="ml-4">
+                        <p className="font-semibold group-hover:text-primary">{selectedChat.name}</p>
+                      </div>
+                    </div>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-2">
+                      <div className="flex flex-col gap-1">
+                        <Button variant="ghost" className="justify-start px-2"><User className="mr-2" /> View Profile</Button>
+                        <Button variant="ghost" className="justify-start px-2"><BellOff className="mr-2" /> Mute</Button>
+                        <Button variant="ghost" className="justify-start px-2"><ShieldAlert className="mr-2" /> Block</Button>
+                        <Button variant="ghost" className="justify-start px-2"><Timer className="mr-2" /> Disappearing Messages</Button>
+                      </div>
+                  </PopoverContent>
+                </Popover>
+
                 <div className="ml-auto flex items-center gap-2">
                   <Button variant="ghost" size="icon"><History className="h-5 w-5"/></Button>
                   <Button variant="ghost" size="icon"><Phone className="h-5 w-5"/></Button>
@@ -107,7 +118,7 @@ export default function ChitChatPage() {
               </div>
               <div className="p-4 border-t flex items-center gap-2 bg-background">
                 <Button variant="ghost" size="icon"><Smile className="h-5 w-5" /></Button>
-                 <Button variant="ghost" size="icon"><Languages className="h-5 w-5" /></Button>
+                 <Button variant="ghost" size="icon" title="Dragomen"><Languages className="h-5 w-5" /></Button>
                 <Input placeholder="Write a message..." className="flex-grow" />
                 <Button variant="ghost" size="icon"><Mic className="h-5 w-5" /></Button>
                 <Button variant="ghost" size="icon"><Camera className="h-5 w-5" /></Button>
