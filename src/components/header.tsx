@@ -3,7 +3,6 @@
 
 import { Search, Bell, CircleUser } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
@@ -27,7 +26,7 @@ export default function Header() {
                     name="text"
                     className="search-field"
                   />
-                  <div className="absolute top-1/2 right-2 -translate-y-1/2 z-[2]">
+                  <div className="absolute top-1/2 right-3 -translate-y-1/2 z-[2]">
                      <Search className="h-5 w-5 text-muted-foreground" />
                   </div>
               </div>
@@ -62,5 +61,3 @@ export default function Header() {
     </header>
   );
 }
-
-    
