@@ -1,26 +1,27 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bell, Bot, Search, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical } from 'lucide-react';
+import { Bell, Bot, Search, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ChitChatIcon } from '@/components/chitchat-icon';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
-const chats = [
-  { id: 1, name: 'Alex Starr', lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', online: true, status: 'seen' },
-  { id: 2, name: 'Mia Wong', lastMessage: 'Haha, that\'s hilarious!', time: 'Yesterday', online: false, status: 'sent' },
-  { id: 3, name: 'Project Team', lastMessage: 'Don\'t forget the meeting at 11.', time: '9:15 AM', online: true, status: 'delivered', unread: true },
-  { id: 4, name: 'David Chen', lastMessage: 'Let\'s catch up next week.', time: 'Sunday', online: false, status: 'sent' },
-  { id: 5, name: 'Sophia Loren', lastMessage: 'I saw that movie you recommended!', time: 'Friday', online: false, status: 'seen' },
-  { id: 6, name: 'Emily Clark', lastMessage: 'Can you send me the files?', time: '8:30 AM', online: false, status: 'delivered' },
-  { id: 7, name: 'Chris Evans', lastMessage: 'Typing...', time: '7:55 AM', online: true, typing: true, status: 'seen' },
+const initialChats = [
+  { id: 1, name: 'Alex Starr', lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', online: true, status: 'seen', lastVisited: Date.now() },
+  { id: 2, name: 'Mia Wong', lastMessage: 'Haha, that\'s hilarious!', time: 'Yesterday', online: false, status: 'sent', lastVisited: Date.now() - 10000 },
+  { id: 3, name: 'Project Team', lastMessage: 'Don\'t forget the meeting at 11.', time: '9:15 AM', online: true, status: 'delivered', unread: true, lastVisited: Date.now() - 20000 },
+  { id: 4, name: 'David Chen', lastMessage: 'Let\'s catch up next week.', time: 'Sunday', online: false, status: 'sent', lastVisited: Date.now() - 30000 },
+  { id: 5, name: 'Sophia Loren', lastMessage: 'I saw that movie you recommended!', time: 'Friday', online: false, status: 'seen', lastVisited: Date.now() - 40000 },
+  { id: 6, name: 'Emily Clark', lastMessage: 'Can you send me the files?', time: '8:30 AM', online: false, status: 'delivered', lastVisited: Date.now() - 50000 },
+  { id: 7, name: 'Chris Evans', lastMessage: 'Typing...', time: '7:55 AM', online: true, typing: true, status: 'seen', lastVisited: Date.now() - 60000 },
 ];
 
 const messages: Record<number, { from: 'me' | 'other'; text: string; time: string; status?: 'sent' | 'delivered' | 'seen' }[]> = {
@@ -115,7 +116,7 @@ const ChatView = ({ chat, messages, onClose }: { chat: any, messages: any[], onC
   );
 };
 
-const ChatList = ({ onChatSelect, selectedChatId }: { onChatSelect: (id: number) => void, selectedChatId: number | null }) => {
+const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onChatSelect: (id: number) => void, selectedChatId: number | null }) => {
   return (
     <div className="flex flex-col gap-4 h-full">
       <div className="flex items-center justify-between">
@@ -166,72 +167,127 @@ const ChatList = ({ onChatSelect, selectedChatId }: { onChatSelect: (id: number)
 
 
 export default function ChitChatPage() {
+  const [chats, setChats] = useState(initialChats);
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
+  const sortedChats = useMemo(() => {
+    return [...chats].sort((a, b) => b.lastVisited - a.lastVisited);
+  }, [chats]);
+  
   const selectedChat = chats.find(c => c.id === selectedChatId);
   const chatMessages = selectedChatId ? messages[selectedChatId as keyof typeof messages] || [] : [];
 
   const openChat = (id: number) => {
+    setChats(prev => prev.map(c => c.id === id ? { ...c, lastVisited: Date.now() } : c));
     setSelectedChatId(id);
   }
 
   const closeChat = () => {
     setSelectedChatId(null);
   }
+  
+  const ActiveChatRecents = () => (
+    <div className="w-full px-12 py-2 border-b">
+        <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+          <CarouselContent className="-ml-2">
+            {sortedChats.map((chat, index) => (
+              <CarouselItem key={index} className="basis-auto pl-2">
+                <div className="w-16 flex flex-col items-center gap-1 cursor-pointer" onClick={() => openChat(chat.id)}>
+                    <Avatar className={`h-12 w-12 border-2 ${selectedChatId === chat.id ? 'border-primary' : 'border-transparent'}`}>
+                        <AvatarImage src={`https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
+                        <AvatarFallback>{chat.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <p className="text-xs truncate text-muted-foreground">{chat.name.split(' ')[0]}</p>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+    </div>
+  );
 
-  const showChatList = isMobile ? selectedChatId === null : true;
-  const showChatView = isMobile ? selectedChatId !== null : true;
 
+  if (isMobile) {
+    return (
+       <div className="h-[calc(100vh-8rem)] relative overflow-hidden">
+        <AnimatePresence>
+            {selectedChatId !== null && selectedChat ? (
+                <motion.div
+                    key="chat-view-mobile"
+                    className="absolute inset-0 bg-background"
+                    initial={{ x: "100%" }}
+                    animate={{ x: 0 }}
+                    exit={{ x: "100%" }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                >
+                    <ChatView chat={selectedChat} messages={chatMessages} onClose={closeChat} />
+                </motion.div>
+            ) : (
+                 <motion.div
+                    key="chat-list-mobile"
+                    className="absolute inset-0"
+                    initial={{ x: 0 }}
+                    animate={{ x: 0 }}
+                    exit={{ x: "-100%" }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                 >
+                    <ChatList chats={sortedChats} onChatSelect={openChat} selectedChatId={selectedChatId} />
+                 </motion.div>
+            )}
+        </AnimatePresence>
+       </div>
+    );
+  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 h-[calc(100vh-8rem)] relative">
-      <AnimatePresence>
-        {isMobile && selectedChatId !== null && (
-          <motion.div
-            key="chat-view-mobile"
-            className="md:col-span-12"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          >
-             {selectedChat && <ChatView chat={selectedChat} messages={chatMessages} onClose={closeChat} />}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {!isMobile && (
-        <>
-          <div className="md:col-span-8 flex flex-col items-center justify-center bg-card/50 border rounded-lg overflow-hidden">
-            <AnimatePresence mode="wait">
-              {selectedChat ? (
-                 <ChatView key="chat-view-desktop" chat={selectedChat} messages={chatMessages} onClose={closeChat} />
-              ) : (
-                 <motion.div 
-                    key="placeholder"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="flex flex-col items-center justify-center h-full text-muted-foreground"
-                  >
+    <div className="grid grid-cols-12 gap-6 h-[calc(100vh-8rem)]">
+        <AnimatePresence mode="wait">
+            {selectedChat ? (
+                <motion.div 
+                    key="chat-view"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="col-span-12 flex flex-col items-center bg-card/50 border rounded-lg overflow-hidden"
+                >
+                    <ActiveChatRecents />
+                    <div className="w-full flex-grow">
+                        <ChatView chat={selectedChat} messages={chatMessages} onClose={closeChat} />
+                    </div>
+                </motion.div>
+            ) : (
+                <motion.div 
+                    key="no-chat-view"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="col-span-8 flex flex-col items-center justify-center bg-card/50 border rounded-lg"
+                >
                     <Logo className="h-24 w-24 mb-4" />
-                    <p>Select a chat to start messaging</p>
-                 </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          <div className="md:col-span-4">
-             <ChatList onChatSelect={openChat} selectedChatId={selectedChatId} />
-          </div>
-        </>
-      )}
-
-      {isMobile && selectedChatId === null && (
-         <div className="md:col-span-12">
-            <ChatList onChatSelect={openChat} selectedChatId={selectedChatId} />
-         </div>
-      )}
+                    <p className="text-muted-foreground">Select a chat to start messaging</p>
+                </motion.div>
+            )}
+        </AnimatePresence>
+        
+        <AnimatePresence>
+            {!selectedChat && (
+                <motion.div 
+                    key="chat-list"
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 50 }}
+                    transition={{ duration: 0.3 }}
+                    className="col-span-4"
+                >
+                    <ChatList chats={sortedChats} onChatSelect={openChat} selectedChatId={selectedChatId} />
+                </motion.div>
+            )}
+        </AnimatePresence>
     </div>
   );
 }
+
+    
