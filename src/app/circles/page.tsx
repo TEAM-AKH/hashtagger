@@ -21,6 +21,7 @@ import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { CreateButton } from '@/components/create-button';
+import { ViewEventsButton } from '@/components/view-events-button';
 
 const initialCircles = [
   { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"], lastVisited: Date.now() - 10000 },
@@ -429,9 +430,7 @@ export default function ConnectionsPage() {
           </div>
           
            <div className="absolute bottom-4 right-4 z-30">
-               <Button onClick={() => setIsDrawerOpen(true)} variant="secondary" className="shadow-lg">
-                    View Events
-               </Button>
+               <ViewEventsButton onClick={() => setIsDrawerOpen(true)} />
            </div>
       </div>
 
@@ -762,5 +761,7 @@ export default function ConnectionsPage() {
     </div>
   );
 }
+
+    
 
     
