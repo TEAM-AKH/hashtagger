@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { CreateButton } from '@/components/create-button';
 
 const initialCircles = [
   { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"], lastVisited: Date.now() - 10000 },
@@ -151,7 +152,7 @@ export default function ConnectionsPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isEraseMode, setIsEraseMode] = useState(false);
   const [circlesToErase, setCirclesToErase] = useState<number[]>([]);
-  const [showRings, setShowRings] = useState(true);
+  const [showRings, setShowRings] = useState(false);
 
 
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
@@ -389,7 +390,7 @@ export default function ConnectionsPage() {
                             type: 'spring',
                             stiffness: 260,
                             damping: 20,
-                            delay: i * 0.05,
+                            delay: i * 0.05 + ringIndex * 0.1,
                         }}
                         whileHover={{ scale: 1.15, zIndex: 20, boxShadow: "0 0 20px hsl(var(--primary))" }}
                         onClick={() => openCircleDetails(item)}
@@ -424,7 +425,7 @@ export default function ConnectionsPage() {
           </div>
 
           <div className="absolute bottom-4 left-4 z-30 flex gap-4">
-                <Button onClick={() => setIsCreateDialogOpen(true)} variant="secondary" size="icon" className="rounded-full h-12 w-12 shadow-lg"><Plus /></Button>
+              <CreateButton onClick={() => setIsCreateDialogOpen(true)} />
           </div>
           
            <div className="absolute bottom-4 right-4 z-30">
@@ -761,7 +762,5 @@ export default function ConnectionsPage() {
     </div>
   );
 }
-
-    
 
     
