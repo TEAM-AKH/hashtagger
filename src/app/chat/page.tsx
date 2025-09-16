@@ -7,21 +7,23 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bell, Bot, Search, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bell, Bot, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ChitChatIcon } from '@/components/chitchat-icon';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
-const initialChats = [
-  { id: 1, name: 'Alex Starr', lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', online: true, status: 'seen', lastVisited: Date.now() },
-  { id: 2, name: 'Mia Wong', lastMessage: 'Haha, that\'s hilarious!', time: 'Yesterday', online: false, status: 'sent', lastVisited: Date.now() - 10000 },
-  { id: 3, name: 'Project Team', lastMessage: 'Don\'t forget the meeting at 11.', time: '9:15 AM', online: true, status: 'delivered', unread: true, lastVisited: Date.now() - 20000 },
-  { id: 4, name: 'David Chen', lastMessage: 'Let\'s catch up next week.', time: 'Sunday', online: false, status: 'sent', lastVisited: Date.now() - 30000 },
-  { id: 5, name: 'Sophia Loren', lastMessage: 'I saw that movie you recommended!', time: 'Friday', online: false, status: 'seen', lastVisited: Date.now() - 40000 },
-  { id: 6, name: 'Emily Clark', lastMessage: 'Can you send me the files?', time: '8:30 AM', online: false, status: 'delivered', lastVisited: Date.now() - 50000 },
-  { id: 7, name: 'Chris Evans', lastMessage: 'Typing...', time: '7:55 AM', online: true, typing: true, status: 'seen', lastVisited: Date.now() - 60000 },
+const initialCircles = [
+    { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"], lastVisited: Date.now() - 10000, online: true, lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', status: 'seen' },
+    { id: 2, name: "Close Friends", image: "https://picsum.photos/seed/2/100", members: ["David", "Eve"], lastVisited: Date.now() - 20000, online: false, lastMessage: 'Haha, that\'s hilarious!', time: 'Yesterday', status: 'sent'},
+    { id: 3, name: "Gaming Squad", image: "https://picsum.photos/seed/3/100", members: ["Frank", "Grace", "Heidi"], lastVisited: Date.now() - 30000, online: true, lastMessage: 'Don\'t forget the meeting at 11.', time: '9:15 AM', status: 'delivered', unread: true },
+    { id: 4, name: "Family", image: "https://picsum.photos/seed/4/100", members: ["Ivan", "Judy"], lastVisited: Date.now() - 40000, online: false, lastMessage: 'Let\'s catch up next week.', time: 'Sunday', status: 'sent' },
+    { id: 5, name: "Book Club", image: "https://picsum.photos/seed/5/100", members: ["Mallory", "Niaj"], lastVisited: Date.now() - 50000, online: false, lastMessage: 'I saw that movie you recommended!', time: 'Friday', status: 'seen' },
+    { id: 6, name: "Hiking Group", image: "https://picsum.photos/seed/6/100", members: ["Oscar", "Peggy"], lastVisited: Date.now() - 60000, online: false, lastMessage: 'Can you send me the files?', time: '8:30 AM', status: 'delivered' },
+    { id: 7, name: "Travel Buddies", image: "https://picsum.photos/seed/7/100", members: ["Quentin", "Rachel"], lastVisited: Date.now() - 70000, online: true, lastMessage: 'Typing...', time: '7:55 AM', typing: true, status: 'seen'},
+    { id: 8, name: "Movie Buffs", image: "https://picsum.photos/seed/8/100", members: ["Steve", "Tina"], lastVisited: Date.now() - 80000, online: false, lastMessage: 'Sounds good!', time: 'Yesterday', status: 'seen'},
+    { id: 9, name: "Coders", image: "https://picsum.photos/seed/9/100", members: ["Ursula", "Vince"], lastVisited: Date.now() - 90000, online: true, lastMessage: 'Just pushed the latest commit.', time: '11:00 AM', status: 'delivered' },
 ];
 
 const initialMessages: Record<number, { from: 'me' | 'other'; text: string; time: string; status?: 'sent' | 'delivered' | 'seen' }[]> = {
@@ -47,6 +49,12 @@ const initialMessages: Record<number, { from: 'me' | 'other'; text: string; time
   ],
   7: [
     { from: 'other', text: 'Typing...', time: '7:55 AM' },
+  ],
+   8: [
+    { from: 'other', text: 'Sounds good!', time: 'Yesterday' },
+  ],
+  9: [
+    { from: 'other', text: 'Just pushed the latest commit.', time: '11:00 AM' },
   ]
 };
 
@@ -80,7 +88,7 @@ const ChatView = ({ chat, messages, onSendMessage, onClose }: { chat: any, messa
           <PopoverTrigger asChild>
             <div className="flex items-center cursor-pointer group">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={`https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
+                <AvatarImage src={chat.image || `https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
                 <AvatarFallback>{chat.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="ml-4">
@@ -98,7 +106,6 @@ const ChatView = ({ chat, messages, onSendMessage, onClose }: { chat: any, messa
         </Popover>
 
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" size="icon"><History className="h-5 w-5"/></Button>
           <Button variant="ghost" size="icon"><Phone className="h-5 w-5"/></Button>
           <Button variant="ghost" size="icon"><Video className="h-5 w-5"/></Button>
           <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
@@ -111,7 +118,7 @@ const ChatView = ({ chat, messages, onSendMessage, onClose }: { chat: any, messa
               <p>{msg.text}</p>
               <div className={`flex items-center justify-end gap-1 text-xs mt-1 ${msg.from === 'me' ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                 <span>{msg.time}</span>
-                {msg.from === 'me' && msg.status && (
+                {msg.from === 'me' && msg.status && index === messages.length - 1 && (
                   <ChitChatIcon type={msg.status} className="h-4 w-4" />
                 )}
               </div>
@@ -149,8 +156,16 @@ const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onCha
          </div>
       </div>
       <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Search chats" className="pl-8" />
+        <div id="halo-search">
+            <div id="search-wrapper">
+                <input
+                    placeholder="Search..."
+                    type="text"
+                    name="text"
+                    className="search-field"
+                />
+            </div>
+        </div>
       </div>
       <Card className="flex-grow overflow-hidden">
         <CardContent className="p-0 h-full overflow-y-auto">
@@ -162,7 +177,7 @@ const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onCha
                 onClick={() => onChatSelect(chat.id)}
               >
                 <Avatar className="h-10 w-10 relative">
-                  <AvatarImage src={`https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
+                  <AvatarImage src={chat.image || `https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
                   <AvatarFallback>{chat.name.charAt(0)}</AvatarFallback>
                   {chat.online && <div className="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-500 rounded-full border-2 border-card" />}
                 </Avatar>
@@ -188,7 +203,7 @@ const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onCha
 
 
 export default function ChitChatPage() {
-  const [chats, setChats] = useState(initialChats);
+  const [chats, setChats] = useState(initialCircles);
   const [messages, setMessages] = useState(initialMessages);
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -229,6 +244,33 @@ export default function ChitChatPage() {
             ? { ...chat, lastMessage: text, time: newMessage.time, status: 'sent' } 
             : chat
     ));
+    
+    // Simulate status change
+    setTimeout(() => {
+        setMessages(prev => {
+            const currentChatMessages = prev[selectedChatId] || [];
+            const updatedMessages = currentChatMessages.map((msg, index) => 
+                index === currentChatMessages.length - 1 ? { ...msg, status: 'delivered' } : msg
+            );
+            return { ...prev, [selectedChatId]: updatedMessages };
+        });
+        setChats(prev => prev.map(chat => 
+            chat.id === selectedChatId ? { ...chat, status: 'delivered' } : chat
+        ));
+    }, 1500);
+
+    setTimeout(() => {
+        setMessages(prev => {
+            const currentChatMessages = prev[selectedChatId] || [];
+            const updatedMessages = currentChatMessages.map((msg, index) => 
+                index === currentChatMessages.length - 1 ? { ...msg, status: 'seen' } : msg
+            );
+            return { ...prev, [selectedChatId]: updatedMessages };
+        });
+        setChats(prev => prev.map(chat => 
+            chat.id === selectedChatId ? { ...chat, status: 'seen' } : chat
+        ));
+    }, 3000);
   }
   
   const ActiveChatRecents = () => (
@@ -240,20 +282,20 @@ export default function ChitChatPage() {
       className="w-full px-12 py-3 border-b bg-card/50"
     >
         <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-          <CarouselContent className="-ml-4">
+          <CarouselContent className="-ml-6">
             {sortedChats.map((chat, index) => (
-              <CarouselItem key={index} className="basis-auto pl-4">
+              <CarouselItem key={index} className="basis-auto pl-6">
                 <motion.div 
                   className="w-16 flex flex-col items-center gap-1.5 cursor-pointer group"
                   onClick={() => openChat(chat.id)}
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                   whileHover={{ y: -5, scale: 1.1 }}
+                   transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                 >
-                    <Avatar className={`h-14 w-14 border-2 transition-colors ${selectedChatId === chat.id ? 'border-primary' : 'border-transparent group-hover:border-primary/50'}`}>
-                        <AvatarImage src={`https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
+                    <Avatar className={`h-14 w-14 border-2 transition-all duration-300 ${selectedChatId === chat.id ? 'border-primary shadow-lg shadow-primary/30' : 'border-transparent group-hover:border-primary/50'}`}>
+                        <AvatarImage src={chat.image || `https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
                         <AvatarFallback>{chat.name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <p className="text-xs truncate text-muted-foreground">{chat.name.split(' ')[0]}</p>
+                    <p className="text-xs truncate text-muted-foreground transition-colors group-hover:text-foreground">{chat.name.split(' ')[0]}</p>
                 </motion.div>
               </CarouselItem>
             ))}

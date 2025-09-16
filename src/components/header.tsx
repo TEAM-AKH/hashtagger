@@ -13,12 +13,25 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
       <div className="relative ml-auto flex-1 md:grow-0">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Search..."
-          className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-        />
+         <div id="halo-search">
+              <div className="aurora-glow"></div>
+              <div className="outer-ring"></div>
+              <div className="outer-ring"></div>
+              <div className="outer-ring"></div>
+              <div className="inner-glow"></div>
+              <div className="main-border"></div>
+              <div id="search-wrapper">
+                <input
+                    placeholder="Search..."
+                    type="text"
+                    name="text"
+                    className="search-field"
+                  />
+                  <div className="absolute top-1/2 right-2 -translate-y-1/2 z-[2]">
+                     <Search className="h-5 w-5 text-muted-foreground" />
+                  </div>
+              </div>
+          </div>
       </div>
       <ModeToggle />
       <Button variant="ghost" size="icon" className="rounded-full">
@@ -49,3 +62,5 @@ export default function Header() {
     </header>
   );
 }
+
+    
