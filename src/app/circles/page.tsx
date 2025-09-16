@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '@/components/logo';
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, CalendarClock, CheckCircle, Save, ArrowLeft, GripHorizontal, MoreVertical } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, CalendarClock, CheckCircle, Save, ArrowLeft, GripHorizontal, MoreVertical, RotateCw, Upload, Camera } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -43,7 +43,7 @@ const initialCircles = [
 const MAX_INNER_RING = 6;
 const MAX_OUTER_RING = 8;
 
-const EventsDrawer = ({ events, setLocalEvents }: { events: typeof eventData, setLocalEvents: any }) => {
+const EventsDrawer = ({ events, setLocalEvents, isDrawerOpen, setIsDrawerOpen }: { events: typeof eventData, setLocalEvents: any, isDrawerOpen: boolean, setIsDrawerOpen: (isOpen: boolean) => void }) => {
     const ongoingEvents = events.filter(e => e.status === 'ongoing' || e.status === 'paused');
     const concludedEvents = events.filter(e => e.status === 'concluded');
     
@@ -62,11 +62,14 @@ const EventsDrawer = ({ events, setLocalEvents }: { events: typeof eventData, se
     
     return (
         <Card className="h-full w-full bg-card/95 backdrop-blur-sm border-none rounded-t-2xl">
-            <CardHeader className="text-center cursor-grab active:cursor-grabbing">
-                <GripHorizontal className="h-6 w-6 text-muted-foreground mx-auto" />
-                <CardTitle>Your Events</CardTitle>
+            <CardHeader className="text-center cursor-grab active:cursor-grabbing flex-row items-center justify-center relative">
+                <GripHorizontal className="h-6 w-6 text-muted-foreground" />
+                <Button variant="ghost" size="icon" className="absolute right-4" onClick={() => setIsDrawerOpen(false)}>
+                    <X className="h-5 w-5"/>
+                </Button>
             </CardHeader>
-            <CardContent className="h-[calc(100%-8rem)]">
+            <CardContent className="h-[calc(100%-4rem)] p-0">
+               <CardTitle className="text-center mb-4">Your Events</CardTitle>
               <ScrollArea className="h-full p-4">
                   <div className="space-y-8">
                      <section>
@@ -147,6 +150,9 @@ export default function ConnectionsPage() {
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [isCircleDetailsOpen, setIsCircleDetailsOpen] = useState(false);
+  const [isEditPicDialogOpen, setIsEditPicDialogOpen] = useState(false);
+  const [newPicPreview, setNewPicPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedCircle, setSelectedCircle] = useState<any>(null);
   const [isRemovingMembers, setIsRemovingMembers] = useState(false);
   const [membersToRemove, setMembersToRemove] = useState<string[]>([]);
@@ -337,6 +343,24 @@ export default function ConnectionsPage() {
     setIsEraseMode(false);
     setCirclesToErase([]);
   };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        setNewPicPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const openEditPicDialog = () => {
+    setIsCircleDetailsOpen(false);
+    setIsEditPicDialogOpen(true);
+  }
+  
+  const closeEditPicDialog = () => {
+    setIsEditPicDialogOpen(false);
+    setNewPicPreview(null);
+    setIsCircleDetailsOpen(true);
+  }
 
   const currentEvent = localEvents.find(e => e.status === 'ongoing');
 
@@ -532,7 +556,7 @@ export default function ConnectionsPage() {
                     dragElastic={{ top: 0, bottom: 0.5 }}
                     onDragEnd={onDrawerDragEnd}
                 >
-                    <EventsDrawer events={localEvents} setLocalEvents={setLocalEvents} />
+                    <EventsDrawer events={localEvents} setLocalEvents={setLocalEvents} isDrawerOpen={isDrawerOpen} setIsDrawerOpen={setIsDrawerOpen}/>
                 </motion.div>
             )}
         </AnimatePresence>
@@ -659,10 +683,19 @@ export default function ConnectionsPage() {
                       {selectedCircle?.members.map((member: string) => (
                         <li key={member} className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                                <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${member}`} />
-                                <AvatarFallback>{member.charAt(0)}</AvatarFallback>
-                            </Avatar>
+                             <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Avatar className="h-10 w-10 cursor-pointer" onClick={openEditPicDialog}>
+                                            <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${member}`} />
+                                            <AvatarFallback>{member.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Edit picture</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                             </TooltipProvider>
                             <span className="font-medium">{member}</span>
                           </div>
                           {isRemovingMembers && <Checkbox checked={membersToRemove.includes(member)} onCheckedChange={() => handleMemberSelection(member)} />}
@@ -758,10 +791,45 @@ export default function ConnectionsPage() {
                 </form>
             </DialogContent>
         </Dialog>
+
+        <Dialog open={isEditPicDialogOpen} onOpenChange={closeEditPicDialog}>
+            <DialogContent className="sm:max-w-sm">
+                 <DialogHeader>
+                    <DialogTitle>Edit Picture</DialogTitle>
+                    <DialogDescription>Upload a new picture for this member.</DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-4">
+                    <div className="w-48 h-48 mx-auto rounded-full border-4 border-dashed border-primary/50 bg-muted flex items-center justify-center relative overflow-hidden">
+                        {newPicPreview ? (
+                            <Image src={newPicPreview} alt="New picture preview" layout="fill" objectFit="cover" />
+                        ) : (
+                            <Camera className="h-12 w-12 text-muted-foreground" />
+                        )}
+                    </div>
+                    {newPicPreview ? (
+                         <div className="bg-muted p-4 rounded-lg">
+                            <h4 className="font-semibold text-center mb-4">Fit to Crop</h4>
+                             <div className="flex justify-center items-center h-32 bg-background rounded-md overflow-hidden">
+                                <Image src={newPicPreview} alt="Crop preview" width={128} height={128} className="rounded-full" />
+                            </div>
+                            <div className="flex justify-between mt-4">
+                                <Button variant="ghost" onClick={closeEditPicDialog}>Cancel</Button>
+                                <Button variant="outline" size="icon"><RotateCw /></Button>
+                                <Button>Save</Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                            <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                                <Upload className="mr-2 h-4 w-4"/> Upload New
+                            </Button>
+                            <Button variant="destructive-outline"><Trash2 className="mr-2 h-4 w-4"/> Remove</Button>
+                            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+                        </div>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
     </div>
   );
 }
-
-    
-
-    
