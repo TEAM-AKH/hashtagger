@@ -24,7 +24,7 @@ const initialChats = [
   { id: 7, name: 'Chris Evans', lastMessage: 'Typing...', time: '7:55 AM', online: true, typing: true, status: 'seen', lastVisited: Date.now() - 60000 },
 ];
 
-const messages: Record<number, { from: 'me' | 'other'; text: string; time: string; status?: 'sent' | 'delivered' | 'seen' }[]> = {
+const initialMessages: Record<number, { from: 'me' | 'other'; text: string; time: string; status?: 'sent' | 'delivered' | 'seen' }[]> = {
   1: [
     { from: 'other', text: 'Hey! Did you check the new post on The Hashtagger?', time: '10:40 AM' },
     { from: 'me', text: 'Yes, looks great! Let\'s catch up later today.', time: '10:42 AM', status: 'seen' },
@@ -50,7 +50,22 @@ const messages: Record<number, { from: 'me' | 'other'; text: string; time: strin
   ]
 };
 
-const ChatView = ({ chat, messages, onClose }: { chat: any, messages: any[], onClose: () => void }) => {
+const ChatView = ({ chat, messages, onSendMessage, onClose }: { chat: any, messages: any[], onSendMessage: (text: string) => void, onClose: () => void }) => {
+  const [newMessage, setNewMessage] = useState('');
+
+  const handleSend = () => {
+    if(newMessage.trim()) {
+        onSendMessage(newMessage.trim());
+        setNewMessage('');
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+        handleSend();
+    }
+  }
+
   return (
     <motion.div 
       key={chat.id}
@@ -107,10 +122,16 @@ const ChatView = ({ chat, messages, onClose }: { chat: any, messages: any[], onC
       <div className="p-4 border-t flex items-center gap-2 bg-background">
         <Button variant="ghost" size="icon"><Smile className="h-5 w-5" /></Button>
          <Button variant="ghost" size="icon" title="Dragomen"><Languages className="h-5 w-5" /></Button>
-        <Input placeholder="Write a message..." className="flex-grow" />
+        <Input 
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Write a message..." 
+          className="flex-grow" 
+        />
         <Button variant="ghost" size="icon"><Mic className="h-5 w-5" /></Button>
         <Button variant="ghost" size="icon"><Camera className="h-5 w-5" /></Button>
-        <Button size="sm">Send</Button>
+        <Button size="sm" onClick={handleSend} disabled={!newMessage.trim()}>Send</Button>
       </div>
     </motion.div>
   );
@@ -168,6 +189,7 @@ const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onCha
 
 export default function ChitChatPage() {
   const [chats, setChats] = useState(initialChats);
+  const [messages, setMessages] = useState(initialMessages);
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -186,27 +208,60 @@ export default function ChitChatPage() {
   const closeChat = () => {
     setSelectedChatId(null);
   }
+
+  const handleSendMessage = (text: string) => {
+    if (!selectedChatId) return;
+
+    const newMessage = {
+        from: 'me' as const,
+        text,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: 'sent' as const,
+    };
+    
+    setMessages(prev => {
+        const newMessagesForChat = [...(prev[selectedChatId] || []), newMessage];
+        return { ...prev, [selectedChatId]: newMessagesForChat };
+    });
+
+     setChats(prev => prev.map(chat => 
+        chat.id === selectedChatId 
+            ? { ...chat, lastMessage: text, time: newMessage.time, status: 'sent' } 
+            : chat
+    ));
+  }
   
   const ActiveChatRecents = () => (
-    <div className="w-full px-12 py-2 border-b">
+    <motion.div 
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: -20, opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+      className="w-full px-12 py-3 border-b bg-card/50"
+    >
         <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-          <CarouselContent className="-ml-2">
+          <CarouselContent className="-ml-4">
             {sortedChats.map((chat, index) => (
-              <CarouselItem key={index} className="basis-auto pl-2">
-                <div className="w-16 flex flex-col items-center gap-1 cursor-pointer" onClick={() => openChat(chat.id)}>
-                    <Avatar className={`h-12 w-12 border-2 ${selectedChatId === chat.id ? 'border-primary' : 'border-transparent'}`}>
+              <CarouselItem key={index} className="basis-auto pl-4">
+                <motion.div 
+                  className="w-16 flex flex-col items-center gap-1.5 cursor-pointer group"
+                  onClick={() => openChat(chat.id)}
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                >
+                    <Avatar className={`h-14 w-14 border-2 transition-colors ${selectedChatId === chat.id ? 'border-primary' : 'border-transparent group-hover:border-primary/50'}`}>
                         <AvatarImage src={`https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
                         <AvatarFallback>{chat.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <p className="text-xs truncate text-muted-foreground">{chat.name.split(' ')[0]}</p>
-                </div>
+                </motion.div>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="bg-background/80 backdrop-blur-sm" />
+          <CarouselNext className="bg-background/80 backdrop-blur-sm"/>
         </Carousel>
-    </div>
+    </motion.div>
   );
 
 
@@ -223,7 +278,7 @@ export default function ChitChatPage() {
                     exit={{ x: "100%" }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 >
-                    <ChatView chat={selectedChat} messages={chatMessages} onClose={closeChat} />
+                    <ChatView chat={selectedChat} messages={chatMessages} onSendMessage={handleSendMessage} onClose={closeChat} />
                 </motion.div>
             ) : (
                  <motion.div
@@ -244,48 +299,50 @@ export default function ChitChatPage() {
 
   return (
     <div className="grid grid-cols-12 gap-6 h-[calc(100vh-8rem)]">
-        <AnimatePresence mode="wait">
-            {selectedChat ? (
-                <motion.div 
-                    key="chat-view"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="col-span-12 flex flex-col items-center bg-card/50 border rounded-lg overflow-hidden"
-                >
-                    <ActiveChatRecents />
-                    <div className="w-full flex-grow">
-                        <ChatView chat={selectedChat} messages={chatMessages} onClose={closeChat} />
-                    </div>
-                </motion.div>
-            ) : (
-                <motion.div 
-                    key="no-chat-view"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="col-span-8 flex flex-col items-center justify-center bg-card/50 border rounded-lg"
-                >
-                    <Logo className="h-24 w-24 mb-4" />
-                    <p className="text-muted-foreground">Select a chat to start messaging</p>
-                </motion.div>
-            )}
-        </AnimatePresence>
+        <div className="col-span-8">
+            <AnimatePresence mode="wait">
+                {selectedChat ? (
+                    <motion.div 
+                        key="chat-view"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="h-full flex flex-col items-center bg-card/50 border rounded-lg overflow-hidden"
+                    >
+                        <ActiveChatRecents />
+                        <div className="w-full flex-grow">
+                            <ChatView chat={selectedChat} messages={chatMessages} onSendMessage={handleSendMessage} onClose={closeChat} />
+                        </div>
+                    </motion.div>
+                ) : (
+                    <motion.div 
+                        key="no-chat-view"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="h-full flex flex-col items-center justify-center bg-card/50 border rounded-lg"
+                    >
+                        <Logo className="h-24 w-24 mb-4" />
+                        <p className="text-muted-foreground">Select a chat to start messaging</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
         
-        <AnimatePresence>
-            {!selectedChat && (
+        <div className="col-span-4">
+            <AnimatePresence>
                 <motion.div 
                     key="chat-list"
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 1, x: 0 }}
+                    animate={{ opacity: selectedChat ? 0 : 1, x: selectedChat ? 50 : 0 }}
                     exit={{ opacity: 0, x: 50 }}
                     transition={{ duration: 0.3 }}
-                    className="col-span-4"
+                    className="h-full"
                 >
                     <ChatList chats={sortedChats} onChatSelect={openChat} selectedChatId={selectedChatId} />
                 </motion.div>
-            )}
-        </AnimatePresence>
+            </AnimatePresence>
+        </div>
     </div>
   );
 }
