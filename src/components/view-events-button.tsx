@@ -34,7 +34,7 @@ export const ViewEventsButton = React.forwardRef<HTMLButtonElement, ViewEventsBu
 
         {/* Hover State (→ View Events) */}
         <div
-          className="absolute top-0 z-10 flex size-full translate-x-12 items-center justify-center gap-2 text-primary-foreground opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 bg-primary"
+          className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-primary text-primary-foreground opacity-0 transition-all duration-300 group-hover:opacity-100"
         >
           <ArrowRight className="h-5 w-5" />
           <span className="whitespace-nowrap">View Events</span>
@@ -45,5 +45,3 @@ export const ViewEventsButton = React.forwardRef<HTMLButtonElement, ViewEventsBu
 );
 
 ViewEventsButton.displayName = 'ViewEventsButton';
-
-    
