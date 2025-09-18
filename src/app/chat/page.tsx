@@ -233,18 +233,24 @@ export default function ChitChatPage() {
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [api, setApi] = useState<CarouselApi>()
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollPrev, setCanScrollPrev] = useState(false)
+  const [canScrollNext, setCanScrollNext] = useState(false)
 
   useEffect(() => {
     if (!api) {
       return
     }
  
-    api.on("select", () => {
-      setCanScrollPrev(api.canScrollPrev())
-    })
+    onSelect(api)
+    api.on("reInit", onSelect)
+    api.on("select", onSelect)
   }, [api])
 
+  const onSelect = (api: CarouselApi) => {
+    if (!api) return;
+    setCanScrollPrev(api.canScrollPrev())
+    setCanScrollNext(api.canScrollNext())
+  }
 
   const sortedChats = useMemo(() => {
     return [...chats].sort((a, b) => b.lastVisited - a.lastVisited);
@@ -363,7 +369,7 @@ export default function ChitChatPage() {
             ))}
           </CarouselContent>
           {canScrollPrev && <CarouselPrevious className="bg-background/80 backdrop-blur-sm" />}
-          <CarouselNext className="bg-background/80 backdrop-blur-sm"/>
+          {canScrollNext && <CarouselNext className="bg-background/80 backdrop-blur-sm"/>}
         </Carousel>
     </motion.div>
   );
