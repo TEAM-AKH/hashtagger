@@ -3,9 +3,11 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Flame, MessageCircle, Send, MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward } from 'lucide-react';
+import { MessageCircle, Send, MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from 'framer-motion';
+import { VibeButton } from '@/components/vibe-button';
+import { CirculateButton } from '@/components/circulate-button';
 
 const clips = [
   { id: 1, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", user: "bunny_lover", description: "Big Buck Bunny adventures!" },
@@ -17,28 +19,8 @@ const clips = [
   { id: 7, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4", user: "sintel_fan", description: "The journey begins." },
 ];
 
-const bubbleVariants = {
-  hidden: { opacity: 0, scale: 0 },
-  visible: (i: number) => ({
-    opacity: 1,
-    scale: 1,
-    transition: {
-      delay: i * 0.1,
-      type: 'spring',
-      stiffness: 150,
-      damping: 10,
-    },
-  }),
-  exit: {
-    opacity: 0,
-    scale: 0,
-    transition: { duration: 0.3 }
-  }
-};
-
 export default function ClipsPage() {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [showLikeAnimation, setShowLikeAnimation] = useState<number | null>(null);
     const [handsFreeLoops, setHandsFreeLoops] = useState<string>('default'); // 'default', '1' to '6'
     const [playbackRate, setPlaybackRate] = useState('1');
     const [currentClip, setCurrentClip] = useState<number>(0);
@@ -54,12 +36,6 @@ export default function ClipsPage() {
             currentVideo.playbackRate = parseFloat(playbackRate);
         }
     }, [playbackRate, currentClip]);
-
-
-    const handleLike = (id: number) => {
-        setShowLikeAnimation(id);
-        setTimeout(() => setShowLikeAnimation(null), 1200);
-    };
 
     const handleScrollToNext = (index: number) => {
         const nextIndex = (index + 1) % clips.length;
@@ -150,20 +126,6 @@ export default function ClipsPage() {
                         <video ref={el => videoRefs.current[index] = el} loop={handsFreeLoops === "0"} muted playsInline className="h-full w-full object-cover">
                             <source src={clip.src} type="video/mp4" />
                         </video>
-                         <AnimatePresence>
-                          {showLikeAnimation === clip.id && (
-                            <motion.div
-                              initial="hidden"
-                              animate="visible"
-                              exit="exit"
-                              className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                            >
-                                <motion.div custom={0} variants={bubbleVariants} className="absolute">
-                                    <span className="text-6xl" style={{filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.7))'}}>🤓</span>
-                                </motion.div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
                         <div className="absolute top-4 right-4 z-10">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -217,18 +179,16 @@ export default function ClipsPage() {
                             <p className="text-sm">{clip.description}</p>
                         </div>
                         <div className="absolute bottom-4 right-4 flex flex-col gap-4">
-                            <Button variant="ghost" size="icon" className="text-white hover:text-red-500 rounded-full bg-black/30 hover:bg-black/50" onClick={() => handleLike(clip.id)}>
-                                <Flame className="h-7 w-7" />
-                                <span className="sr-only">Lit</span>
-                            </Button>
+                            <div className="rounded-full bg-black/30 backdrop-blur-sm">
+                                <VibeButton />
+                            </div>
                             <Button variant="ghost" size="icon" className="text-white hover:text-blue-400 rounded-full bg-black/30 hover:bg-black/50">
                                 <MessageCircle className="h-7 w-7" />
                                 <span className="sr-only">Express</span>
                             </Button>
-                            <Button variant="ghost" size="icon" className="text-white hover:text-green-400 rounded-full bg-black/30 hover:bg-black/50">
-                                <Send className="h-7 w-7" />
-                                <span className="sr-only">Circulate</span>
-                            </Button>
+                            <div className="rounded-full bg-black/30 backdrop-blur-sm p-1.5">
+                                <CirculateButton />
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -236,5 +196,3 @@ export default function ClipsPage() {
         </div>
     );
 }
-
-    

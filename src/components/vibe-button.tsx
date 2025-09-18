@@ -16,10 +16,14 @@ export const VibeButton = () => {
             />
             <div className="icons flex items-center justify-center h-9 w-9">
                 <svg id="icon-like-regular" className="w-6 h-6 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                   <span className="text-2xl">🤓</span>
+                   <foreignObject x="0" y="0" width="24" height="24">
+                        <span className="text-2xl">🤓</span>
+                   </foreignObject>
                 </svg>
-                <svg id="icon-like-solid" className="w-6 h-6 text-yellow-400" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                   <span className="text-2xl">🤓</span>
+                <svg id="icon-like-solid" className="w-6 h-6 text-yellow-400" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round">
+                    <foreignObject x="0" y="0" width="24" height="24">
+                        <span className="text-2xl">🤓</span>
+                   </foreignObject>
                 </svg>
             </div>
             <div className="fireworks">
@@ -30,5 +34,3 @@ export const VibeButton = () => {
         </div>
     );
 };
-
-    
