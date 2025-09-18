@@ -33,6 +33,8 @@
     --sidebar-grad-start: #c98cf3;
     --sidebar-grad-end: #9b66e0;
     --sidebar-foreground: hsl(0 0% 100% / 0.7);
+    --express-grad-start: #6a11cb;
+    --express-grad-end: #2575fc;
   }
 
   .dark {
@@ -58,6 +60,8 @@
     --sidebar-grad-start: #c98cf3;
     --sidebar-grad-end: #9b66e0;
     --sidebar-foreground: hsl(0 0% 100% / 0.7);
+    --express-grad-start: #6a11cb;
+    --express-grad-end: #2575fc;
   }
 }
 

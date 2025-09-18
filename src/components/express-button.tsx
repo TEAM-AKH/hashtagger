@@ -1,98 +1,130 @@
 
 'use client';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
 
-const letterVariants = {
-  closed: { rotateX: 0 },
-  open: { rotateX: 180, transition: { duration: 0.4, ease: 'easeInOut' } },
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  onSnapshot,
+  query,
+  orderBy,
+} from 'firebase/firestore';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { ScrollArea } from './ui/scroll-area';
+import { Avatar, AvatarFallback } from './ui/avatar';
+import { ExpressIcon } from './express-icon';
+
+type Comment = {
+  id: string;
+  text: string;
+  createdAt: any;
+  author: string;
 };
 
-const flapVariants = {
-  closed: { rotateX: 0, y: 0 },
-  open: { rotateX: -180, y: -2, transition: { duration: 0.4, ease: 'easeInOut' } },
-};
+export const ExpressButton = ({ docId }: { docId: string }) => {
+  const [showBox, setShowBox] = useState(false);
+  const [comment, setComment] = useState('');
+  const [comments, setComments] = useState<Comment[]>([]);
 
-const ExpressIcon = ({ isToggled }: { isToggled: boolean }) => {
-  return (
-    <motion.div
-      className="relative w-7 h-7"
-      animate={isToggled ? 'open' : 'closed'}
-    >
-      {/* Back of envelope */}
-      <motion.div className="absolute inset-0 bg-card border rounded-md" />
-      
-      {/* Letter inside */}
-      <motion.div 
-        className="absolute inset-x-1 top-2 h-4 bg-primary/20 rounded-sm"
-        initial={{ y: 20 }}
-        variants={{ closed: { y: 20 }, open: { y: 0 } }}
-        transition={{ delay: 0.2 }}
-      />
+  useEffect(() => {
+    if (!docId) return;
+    const q = query(
+      collection(db, 'express', docId, 'comments'),
+      orderBy('createdAt', 'desc')
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setComments(
+        snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          author: doc.data().author || 'Anonymous',
+        })) as Comment[]
+      );
+    });
+    return () => unsubscribe();
+  }, [docId]);
 
-      {/* Flap */}
-      <motion.div
-        className="absolute inset-x-0 top-0 h-1/2"
-        style={{ perspective: 100, transformOrigin: 'top' }}
-        variants={flapVariants}
-      >
-        <div className="absolute inset-0 bg-card border-b rounded-t-md" />
-        <div 
-            className="absolute inset-0"
-            style={{
-                clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
-                background: 'linear-gradient(to bottom, hsl(var(--border)), hsl(var(--card)))'
-            }}
-        />
-      </motion.div>
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!comment.trim() || !docId) return;
 
-       {/* Front of envelope */}
-       <motion.div
-            className="absolute inset-0"
-            style={{
-                clipPath: 'polygon(0 0, 100% 0, 50% 50%, 0 100%, 100% 100%, 50% 50%)',
-                background: 'linear-gradient(to bottom, hsl(var(--card)), hsl(var(--border)))'
-            }}
-        />
-        
-       {/* Emoji */}
-       <motion.div 
-        className="absolute inset-0 flex items-center justify-center"
-        initial={false}
-        animate={{ opacity: isToggled ? 0 : 1 }}
-        transition={{ delay: isToggled ? 0 : 0.3 }}
-       >
-         <span className="text-lg">💌</span>
-       </motion.div>
-    </motion.div>
-  );
-};
-
-
-export const ExpressButton = ({ isToggled, onToggle }: { isToggled: boolean, onToggle: () => void }) => {
-  const [isHovered, setIsHovered] = useState(false);
+    try {
+      await addDoc(collection(db, 'express', docId, 'comments'), {
+        text: comment,
+        author: 'User', // Replace with actual user later
+        createdAt: serverTimestamp(),
+      });
+      setComment('');
+    } catch (error) {
+      console.error('Error adding comment: ', error);
+    }
+  };
 
   return (
-    <motion.button
-      onClick={onToggle}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      className="relative flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
-      aria-label="Express"
-    >
-      <ExpressIcon isToggled={isToggled} />
-      <motion.span
-        initial={{ width: 0, opacity: 0, x: -10 }}
-        animate={{ 
-            width: isHovered ? 'auto' : 0, 
-            opacity: isHovered ? 1 : 0,
-            x: isHovered ? 0 : -10
-        }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="overflow-hidden whitespace-nowrap"
+    <div className="relative">
+      <button
+        onClick={() => setShowBox(!showBox)}
+        className="relative flex items-center justify-center p-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors rounded-full"
       >
-        Express
-      </motion.span>
-    </motion.button>
+        <ExpressIcon />
+      </button>
+
+      <AnimatePresence>
+        {showBox && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="absolute bottom-full mb-2 w-80 min-h-[20rem] max-h-96 bg-card border rounded-xl shadow-lg flex flex-col z-20 left-1/2 -translate-x-1/2"
+          >
+            <div className="p-4 border-b">
+              <h4 className="font-semibold text-center">Expressions</h4>
+            </div>
+
+            <ScrollArea className="flex-grow p-4">
+              <div className="space-y-4">
+                {comments.length === 0 ? (
+                  <p className="text-muted-foreground text-sm text-center py-8">
+                    No expressions yet.
+                  </p>
+                ) : (
+                  comments.map((c) => (
+                    <div key={c.id} className="flex items-start gap-2.5">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback>{c.author.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-grow rounded-md bg-muted/50 px-3 py-2">
+                        <p className="text-sm text-foreground">{c.text}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+
+            <form
+              onSubmit={handleSubmit}
+              className="p-4 border-t flex items-center gap-2"
+            >
+              <Input
+                type="text"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Write an expression..."
+                className="flex-grow"
+              />
+              <Button type="submit" size="sm" disabled={!comment.trim()}>
+                Post
+              </Button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };

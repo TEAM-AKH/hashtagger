@@ -3,7 +3,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward } from 'lucide-react';
+import { MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward, MessageCircle, Send } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { motion } from 'framer-motion';
 import { VibeButton } from '@/components/vibe-button';
@@ -11,13 +11,11 @@ import { CirculateButton } from '@/components/circulate-button';
 import { ExpressButton } from '@/components/express-button';
 
 const clips = [
-  { id: 1, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", user: "bunny_lover", description: "Big Buck Bunny adventures!" },
-  { id: 2, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", user: "dreamer", description: "Elephants have dreams too." },
-  { id: 3, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", user: "firestarter", description: "Just chilling by the fire." },
-  { id: 4, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", user: "escape_artist", description: "My great escape" },
-  { id: 5, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", user: "fun_times", description: "Living my best life!" },
-  { id: 6, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4", user: "joy_rider", description: "Cruising into the weekend." },
-  { id: 7, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4", user: "sintel_fan", description: "The journey begins." },
+  { id: 1, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", user: "bunny_lover", description: "Big Buck Bunny adventures!", vibes: 128, expresses: 42, circulates: 18 },
+  { id: 2, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", user: "dreamer", description: "Elephants have dreams too.", vibes: 256, expresses: 89, circulates: 23 },
+  { id: 3, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", user: "firestarter", description: "Just chilling by the fire.", vibes: 512, expresses: 120, circulates: 45 },
+  { id: 4, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", user: "escape_artist", description: "My great escape", vibes: 1024, expresses: 340, circulates: 99 },
+  { id: 5, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", user: "fun_times", description: "Living my best life!", vibes: 2048, expresses: 560, circulates: 150 },
 ];
 
 export default function ClipsPage() {
@@ -180,15 +178,18 @@ export default function ClipsPage() {
                             <p className="text-sm">{clip.description}</p>
                         </div>
                         <div className="absolute bottom-4 right-4 flex flex-col items-center gap-4">
-                            <div className="rounded-full bg-black/30 backdrop-blur-sm p-1">
+                           <div className="flex flex-col items-center gap-2 text-white">
                                 <VibeButton />
+                                <span className="text-xs font-bold">{clip.vibes}</span>
+                           </div>
+                            <div className="flex flex-col items-center gap-2 text-white">
+                                <ExpressButton docId={clip.id.toString()} />
+                                <span className="text-xs font-bold">{clip.expresses}</span>
                             </div>
-                           <div className="rounded-full bg-black/30 backdrop-blur-sm p-1">
-                               <ExpressButton isToggled={false} onToggle={() => {}} />
-                            </div>
-                            <div className="rounded-full bg-black/30 backdrop-blur-sm p-1.5">
+                           <div className="flex flex-col items-center gap-2 text-white">
                                 <CirculateButton />
-                            </div>
+                                <span className="text-xs font-bold">{clip.circulates}</span>
+                           </div>
                         </div>
                     </div>
                 ))}

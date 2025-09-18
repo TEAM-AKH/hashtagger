@@ -4,11 +4,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, Send, X, Plus } from 'lucide-react';
+import { Camera, Send, X, Plus, MoreHorizontal, Trash2, Edit, Share, FolderHeart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const initialFeeds = [
   { id: 1, user: 'nature_lover', image: 'https://picsum.photos/seed/feed1/400/700', duration: 5000 },
@@ -154,7 +155,20 @@ export default function DynamicFeedsPage() {
                 </div>
                  <div className="flex items-center justify-between mt-2 text-white">
                     <p className="font-bold text-sm">@{currentFeed.user}</p>
-                    <Button variant="ghost" size="icon" onClick={closeFeed}><X/></Button>
+                     <div className='flex items-center gap-1'>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20"><MoreHorizontal/></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem><Edit className="mr-2"/> Edit Feed</DropdownMenuItem>
+                                <DropdownMenuItem><Share className="mr-2"/> Share Feed</DropdownMenuItem>
+                                <DropdownMenuItem><FolderHeart className="mr-2"/> Save to Treasures</DropdownMenuItem>
+                                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2"/> Remove Feed</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="ghost" size="icon" onClick={closeFeed} className="text-white hover:bg-white/20"><X/></Button>
+                    </div>
                  </div>
               </div>
                <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center gap-2">
@@ -216,5 +230,3 @@ export default function DynamicFeedsPage() {
     </div>
   );
 }
-
-    

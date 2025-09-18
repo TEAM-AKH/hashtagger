@@ -43,46 +43,10 @@ type Post = {
 
 export default function PostCard({ post }: { post: Post }) {
   const [isSaved, setIsSaved] = useState(post.isSaved || false);
-  const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState<Comment[]>(post.comments);
-  const [newComment, setNewComment] = useState("");
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editingText, setEditingText] = useState("");
 
   const handleSave = () => {
     setIsSaved(!isSaved);
   };
-
-  const handleAddComment = () => {
-      if (newComment.trim()) {
-          const newCommentObj = { 
-              id: Date.now(), 
-              author: 'You', 
-              text: newComment.trim() 
-          };
-          setComments([...comments, newCommentObj]);
-          setNewComment('');
-      }
-  };
-
-  const handleEditComment = (comment: Comment) => {
-    setEditingCommentId(comment.id);
-    setEditingText(comment.text);
-  };
-
-  const handleUpdateComment = () => {
-    if (editingCommentId === null) return;
-    setComments(comments.map(c => 
-        c.id === editingCommentId ? { ...c, text: editingText } : c
-    ));
-    setEditingCommentId(null);
-    setEditingText("");
-  };
-
-  const handleDeleteComment = (commentId: number) => {
-    setComments(comments.filter(c => c.id !== commentId));
-  };
-
 
   return (
     <Card className="overflow-hidden">
@@ -145,82 +109,12 @@ export default function PostCard({ post }: { post: Post }) {
             )}
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col items-start">
+      <CardFooter>
         <div className="flex justify-between items-center w-full">
-          <div className="text-sm text-muted-foreground">{comments.length} Expressions</div>
-          <div className="flex items-center">
               <VibeButton />
-              <ExpressButton isToggled={showComments} onToggle={() => setShowComments(!showComments)} />
+              <ExpressButton docId={post.id.toString()}/>
               <CirculateButton />
-          </div>
         </div>
-        <AnimatePresence>
-          {showComments && (
-            <motion.div 
-              className="w-full pt-4 space-y-4"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
-              <div className="space-y-3 text-sm max-h-40 overflow-y-auto pr-2">
-                {comments.length === 0 && <p className="text-muted-foreground text-xs text-center py-2">No expressions yet. Be the first!</p>}
-                {comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-2 items-start group">
-                     <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs">{comment.author.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="bg-muted/60 rounded-lg px-3 py-1.5 w-full">
-                        {editingCommentId === comment.id ? (
-                            <div className="flex items-center gap-2">
-                                <Input 
-                                    value={editingText}
-                                    onChange={(e) => setEditingText(e.target.value)}
-                                    className="h-8"
-                                    onKeyDown={(e) => e.key === 'Enter' && handleUpdateComment()}
-                                />
-                                <Button size="sm" onClick={handleUpdateComment}>Save</Button>
-                                <Button size="sm" variant="ghost" onClick={() => setEditingCommentId(null)}>Cancel</Button>
-                            </div>
-                        ) : (
-                            <>
-                                <span className="font-semibold text-xs">{comment.author}</span>
-                                <p className="text-muted-foreground text-sm">{comment.text}</p>
-                            </>
-                        )}
-                    </div>
-                     {comment.author === 'You' && editingCommentId !== comment.id && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem onClick={() => handleEditComment(comment)}>
-                                    <Edit className="mr-2 h-4 w-4" /> Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDeleteComment(comment.id)} className="text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 pt-2 border-t">
-                <Input 
-                  placeholder="Add an expression..." 
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
-                  className="bg-muted/50 border-0"
-                />
-                <Button size="sm" onClick={handleAddComment} disabled={!newComment.trim()}>Post</Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </CardFooter>
     </Card>
   );
