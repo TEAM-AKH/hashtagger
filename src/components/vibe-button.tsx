@@ -1,11 +1,12 @@
 
 'use client';
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import { motion } from 'framer-motion';
 
 export const VibeButton = () => {
     const [isChecked, setIsChecked] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
+    const uniqueId = useId();
   
     return (
         <motion.div 
@@ -14,13 +15,13 @@ export const VibeButton = () => {
             onHoverEnd={() => setIsHovered(false)}
         >
             <input 
-                id={`like-checkbox-${Math.random()}`}
+                id={uniqueId}
                 type="checkbox" 
                 className="absolute opacity-0 w-full h-full cursor-pointer z-10"
                 checked={isChecked}
                 onChange={() => setIsChecked(!isChecked)}
             />
-            <div className="icons flex items-center justify-center h-9 w-auto px-3 rounded-full transition-colors hover:text-primary">
+            <label htmlFor={uniqueId} className="icons flex items-center justify-center h-9 w-auto px-3 rounded-full transition-colors hover:text-primary cursor-pointer">
                 <div className="relative w-6 h-6">
                     <div id="icon-like-regular" className="absolute inset-0 transition-all duration-300" style={{ transform: isChecked ? 'scale(0)' : 'scale(1)'}}>
                         <span className="text-2xl">🥂</span>
@@ -41,7 +42,7 @@ export const VibeButton = () => {
                 >
                     Vibe
                 </motion.span>
-            </div>
+            </label>
             <div className="fireworks absolute inset-0 pointer-events-none">
                 {isChecked && Array.from({ length: 10 }).map((_, i) => (
                     <div key={i} className="checked-like-fx" style={{ transform: `rotate(${i * 36}deg)` }} />
