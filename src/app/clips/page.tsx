@@ -3,11 +3,12 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Send, MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward } from 'lucide-react';
+import { MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { VibeButton } from '@/components/vibe-button';
 import { CirculateButton } from '@/components/circulate-button';
+import { ExpressButton } from '@/components/express-button';
 
 const clips = [
   { id: 1, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", user: "bunny_lover", description: "Big Buck Bunny adventures!" },
@@ -178,14 +179,13 @@ export default function ClipsPage() {
                             <div className="font-bold">@{clip.user}</div>
                             <p className="text-sm">{clip.description}</p>
                         </div>
-                        <div className="absolute bottom-4 right-4 flex flex-col gap-4">
-                            <div className="rounded-full bg-black/30 backdrop-blur-sm">
+                        <div className="absolute bottom-4 right-4 flex flex-col items-center gap-4">
+                            <div className="rounded-full bg-black/30 backdrop-blur-sm p-1">
                                 <VibeButton />
                             </div>
-                            <Button variant="ghost" size="icon" className="text-white hover:text-blue-400 rounded-full bg-black/30 hover:bg-black/50">
-                                <MessageCircle className="h-7 w-7" />
-                                <span className="sr-only">Express</span>
-                            </Button>
+                           <div className="rounded-full bg-black/30 backdrop-blur-sm p-1">
+                               <ExpressButton isToggled={false} onToggle={() => {}} />
+                            </div>
                             <div className="rounded-full bg-black/30 backdrop-blur-sm p-1.5">
                                 <CirculateButton />
                             </div>

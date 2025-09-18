@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, Send, Bookmark, Circle, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Bookmark, Circle, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CirculateButton } from "./circulate-button";
 import { VibeButton } from "./vibe-button";
+import { ExpressButton } from "./express-button";
 
 type Comment = {
     id: number;
@@ -146,12 +147,10 @@ export default function PostCard({ post }: { post: Post }) {
       </CardContent>
       <CardFooter className="flex flex-col items-start">
         <div className="flex justify-between items-center w-full">
-          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setShowComments(!showComments)}>
-              <MessageCircle className="mr-2" />
-              {comments.length} Expressions
-          </Button>
-          <div className="flex gap-1 sm:gap-2">
+          <div className="text-sm text-muted-foreground">{comments.length} Expressions</div>
+          <div className="flex items-center">
               <VibeButton />
+              <ExpressButton isToggled={showComments} onToggle={() => setShowComments(!showComments)} />
               <CirculateButton />
           </div>
         </div>

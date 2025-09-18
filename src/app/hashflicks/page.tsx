@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { VibeButton } from '@/components/vibe-button';
 import { CirculateButton } from '@/components/circulate-button';
+import { ExpressButton } from '@/components/express-button';
 
 const hashflicks = [
   {
@@ -101,11 +102,9 @@ export default function HashflicksPage() {
               <p className="text-sm text-muted-foreground">@{flick.user}</p>
               <p className="text-sm text-muted-foreground">{flick.views} views • {flick.uploaded}</p>
               <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center gap-1">
+                <div className="flex items-center">
                     <VibeButton />
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                        <MessageCircle className="h-5 w-5" /> Express
-                    </Button>
+                    <ExpressButton isToggled={false} onToggle={() => alert('Express clicked!')}/>
                     <CirculateButton />
                 </div>
               </div>
