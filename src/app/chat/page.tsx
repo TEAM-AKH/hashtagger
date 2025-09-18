@@ -196,8 +196,10 @@ const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onCha
         <CardContent className="p-0 h-full overflow-y-auto">
           <div className="flex flex-col">
             {chats.map(chat => (
-              <div 
-                key={chat.id} 
+              <motion.div
+                key={chat.id}
+                whileHover={{ scale: 1.02, y: -2 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
                 className={`flex items-center p-4 cursor-pointer hover:bg-muted/50 border-b ${selectedChatId === chat.id ? 'bg-muted' : ''}`}
                 onClick={() => onChatSelect(chat.id)}
               >
@@ -217,7 +219,7 @@ const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onCha
                       <ChitChatIcon type={chat.status as any} className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </CardContent>
@@ -237,10 +239,12 @@ export default function ChitChatPage() {
   const [canScrollNext, setCanScrollNext] = useState(false)
 
   const onSelect = useCallback((api: CarouselApi) => {
-    if (!api) return;
+    if (!api) {
+      return
+    }
     setCanScrollPrev(api.canScrollPrev())
     setCanScrollNext(api.canScrollNext())
-  }, [])
+  }, []);
   
   useEffect(() => {
     if (!api) {
@@ -461,5 +465,3 @@ export default function ChitChatPage() {
     </div>
   );
 }
-
-    
