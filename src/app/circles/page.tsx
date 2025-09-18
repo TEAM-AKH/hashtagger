@@ -413,11 +413,11 @@ export default function ConnectionsPage() {
                         exit={{ scale: 0, x: 0, y: 0 }}
                         transition={{
                             type: 'spring',
-                            stiffness: 260,
-                            damping: 20,
+                            stiffness: 400,
+                            damping: 10,
                             delay: i * 0.05 + ringIndex * 0.1,
                         }}
-                        whileHover={{ scale: 1.15, zIndex: 20, boxShadow: "0 0 20px hsl(var(--primary))" }}
+                        whileHover={{ y: -5, scale: 1.1 }}
                         onClick={() => openCircleDetails(item)}
                       >
                         <TooltipProvider>
@@ -833,3 +833,5 @@ export default function ConnectionsPage() {
     </div>
   );
 }
+
+    
