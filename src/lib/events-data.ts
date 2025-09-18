@@ -25,7 +25,7 @@ export let events: Event[] = [
         startTime: "10:00",
         endDate: "2024-08-15",
         endTime: "12:00",
-        attendees: [],
+        attendees: ["Alice", "Bob"],
         status: "ongoing",
     },
     {
@@ -36,7 +36,7 @@ export let events: Event[] = [
         startTime: "14:00",
         endDate: "2024-07-20",
         endTime: "18:00",
-        attendees: [],
+        attendees: ["David", "Eve", "Frank"],
         status: "concluded",
     }
 ];
@@ -55,3 +55,5 @@ export function setEventStatus(eventId: number, status: EventStatus) {
         event.id === eventId ? { ...event, status } : event
     );
 }
+
+    

@@ -161,28 +161,6 @@ export default function MemoryBankPage() {
                 ))}
             </div>
         </motion.div>
-
-         <motion.div variants={itemVariants} className="space-y-4">
-            <h2 className="text-2xl font-bold flex items-center gap-2"><Bookmark className="text-primary"/> Recently Saved</h2>
-             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {recentSavedItems.map(item => (
-                     <motion.div key={item.id} variants={itemVariants} className="group relative aspect-square">
-                        {item.type === 'post' && item.image &&
-                            <Image src={item.image.src} alt={item.content} fill className="object-cover rounded-md" data-ai-hint={item.image.hint} />
-                        }
-                        {item.type === 'clip' && 
-                             <video src={item.src} poster={`https://picsum.photos/seed/clip${item.id}/400`} muted loop className="w-full h-full object-cover rounded-md" />
-                        }
-                        {item.type === 'hashflick' &&
-                             <Image src={item.thumbnail} alt={item.title} fill className="object-cover rounded-md" data-ai-hint="movie poster" />
-                        }
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
-                           <Badge>{item.type}</Badge>
-                        </div>
-                    </motion.div>
-                ))}
-            </div>
-        </motion.div>
        </motion.div>
        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogContent className="sm:max-w-[425px]">
@@ -215,3 +193,5 @@ export default function MemoryBankPage() {
     </div>
   );
 }
+
+    

@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Download, Flame, MessageCircle, Send, MoreVertical, Upload, Settings, Radio } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
@@ -59,19 +59,11 @@ const bubbleVariants = {
 
 export default function HashflicksPage() {
   const [showLikeAnimation, setShowLikeAnimation] = useState<number | null>(null);
+  const [quality, setQuality] = useState('1080');
 
   const handleLike = (id: number) => {
     setShowLikeAnimation(id);
     setTimeout(() => setShowLikeAnimation(null), 1200);
-  };
-
-  const handleDownload = (videoSrc: string, title: string) => {
-    const link = document.createElement('a');
-    link.href = videoSrc;
-    link.download = title;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   return (
@@ -112,13 +104,7 @@ export default function HashflicksPage() {
                       className="absolute inset-0 flex items-center justify-center pointer-events-none"
                     >
                         <motion.div custom={0} variants={bubbleVariants} className="absolute">
-                            <Flame className="h-32 w-32 text-red-500/80" fill="currentColor" />
-                        </motion.div>
-                        <motion.div custom={1} variants={bubbleVariants} className="absolute" style={{ top: '30%', left: '25%', transform: 'rotate(-20deg)' }}>
-                            <Flame className="h-16 w-16 text-orange-400/80" fill="currentColor" />
-                        </motion.div>
-                        <motion.div custom={2} variants={bubbleVariants} className="absolute" style={{ bottom: '30%', right: '25%', transform: 'rotate(20deg)' }}>
-                            <Flame className="h-20 w-20 text-yellow-400/80" fill="currentColor" />
+                            <span className="text-6xl" style={{filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.7))'}}>🤓</span>
                         </motion.div>
                     </motion.div>
                   )}
@@ -131,7 +117,18 @@ export default function HashflicksPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuItem><Settings className="mr-2"/>Quality</DropdownMenuItem>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>
+                                    <Settings className="mr-2"/>Quality
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuRadioGroup value={quality} onValueChange={setQuality}>
+                                        <DropdownMenuRadioItem value="1080">1080p</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="720">720p</DropdownMenuRadioItem>
+                                        <DropdownMenuRadioItem value="480">480p</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -152,9 +149,6 @@ export default function HashflicksPage() {
                         <Send className="h-5 w-5" /> Circulate
                     </Button>
                 </div>
-                 <Button variant="outline" size="sm" onClick={() => handleDownload(flick.videoSrc, flick.title)}>
-                    <Download className="h-5 w-5 mr-2" /> Download
-                </Button>
               </div>
             </div>
           </div>
@@ -163,3 +157,5 @@ export default function HashflicksPage() {
     </div>
   );
 }
+
+    

@@ -7,12 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bell, Bot, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bell, Bot, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, ChevronLeft, ChevronRight, ThumbsUp, Heart, Laugh } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ChitChatIcon } from '@/components/chitchat-icon';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
 
 const initialCircles = [
     { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"], lastVisited: Date.now() - 10000, online: true, lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', status: 'seen' },
@@ -26,14 +27,14 @@ const initialCircles = [
     { id: 9, name: "Coders", image: "https://picsum.photos/seed/9/100", members: ["Ursula", "Vince"], lastVisited: Date.now() - 90000, online: true, lastMessage: 'Just pushed the latest commit.', time: '11:00 AM', status: 'delivered' },
 ];
 
-const initialMessages: Record<number, { from: 'me' | 'other'; text: string; time: string; status?: 'sent' | 'delivered' | 'seen' }[]> = {
+const initialMessages: Record<number, { from: 'me' | 'other'; text: string; time: string; status?: 'sent' | 'delivered' | 'seen', reactions?: string[] }[]> = {
   1: [
-    { from: 'other', text: 'Hey! Did you check the new post on The Hashtagger?', time: '10:40 AM' },
+    { from: 'other', text: 'Hey! Did you check the new post on The Hashtagger?', time: '10:40 AM', reactions: ['👍'] },
     { from: 'me', text: 'Yes, looks great! Let\'s catch up later today.', time: '10:42 AM', status: 'seen' },
     { from: 'other', text: 'Hey, are you free for a call?', time: '10:45 AM' },
   ],
   2: [
-    { from: 'other', text: 'Haha, that\'s hilarious!', time: 'Yesterday' },
+    { from: 'other', text: 'Haha, that\'s hilarious!', time: 'Yesterday', reactions: ['😂'] },
   ],
   3: [
     { from: 'other', text: 'Don\'t forget the meeting at 11.', time: '9:15 AM' },
@@ -58,7 +59,7 @@ const initialMessages: Record<number, { from: 'me' | 'other'; text: string; time
   ]
 };
 
-const ChatView = ({ chat, messages, onSendMessage, onClose }: { chat: any, messages: any[], onSendMessage: (text: string) => void, onClose: () => void }) => {
+const ChatView = ({ chat, messages, onSendMessage, onClose, onAddReaction }: { chat: any, messages: any[], onSendMessage: (text: string) => void, onClose: () => void, onAddReaction: (msgIndex: number, reaction: string) => void }) => {
   const [newMessage, setNewMessage] = useState('');
 
   const handleSend = () => {
@@ -111,18 +112,42 @@ const ChatView = ({ chat, messages, onSendMessage, onClose }: { chat: any, messa
           <Button variant="ghost" size="icon" onClick={onClose}><X className="h-5 w-5" /></Button>
         </div>
       </div>
-      <div className="flex-grow p-4 space-y-4 overflow-y-auto bg-muted/20">
+      <div className="flex-grow p-4 space-y-2 overflow-y-auto bg-muted/20">
         {messages.map((msg, index) => (
-          <div key={index} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`p-3 rounded-lg max-w-xs lg:max-w-md ${msg.from === 'me' ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
-              <p>{msg.text}</p>
-              <div className={`flex items-center justify-end gap-1 text-xs mt-1 ${msg.from === 'me' ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                <span>{msg.time}</span>
-                {msg.from === 'me' && msg.status && index === messages.length - 1 && (
-                  <ChitChatIcon type={msg.status} className="h-4 w-4" />
-                )}
-              </div>
-            </div>
+          <div key={index} className={`flex flex-col ${msg.from === 'me' ? 'items-end' : 'items-start'}`}>
+            <ContextMenu>
+                <ContextMenuTrigger>
+                    <div className={`p-3 rounded-lg max-w-xs lg:max-w-md ${msg.from === 'me' ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
+                        <p>{msg.text}</p>
+                         <div className={`flex items-center justify-end gap-1 text-xs mt-1 ${msg.from === 'me' ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                            <span>{msg.time}</span>
+                            {msg.from === 'me' && msg.status && index === messages.length - 1 && (
+                            <ChitChatIcon type={msg.status} className="h-4 w-4" />
+                            )}
+                        </div>
+                    </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                    <ContextMenuItem onClick={() => onAddReaction(index, '👍')}>React <ThumbsUp className="ml-auto"/></ContextMenuItem>
+                    <ContextMenuItem onClick={() => onAddReaction(index, '❤️')}>React <Heart className="ml-auto"/></ContextMenuItem>
+                    <ContextMenuItem onClick={() => onAddReaction(index, '😂')}>React <Laugh className="ml-auto"/></ContextMenuItem>
+                </ContextMenuContent>
+            </ContextMenu>
+             {msg.reactions && msg.reactions.length > 0 && (
+                <div className="flex gap-1 mt-1 -mb-1 z-10">
+                    {msg.reactions.map((reaction, rIndex) => (
+                        <motion.div 
+                            key={rIndex}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: rIndex * 0.1 }}
+                            className="text-xs bg-muted border rounded-full px-2 py-0.5"
+                        >
+                            {reaction}
+                        </motion.div>
+                    ))}
+                </div>
+            )}
           </div>
         ))}
       </div>
@@ -207,6 +232,19 @@ export default function ChitChatPage() {
   const [messages, setMessages] = useState(initialMessages);
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const [api, setApi] = useState<CarouselApi>()
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+
+  useEffect(() => {
+    if (!api) {
+      return
+    }
+ 
+    api.on("select", () => {
+      setCanScrollPrev(api.canScrollPrev())
+    })
+  }, [api])
+
 
   const sortedChats = useMemo(() => {
     return [...chats].sort((a, b) => b.lastVisited - a.lastVisited);
@@ -249,6 +287,7 @@ export default function ChitChatPage() {
     setTimeout(() => {
         setMessages(prev => {
             const currentChatMessages = prev[selectedChatId] || [];
+            if (!currentChatMessages) return prev;
             const updatedMessages = currentChatMessages.map((msg, index) => 
                 index === currentChatMessages.length - 1 ? { ...msg, status: 'delivered' } : msg
             );
@@ -262,6 +301,7 @@ export default function ChitChatPage() {
     setTimeout(() => {
         setMessages(prev => {
             const currentChatMessages = prev[selectedChatId] || [];
+            if (!currentChatMessages) return prev;
             const updatedMessages = currentChatMessages.map((msg, index) => 
                 index === currentChatMessages.length - 1 ? { ...msg, status: 'seen' } : msg
             );
@@ -272,6 +312,28 @@ export default function ChitChatPage() {
         ));
     }, 3000);
   }
+
+  const handleAddReaction = (msgIndex: number, reaction: string) => {
+    if (!selectedChatId) return;
+
+    setMessages(prev => {
+        const currentChatMessages = prev[selectedChatId] || [];
+        if (!currentChatMessages) return prev;
+
+        const updatedMessages = currentChatMessages.map((msg, index) => {
+            if (index === msgIndex) {
+                const newReactions = msg.reactions ? [...msg.reactions] : [];
+                if (!newReactions.includes(reaction)) {
+                    newReactions.push(reaction);
+                }
+                return { ...msg, reactions: newReactions };
+            }
+            return msg;
+        });
+
+        return { ...prev, [selectedChatId]: updatedMessages };
+    });
+  }
   
   const ActiveChatRecents = () => (
     <motion.div 
@@ -281,7 +343,7 @@ export default function ChitChatPage() {
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
       className="w-full px-12 py-3 border-b bg-card/50"
     >
-        <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+        <Carousel setApi={setApi} opts={{ align: "start", dragFree: true }} className="w-full">
           <CarouselContent className="-ml-6">
             {sortedChats.map((chat, index) => (
               <CarouselItem key={index} className="basis-auto pl-6">
@@ -300,7 +362,7 @@ export default function ChitChatPage() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="bg-background/80 backdrop-blur-sm" />
+          {canScrollPrev && <CarouselPrevious className="bg-background/80 backdrop-blur-sm" />}
           <CarouselNext className="bg-background/80 backdrop-blur-sm"/>
         </Carousel>
     </motion.div>
@@ -320,7 +382,7 @@ export default function ChitChatPage() {
                     exit={{ x: "100%" }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 >
-                    <ChatView chat={selectedChat} messages={chatMessages} onSendMessage={handleSendMessage} onClose={closeChat} />
+                    <ChatView chat={selectedChat} messages={chatMessages} onSendMessage={handleSendMessage} onClose={closeChat} onAddReaction={handleAddReaction} />
                 </motion.div>
             ) : (
                  <motion.div
@@ -353,7 +415,7 @@ export default function ChitChatPage() {
                     >
                         <ActiveChatRecents />
                         <div className="w-full flex-grow">
-                            <ChatView chat={selectedChat} messages={chatMessages} onSendMessage={handleSendMessage} onClose={closeChat} />
+                            <ChatView chat={selectedChat} messages={chatMessages} onSendMessage={handleSendMessage} onClose={closeChat} onAddReaction={handleAddReaction} />
                         </div>
                     </motion.div>
                 ) : (

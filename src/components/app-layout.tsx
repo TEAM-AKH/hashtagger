@@ -9,7 +9,7 @@ function Layout({ children }: { children: ReactNode }) {
         <div className="flex min-h-screen">
             <SideNav />
             <div
-                className="flex-1 flex flex-col ml-24"
+                className="flex-1 flex flex-col pl-20"
             >
                 <Header />
                 <main className="flex-1 p-4 lg:p-6">{children}</main>
@@ -23,3 +23,5 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <Layout>{children}</Layout>
   );
 }
+
+    

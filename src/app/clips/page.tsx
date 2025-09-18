@@ -3,7 +3,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Flame, MessageCircle, Send, MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2 } from 'lucide-react';
+import { Flame, MessageCircle, Send, MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -40,12 +40,21 @@ export default function ClipsPage() {
     const containerRef = useRef<HTMLDivElement>(null);
     const [showLikeAnimation, setShowLikeAnimation] = useState<number | null>(null);
     const [handsFreeLoops, setHandsFreeLoops] = useState<string>('default'); // 'default', '1' to '6'
+    const [playbackRate, setPlaybackRate] = useState('1');
     const [currentClip, setCurrentClip] = useState<number>(0);
     const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
     useEffect(() => {
         videoRefs.current = videoRefs.current.slice(0, clips.length);
     }, []);
+    
+    useEffect(() => {
+        const currentVideo = videoRefs.current[currentClip];
+        if (currentVideo) {
+            currentVideo.playbackRate = parseFloat(playbackRate);
+        }
+    }, [playbackRate, currentClip]);
+
 
     const handleLike = (id: number) => {
         setShowLikeAnimation(id);
@@ -93,6 +102,7 @@ export default function ClipsPage() {
                     const index = videoRefs.current.indexOf(video);
                     
                     if (entry.isIntersecting) {
+                        video.playbackRate = parseFloat(playbackRate);
                         video.play().catch(e => console.error("Autoplay failed", e));
                         setCurrentClip(index);
                         const cleanup = setupAutoScroll(video, index);
@@ -118,7 +128,7 @@ export default function ClipsPage() {
                 if (video) observer.unobserve(video);
             });
         };
-    }, [handsFreeLoops]);
+    }, [handsFreeLoops, playbackRate]);
     
 
     return (
@@ -149,13 +159,7 @@ export default function ClipsPage() {
                               className="absolute inset-0 flex items-center justify-center pointer-events-none"
                             >
                                 <motion.div custom={0} variants={bubbleVariants} className="absolute">
-                                    <Flame className="h-32 w-32 text-red-500/80" fill="currentColor" />
-                                </motion.div>
-                                <motion.div custom={1} variants={bubbleVariants} className="absolute" style={{ top: '30%', left: '25%', transform: 'rotate(-20deg)' }}>
-                                    <Flame className="h-16 w-16 text-orange-400/80" fill="currentColor" />
-                                </motion.div>
-                                <motion.div custom={2} variants={bubbleVariants} className="absolute" style={{ bottom: '30%', right: '25%', transform: 'rotate(20deg)' }}>
-                                    <Flame className="h-20 w-20 text-yellow-400/80" fill="currentColor" />
+                                    <span className="text-6xl" style={{filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.7))'}}>🤓</span>
                                 </motion.div>
                             </motion.div>
                           )}
@@ -183,6 +187,22 @@ export default function ClipsPage() {
                                                 <DropdownMenuRadioItem value="5">5 loops</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="6">6 loops</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="0">Disabled</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuSub>
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                            <Forward className="mr-2 h-4 w-4" />
+                                            Pace
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuRadioGroup value={playbackRate} onValueChange={setPlaybackRate}>
+                                                <DropdownMenuRadioItem value="2">2x</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="1.5">1.5x</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="1">Normal</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="0.75">0.75x</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="0.5">0.5x</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="0.25">0.25x</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuSub>
@@ -216,3 +236,5 @@ export default function ClipsPage() {
         </div>
     );
 }
+
+    

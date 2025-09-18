@@ -10,6 +10,10 @@ import { ChevronLeft, Users, Map, Clock, Upload, Download, Save, Play, Pause, XC
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 const MapPlaceholder = ({ location }: { location: string }) => (
     <div className="aspect-video bg-muted rounded-md flex flex-col items-center justify-center text-center p-4">
@@ -28,6 +32,7 @@ export default function EventDetailPage() {
     const params = useParams();
     const eventId = parseInt(params.id as string, 10);
     const event = events.find(e => e.id === eventId);
+    const [isConveneOpen, setIsConveneOpen] = useState(false);
 
     if (!event) {
         return (
@@ -48,6 +53,13 @@ export default function EventDetailPage() {
         const newStatus = event.status === 'paused' ? 'ongoing' : 'paused';
         setEventStatus(eventId, newStatus);
     }
+
+    const mockCircles = [
+        { id: 1, name: "Project Team", members: ["Alice", "Bob", "Charlie"] },
+        { id: 2, name: "Close Friends", members: ["David", "Eve"] },
+    ];
+
+    const mockMembers = ["Frank", "Grace", "Heidi"];
 
     return (
         <div className="container mx-auto p-4 space-y-6">
@@ -81,17 +93,28 @@ export default function EventDetailPage() {
                     </Card>
                     
                     <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5"/> Convene Attendees</CardTitle>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5"/> Attendees</CardTitle>
+                             <Button variant="outline" size="sm" onClick={() => setIsConveneOpen(true)}><Plus className="mr-2 h-4 w-4"/>Add</Button>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                             <div className="flex gap-2">
-                                <Button variant="outline" className="w-full"><Plus className="mr-2"/>Invite Circles</Button>
-                                <Button variant="outline" className="w-full"><Mail className="mr-2"/>Invite by Email</Button>
-                            </div>
-                             <div className="text-center text-sm text-muted-foreground py-8">
-                                No attendees invited yet.
-                             </div>
+                             {event.attendees.length > 0 ? (
+                                <div className="flex flex-wrap gap-4">
+                                {event.attendees.map(attendee => (
+                                    <div key={attendee} className="flex items-center gap-2">
+                                        <Avatar className="h-8 w-8">
+                                             <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${attendee}`} />
+                                            <AvatarFallback>{attendee.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <span className="text-sm font-medium">{attendee}</span>
+                                    </div>
+                                ))}
+                                </div>
+                             ) : (
+                                <div className="text-center text-sm text-muted-foreground py-8">
+                                    No attendees invited yet.
+                                </div>
+                             )}
                         </CardContent>
                     </Card>
 
@@ -154,6 +177,52 @@ export default function EventDetailPage() {
                     </Card>
                 </div>
             </div>
+
+            <Dialog open={isConveneOpen} onOpenChange={setIsConveneOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Convene Attendees</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-6 py-4">
+                        <div>
+                            <h3 className="font-semibold mb-2">Invite Circles</h3>
+                            <div className="space-y-2">
+                                {mockCircles.map(circle => (
+                                    <div key={circle.id} className="flex items-center gap-3 p-2 rounded-md border">
+                                        <Checkbox id={`circle-${circle.id}`}/>
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={`https://picsum.photos/seed/${circle.id}/100`} />
+                                            <AvatarFallback>{circle.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <Label htmlFor={`circle-${circle.id}`} className="font-medium">{circle.name}</Label>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                         <div>
+                            <h3 className="font-semibold mb-2">Invite Members</h3>
+                             <div className="space-y-2">
+                                {mockMembers.map(member => (
+                                    <div key={member} className="flex items-center gap-3 p-2 rounded-md border">
+                                        <Checkbox id={`member-${member}`}/>
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${member}`} />
+                                            <AvatarFallback>{member.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <Label htmlFor={`member-${member}`} className="font-medium">{member}</Label>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                     <div className="flex justify-end gap-2">
+                        <Button variant="secondary" onClick={() => setIsConveneOpen(false)}>Cancel</Button>
+                        <Button>Send Invites</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
+
+    

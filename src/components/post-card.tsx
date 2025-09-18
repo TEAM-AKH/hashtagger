@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Image from "next/image";
@@ -16,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CirculateButton } from "./circulate-button";
+import { VibeButton } from "./vibe-button";
 
 type Comment = {
     id: number;
@@ -45,18 +45,12 @@ export default function PostCard({ post }: { post: Post }) {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<Comment[]>(post.comments);
   const [newComment, setNewComment] = useState("");
-  const [showVibe, setShowVibe] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
 
   const handleSave = () => {
     setIsSaved(!isSaved);
   };
-  
-  const handleVibe = () => {
-    setShowVibe(true);
-    setTimeout(() => setShowVibe(false), 1500);
-  }
 
   const handleAddComment = () => {
       if (newComment.trim()) {
@@ -107,26 +101,6 @@ export default function PostCard({ post }: { post: Post }) {
       <CardContent className="space-y-4 pt-0 relative">
         <p className="text-foreground/90">{post.content}</p>
         <div className="relative">
-             <AnimatePresence>
-                {showVibe && (
-                    <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none overflow-hidden">
-                         <motion.div 
-                            initial={{ opacity: 0, x: -100, y: 20, rotate: -30 }} 
-                            animate={{ opacity: 1, x: -20, y: 0, rotate: 15}} 
-                            exit={{ opacity: 0, x: -100, y: 20, rotate: -30}}
-                            transition={{ type: 'spring', stiffness: 200, damping: 12}}
-                            className="text-6xl drop-shadow-lg"
-                         >🥂</motion.div>
-                         <motion.div 
-                            initial={{ opacity: 0, x: 100, y: 20, rotate: 30 }}
-                            animate={{ opacity: 1, x: 20, y: 0, rotate: -15}}
-                            exit={{ opacity: 0, x: 100, y: 20, rotate: 30}}
-                            transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.1 }}
-                            className="text-6xl drop-shadow-lg"
-                        >🥂</motion.div>
-                    </div>
-                )}
-              </AnimatePresence>
             {post.image && (
               <div className="relative aspect-[16/10] w-full overflow-hidden rounded-lg border">
                 <Image src={post.image.src} alt="Post image" fill style={{ objectFit: 'cover' }} data-ai-hint={post.image.hint} />
@@ -177,10 +151,7 @@ export default function PostCard({ post }: { post: Post }) {
               {comments.length} Expressions
           </Button>
           <div className="flex gap-1 sm:gap-2">
-              <Button variant="ghost" size="sm" className="flex items-center gap-2 text-muted-foreground hover:text-accent-foreground" onClick={handleVibe}>
-                  <span>🥂</span>
-                  <span>Vibe</span>
-              </Button>
+              <VibeButton />
               <CirculateButton />
           </div>
         </div>
@@ -255,3 +226,5 @@ export default function PostCard({ post }: { post: Post }) {
     </Card>
   );
 }
+
+    

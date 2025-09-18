@@ -25,7 +25,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased">
+      <body className="font-body antialiased bg-background">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -39,3 +39,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

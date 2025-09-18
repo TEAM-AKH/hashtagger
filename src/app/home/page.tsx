@@ -88,6 +88,66 @@ const itemVariants = {
 export default function HomePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+        <style jsx global>{`
+            .icons #icon-like-regular {
+              display: block;
+            }
+            .icons #icon-like-solid {
+              display: none;
+            }
+
+            /* Hover wiggle */
+            .icons:hover :is(#icon-like-solid, #icon-like-regular) {
+              animation: rotate-icon-like 0.5s ease-in-out both;
+            }
+
+            /* When checked - show solid icon + bounce animation */
+            #like-checkbox:checked ~ .icons #icon-like-regular {
+              display: none;
+            }
+            #like-checkbox:checked ~ .icons #icon-like-solid {
+              display: block;
+              animation: checked-icon-like 0.5s ease-out;
+            }
+
+            /* Fireworks trigger */
+            #like-checkbox:checked ~ .fireworks > .checked-like-fx {
+              position: absolute;
+              width: 10px;
+              height: 10px;
+              border-radius: 50%;
+              box-shadow: 0 0 #5dade2, 0 0 #5dade2, 0 0 #5dade2, 0 0 #5dade2;
+              animation:
+                fireworks-bang 1s ease-out forwards,
+                fireworks-gravity 1s ease-in forwards;
+            }
+            @keyframes rotate-icon-like {
+              0%,100% { transform: rotate(0deg); }
+              25% { transform: rotate(3deg); }
+              50% { transform: rotate(-3deg); }
+              75% { transform: rotate(1deg); }
+            }
+
+            @keyframes checked-icon-like {
+              0% { transform: scale(0); opacity: 0; }
+              50% { transform: scale(1.3) rotate(-10deg); }
+              100% { transform: scale(1) rotate(0deg); opacity: 1; }
+            }
+
+            @keyframes fireworks-bang {
+              to {
+                box-shadow:
+                  114px -107px #3498db,
+                  197px -6px #3498db,
+                  -167px -262px #3498db,
+                  81px 42px #3498db,
+                  -60px -183px #3498db;
+              }
+            }
+            @keyframes fireworks-gravity {
+              to { transform: translateY(200px); opacity: 0; }
+            }
+        `}</style>
       <motion.h1 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -108,3 +168,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
