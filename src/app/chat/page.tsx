@@ -12,7 +12,7 @@ import { Logo } from '@/components/logo';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ChitChatIcon } from '@/components/chitchat-icon';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
 
 const initialCircles = [
@@ -234,7 +234,6 @@ export default function ChitChatPage() {
   const [messages, setMessages] = useState(initialMessages);
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const [api, setApi] = useState<CarouselApi>()
 
   const sortedChats = useMemo(() => {
     return [...chats].sort((a, b) => b.lastVisited - a.lastVisited);
@@ -333,7 +332,7 @@ export default function ChitChatPage() {
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
       className="w-full px-12 py-3 border-b bg-card/50"
     >
-        <Carousel setApi={setApi} opts={{ align: "start", dragFree: true }} className="w-full">
+        <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
           <CarouselContent className="-ml-6">
             {sortedChats.map((chat, index) => (
               <CarouselItem key={index} className="basis-auto pl-6">
