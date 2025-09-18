@@ -1,9 +1,11 @@
 
 'use client';
 
-export const ExpressIcon = () => {
+import { motion } from 'framer-motion';
+
+export const ExpressIcon = ({ isHovered }: { isHovered?: boolean }) => {
     return (
-        <svg
+        <motion.svg
             xmlns="http://www.w3.org/2000/svg"
             width="28"
             height="28"
@@ -14,6 +16,8 @@ export const ExpressIcon = () => {
             strokeLinecap="round"
             strokeLinejoin="round"
             className="drop-shadow-sm"
+            animate={isHovered ? { scale: 1.1, rotate: -5 } : { scale: 1, rotate: 0 }}
+            transition={{ type: 'spring', stiffness: 300 }}
         >
             <defs>
                 <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
@@ -21,12 +25,15 @@ export const ExpressIcon = () => {
                     <stop offset="100%" stopColor="var(--express-grad-end)" />
                 </linearGradient>
             </defs>
-
-            {/* Speech bubble */}
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-
-            {/* Envelope */}
-            <rect
+            <motion.path 
+                d="M7 8l5 3.5 5-3.5" 
+                stroke="hsl(var(--primary))" 
+                initial={{ y: -2, opacity: 0 }}
+                animate={{ y: isHovered ? 0 : -2, opacity: isHovered ? 1: 0 }}
+                transition={{ delay: 0.1 }}
+            />
+             <motion.rect
                 x="7"
                 y="7"
                 width="10"
@@ -35,8 +42,10 @@ export const ExpressIcon = () => {
                 ry="1"
                 fill="hsl(var(--card))"
                 stroke="none"
+                initial={{ height: 6 }}
+                animate={{ height: isHovered ? 0 : 6 }}
+                transition={{ duration: 0.2 }}
             />
-            <path d="M7 7l5 4 5-4" stroke="hsl(var(--primary))" />
-        </svg>
+        </motion.svg>
     );
 };

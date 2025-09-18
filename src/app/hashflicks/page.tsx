@@ -104,7 +104,7 @@ export default function HashflicksPage() {
               <div className="flex justify-between items-center mt-4">
                 <div className="flex items-center -ml-3">
                     <VibeButton />
-                    <ExpressButton docId={flick.id.toString()} />
+                    <ExpressButton docId={flick.id.toString()} mode="inline" />
                     <CirculateButton />
                 </div>
               </div>

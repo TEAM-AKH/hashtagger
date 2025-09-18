@@ -178,15 +178,15 @@ export default function ClipsPage() {
                             <p className="text-sm">{clip.description}</p>
                         </div>
                         <div className="absolute bottom-4 right-4 flex flex-col items-center gap-4">
-                           <div className="flex flex-col items-center gap-2 text-white">
+                           <div className="flex flex-col items-center gap-1 text-white">
                                 <VibeButton />
                                 <span className="text-xs font-bold">{clip.vibes}</span>
                            </div>
-                            <div className="flex flex-col items-center gap-2 text-white">
-                                <ExpressButton docId={clip.id.toString()} />
+                            <div className="flex flex-col items-center gap-1 text-white">
+                                <ExpressButton docId={clip.id.toString()} mode="overlay" />
                                 <span className="text-xs font-bold">{clip.expresses}</span>
                             </div>
-                           <div className="flex flex-col items-center gap-2 text-white">
+                           <div className="flex flex-col items-center gap-1 text-white">
                                 <CirculateButton />
                                 <span className="text-xs font-bold">{clip.circulates}</span>
                            </div>
