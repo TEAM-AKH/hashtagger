@@ -3,7 +3,9 @@
 
 import { motion } from 'framer-motion';
 
-export const ExpressIcon = ({ isHovered }: { isHovered?: boolean }) => {
+export const ExpressIcon = ({ isHovered, isStatic = false }: { isHovered?: boolean, isStatic?: boolean }) => {
+    const shouldAnimate = !isStatic && isHovered;
+
     return (
         <motion.svg
             xmlns="http://www.w3.org/2000/svg"
@@ -16,7 +18,7 @@ export const ExpressIcon = ({ isHovered }: { isHovered?: boolean }) => {
             strokeLinecap="round"
             strokeLinejoin="round"
             className="drop-shadow-sm"
-            animate={isHovered ? { scale: 1.1, rotate: -5 } : { scale: 1, rotate: 0 }}
+            animate={shouldAnimate ? { scale: 1.1, rotate: -5 } : { scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 300 }}
         >
             <defs>
@@ -30,7 +32,7 @@ export const ExpressIcon = ({ isHovered }: { isHovered?: boolean }) => {
                 d="M7 8l5 3.5 5-3.5" 
                 stroke="hsl(var(--primary))" 
                 initial={{ y: -2, opacity: 0 }}
-                animate={{ y: isHovered ? 0 : -2, opacity: isHovered ? 1: 0 }}
+                animate={{ y: shouldAnimate ? 0 : -2, opacity: shouldAnimate ? 1: 0 }}
                 transition={{ delay: 0.1 }}
             />
              <motion.rect
@@ -43,7 +45,7 @@ export const ExpressIcon = ({ isHovered }: { isHovered?: boolean }) => {
                 fill="hsl(var(--card))"
                 stroke="none"
                 initial={{ height: 6 }}
-                animate={{ height: isHovered ? 0 : 6 }}
+                animate={{ height: shouldAnimate ? 0 : 6 }}
                 transition={{ duration: 0.2 }}
             />
         </motion.svg>

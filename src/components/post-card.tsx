@@ -112,13 +112,10 @@ export default function PostCard({ post }: { post: Post }) {
       <CardFooter>
         <div className="flex justify-between items-center w-full">
             <VibeButton />
-            <div className="flex-grow flex justify-center">
-                <ExpressButton docId={post.id.toString()} mode="inline" />
-            </div>
+            <ExpressButton docId={post.id.toString()} mode="inline" />
             <CirculateButton />
         </div>
       </CardFooter>
-        <ExpressButton docId={post.id.toString()} mode="inline"/>
     </Card>
   );
 }

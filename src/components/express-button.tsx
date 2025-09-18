@@ -111,8 +111,9 @@ export const ExpressButton = ({ docId, mode = 'inline' }: { docId: string, mode?
   }
 
   const renderCommentBox = () => (
-    <div className="flex-grow p-4">
-        <ScrollArea className="h-48 pr-4">
+    <div className="flex-grow p-4 flex flex-col h-full">
+        <h3 className="text-center font-bold mb-4">Comments</h3>
+        <ScrollArea className="flex-grow pr-4">
             <div className="space-y-4">
             {comments.length === 0 ? (
                 <p className="text-muted-foreground text-sm text-center py-8">
@@ -176,7 +177,7 @@ export const ExpressButton = ({ docId, mode = 'inline' }: { docId: string, mode?
                 onClick={() => setShowBox(!showBox)}
                 className="relative flex items-center justify-center p-2 text-sm font-medium text-white"
             >
-                <ExpressIcon />
+                <ExpressIcon isStatic />
             </button>
             <AnimatePresence>
                 {showBox && (
@@ -187,6 +188,7 @@ export const ExpressButton = ({ docId, mode = 'inline' }: { docId: string, mode?
                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                          className="absolute bottom-0 left-0 right-0 h-1/2 bg-card/80 backdrop-blur-md rounded-t-2xl shadow-lg flex flex-col z-20"
                     >
+                       <div className="w-12 h-1.5 bg-muted-foreground/50 rounded-full mx-auto my-2 cursor-grab" onClick={() => setShowBox(false)}/>
                        {renderCommentBox()}
                     </motion.div>
                 )}
@@ -224,10 +226,10 @@ export const ExpressButton = ({ docId, mode = 'inline' }: { docId: string, mode?
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    className="overflow-hidden"
+                    className="absolute left-1/2 -translate-x-1/2 mt-2 w-80 sm:w-96 bg-card border rounded-lg shadow-lg z-10"
                 >
-                    <div className="border-t mt-4 pt-4">
-                        {renderCommentBox()}
+                    <div className="h-80">
+                         {renderCommentBox()}
                     </div>
                 </motion.div>
             )}

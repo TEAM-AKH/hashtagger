@@ -102,11 +102,9 @@ export default function HashflicksPage() {
               <p className="text-sm text-muted-foreground">@{flick.user}</p>
               <p className="text-sm text-muted-foreground">{flick.views} views • {flick.uploaded}</p>
               <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center -ml-3">
-                    <VibeButton />
-                    <ExpressButton docId={flick.id.toString()} mode="inline" />
-                    <CirculateButton />
-                </div>
+                <VibeButton />
+                <ExpressButton docId={flick.id.toString()} mode="inline" />
+                <CirculateButton />
               </div>
             </div>
           </div>

@@ -3,7 +3,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward, MessageCircle, Send } from 'lucide-react';
+import { MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { motion } from 'framer-motion';
 import { VibeButton } from '@/components/vibe-button';
