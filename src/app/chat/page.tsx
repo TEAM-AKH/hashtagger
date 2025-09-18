@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -236,6 +236,12 @@ export default function ChitChatPage() {
   const [canScrollPrev, setCanScrollPrev] = useState(false)
   const [canScrollNext, setCanScrollNext] = useState(false)
 
+  const onSelect = useCallback((api: CarouselApi) => {
+    if (!api) return;
+    setCanScrollPrev(api.canScrollPrev())
+    setCanScrollNext(api.canScrollNext())
+  }, [])
+  
   useEffect(() => {
     if (!api) {
       return
@@ -244,13 +250,12 @@ export default function ChitChatPage() {
     onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)
-  }, [api])
 
-  const onSelect = (api: CarouselApi) => {
-    if (!api) return;
-    setCanScrollPrev(api.canScrollPrev())
-    setCanScrollNext(api.canScrollNext())
-  }
+    return () => {
+      api.off("reInit", onSelect)
+      api.off("select", onSelect)
+    }
+  }, [api, onSelect])
 
   const sortedChats = useMemo(() => {
     return [...chats].sort((a, b) => b.lastVisited - a.lastVisited);
