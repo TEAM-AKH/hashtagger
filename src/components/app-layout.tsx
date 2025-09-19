@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import Header from '@/components/header';
 import SideNav from './side-nav';
+import { AssistiveTouch } from './assistive-touch';
 
 function Layout({ children }: { children: ReactNode }) {
     return (
@@ -14,6 +15,7 @@ function Layout({ children }: { children: ReactNode }) {
                 <Header />
                 <main className="flex-1 p-4 lg:p-6">{children}</main>
             </div>
+            <AssistiveTouch />
         </div>
     )
 }
