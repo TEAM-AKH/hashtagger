@@ -19,23 +19,18 @@ export function AssistiveTouch() {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [isSnapped, setIsSnapped] = useState(true);
-  const [snapSide, setSnapSide] = useState<'left' | 'right'>('right');
   const buttonRef = useRef<HTMLDivElement>(null);
   const radialRef = useRef<HTMLDivElement>(null);
   const controls = useDragControls();
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
-  const [dragConstraints, setDragConstraints] = useState({});
+  const [dragConstraints, setDragConstraints] = useState<{top: number, bottom: number}>({top: 10, bottom: 500});
 
   useEffect(() => {
     setIsClient(true);
-    // Set drag constraints only on the client
     setDragConstraints({
-      top: 10,
-      left: 10,
-      right: window.innerWidth - 10,
-      bottom: window.innerHeight - 10,
+        top: 10,
+        bottom: window.innerHeight - 74,
     });
   }, []);
 
@@ -47,18 +42,12 @@ export function AssistiveTouch() {
 
   const handleDragStart = () => {
     setIsDragging(true);
-    setIsSnapped(false);
     closeRadial();
   };
 
   const handleDragEnd = () => {
-    setIsDragging(false);
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      setSnapSide(centerX > window.innerWidth / 2 ? 'right' : 'left');
-    }
-    setIsSnapped(true);
+    // A timeout to prevent click event firing immediately after drag
+    setTimeout(() => setIsDragging(false), 50);
   };
   
   const handleClick = (event: React.MouseEvent) => {
@@ -75,7 +64,8 @@ export function AssistiveTouch() {
   
   // Close when clicking outside
   useEffect(() => {
-    if (!isClient) return;
+    if (!isClient || !isOpen) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (isOpen && 
           !buttonRef.current?.contains(event.target as Node) && 
@@ -89,9 +79,8 @@ export function AssistiveTouch() {
 
   const radius = 100;
   const arc = Math.PI;
-  const startAngle = snapSide === 'right' ? Math.PI : 0;
+  const startAngle = Math.PI;
   
-  // Don't render anything on the server
   if (!isClient) {
     return null;
   }
@@ -100,7 +89,7 @@ export function AssistiveTouch() {
     <>
       <motion.div
         ref={buttonRef}
-        drag
+        drag="y"
         dragListener={false}
         dragControls={controls}
         onDragStart={handleDragStart}
@@ -113,19 +102,18 @@ export function AssistiveTouch() {
         dragTransition={{ bounceStiffness: 400, bounceDamping: 25 }}
         className={cn(
           "fixed bottom-7 w-16 h-16 rounded-full cursor-pointer touch-none select-none z-[9998] grid place-items-center bg-black/50 backdrop-blur-md shadow-2xl transition-all duration-300",
-          isSnapped && snapSide === 'right' && "right-[-32px] rounded-r-none",
-          isSnapped && snapSide === 'left' && "left-[-32px] rounded-l-none",
-          !isSnapped && "right-auto left-auto",
-          isSnapped && isHovered && snapSide === 'right' && "right-3 rounded-full",
-          isSnapped && isHovered && snapSide === 'left' && "left-3 rounded-full",
+          "right-[-32px] rounded-r-none",
+          isHovered && "right-3 rounded-full",
           isDragging && "scale-95",
-          isOpen && "scale-105"
         )}
         style={{
-           right: isSnapped && snapSide === 'right' ? (isHovered ? '12px' : '-32px') : 'auto',
-           left: isSnapped && snapSide === 'left' ? (isHovered ? '12px' : '-32px') : 'auto',
+           right: isHovered ? '12px' : '-32px',
         }}
-        onPointerDown={(e) => controls.start(e)}
+        animate={{
+            scale: isOpen ? 1.05 : 1,
+            rotate: isOpen ? -180 : 0
+        }}
+        onPointerDown={(e) => controls.start(e, { snapToCursor: false })}
         aria-haspopup="true"
         aria-expanded={isOpen}
         aria-label="Assistive Touch Menu"
@@ -148,6 +136,7 @@ export function AssistiveTouch() {
             style={{ 
               top: (buttonRef.current?.getBoundingClientRect().top ?? 0) + 32,
               left: (buttonRef.current?.getBoundingClientRect().left ?? 0) + 32,
+              transformOrigin: 'center',
             }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
