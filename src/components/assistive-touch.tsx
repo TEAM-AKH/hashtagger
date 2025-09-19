@@ -2,13 +2,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, useDragControls, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, User, Settings, LogOut } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-const actionsConfig = [
+const actions = [
   { href: '/profile', label: 'Profile', icon: User },
   { href: '/notifications', label: 'Notifications', icon: Bell },
   { href: '/settings', label: 'Settings', icon: Settings },
@@ -17,167 +17,89 @@ const actionsConfig = [
 
 export function AssistiveTouch() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const buttonRef = useRef<HTMLDivElement>(null);
-  const radialRef = useRef<HTMLDivElement>(null);
-  const controls = useDragControls();
-  const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
-  const [dragConstraints, setDragConstraints] = useState({ top: 0, bottom: 0 });
+  const pathname = usePathname();
+  const widgetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // This effect runs only on the client, after the component mounts
     setIsClient(true);
-    setDragConstraints({
-      top: 10,
-      bottom: window.innerHeight - 74, // 64px height + 10px buffer
-    });
   }, []);
-
-  const closeRadial = () => setIsOpen(false);
-
+  
   useEffect(() => {
-    closeRadial();
+    setIsOpen(false);
   }, [pathname]);
 
-  const handleDragStart = () => {
-    setIsDragging(true);
-    closeRadial();
-  };
-
-  const handleDragEnd = () => {
-    setTimeout(() => setIsDragging(false), 50);
-  };
-  
-  const handleClick = (event: React.MouseEvent) => {
-    if (isDragging) {
-      event.stopPropagation();
-      return;
-    }
-    setIsOpen(!isOpen);
-  };
-  
-  // Close when clicking outside
   useEffect(() => {
-    if (!isClient || !isOpen) return;
-
+    if (!isOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
-      if (isOpen && 
-          !buttonRef.current?.contains(event.target as Node) && 
-          !radialRef.current?.contains(event.target as Node)) {
-        closeRadial();
+      if (widgetRef.current && !widgetRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen, isClient]);
+  }, [isOpen]);
 
-  const radius = 100;
-  const arc = Math.PI; // 180 degrees
-  const startAngle = Math.PI; // Start from the left (180 degrees)
-  
-  // Render nothing on the server to prevent SSR errors
   if (!isClient) {
     return null;
   }
-  
+
   return (
-    <>
-      <motion.div
-        ref={buttonRef}
-        drag="y"
-        dragListener={false}
-        dragControls={controls}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onHoverStart={() => setIsHovered(true)}
-        onHoverEnd={() => setIsHovered(false)}
-        onClick={handleClick}
-        dragConstraints={dragConstraints}
-        dragElastic={0.2}
-        dragTransition={{ bounceStiffness: 400, bounceDamping: 25 }}
-        className={cn(
-          "fixed bottom-7 w-16 h-16 rounded-full cursor-pointer touch-none select-none z-[9998] grid place-items-center bg-black/50 backdrop-blur-md shadow-2xl transition-all duration-300",
-          "right-[-32px] rounded-r-none",
-          isHovered && "right-3 rounded-full",
-          isDragging && "scale-95",
-        )}
-        style={{
-           right: isHovered ? '12px' : '-32px',
-        }}
-        animate={{
-            scale: isOpen ? 1.05 : 1,
-            rotate: isOpen ? -180 : 0
-        }}
-        onPointerDown={(e) => controls.start(e, { snapToCursor: false })}
-        aria-haspopup="true"
-        aria-expanded={isOpen}
-        aria-label="Assistive Touch Menu"
+    <motion.div
+      ref={widgetRef}
+      layout
+      onClick={() => setIsOpen(!isOpen)}
+      className={cn(
+        "fixed top-1/2 right-0 transform -translate-y-1/2 flex items-center justify-center cursor-pointer z-50",
+        "bg-card/80 backdrop-blur-md shadow-2xl border border-border"
+      )}
+      initial={{ borderRadius: '50% 0 0 50%', width: '4rem', height: '7rem' }}
+      animate={{
+        width: isOpen ? '8rem' : '4rem',
+        height: isOpen ? '24rem' : '7rem',
+        borderRadius: isOpen ? '1.5rem' : '50% 0 0 50%',
+      }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+    >
+      {/* Ball Core */}
+      <motion.div 
+        layout="position"
+        className="w-10 h-10 bg-primary rounded-full z-10 grid place-items-center"
       >
-        <div className="w-10 h-10 rounded-full bg-gradient-to-b from-white/90 to-gray-200 grid place-items-center shadow-inner relative overflow-hidden">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-b from-white/90 to-gray-200 grid place-items-center shadow-inner relative overflow-hidden">
            <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-transparent to-white/20" />
-           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
              <circle cx="12" cy="12" r="6" fill="#0b1220" opacity="0.12"/>
              <circle cx="12" cy="12" r="3.6" fill="#0b1220" opacity="0.18"/>
            </svg>
         </div>
       </motion.div>
 
+      {/* Icon Container */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            ref={radialRef}
-            role="menu"
-            className="fixed z-[9997]"
-            style={{ 
-              top: (buttonRef.current?.getBoundingClientRect().top ?? 0) + 32,
-              left: (buttonRef.current?.getBoundingClientRect().left ?? 0) + 32,
-              transformOrigin: 'center',
-            }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { delay: 0.1 } }}
+            exit={{ opacity: 0, transition: { duration: 0.1 } }}
           >
-            {actionsConfig.map((action, i) => {
-              const angle = startAngle + (i / (actionsConfig.length - 1)) * arc;
-              const x = Math.round(Math.cos(angle) * radius);
-              const y = Math.round(Math.sin(angle) * -1);
-
-              return (
-                 <Link href={action.href} key={action.href} passHref>
-                    <motion.div
-                        className="absolute -translate-x-1/2 -translate-y-1/2 w-16 h-16 grid place-items-center rounded-2xl bg-black/40 backdrop-blur-sm shadow-xl text-white"
-                        role="menuitem"
-                        initial={{ x: 0, y: 0, opacity: 0, scale: 0.5 }}
-                        animate={{ x, y, opacity: 1, scale: 1 }}
-                        exit={{ x: 0, y: 0, opacity: 0, scale: 0.5 }}
-                        transition={{ 
-                            type: 'spring', 
-                            stiffness: 500, 
-                            damping: 20, 
-                            delay: i * 0.04 
-                        }}
-                        onClick={closeRadial}
-                    >
-                        <action.icon className="w-6 h-6" />
-                        <motion.div 
-                          initial={{opacity: 0, y: 5}}
-                          animate={{opacity: 1, y: 0}}
-                          exit={{opacity: 0, y: 5}}
-                          transition={{delay: 0.2 + i * 0.04}}
-                          className="absolute top-full mt-2 text-xs font-medium text-white/90 whitespace-nowrap"
-                        >
-                            {action.label}
-                        </motion.div>
-                    </motion.div>
-                </Link>
-              );
-            })}
+            {actions.map((action, i) => (
+              <Link key={action.href} href={action.href} passHref>
+                  <motion.div
+                    className="w-12 h-12 flex items-center justify-center rounded-full bg-background/80 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors shadow-md"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1, transition: { delay: 0.1 + i * 0.05 } }}
+                    exit={{ y: 20, opacity: 0, transition: { duration: 0.1 } }}
+                    whileHover={{ scale: 1.1 }}
+                  >
+                    <action.icon className="h-6 w-6" />
+                  </motion.div>
+              </Link>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </motion.div>
   );
 }
