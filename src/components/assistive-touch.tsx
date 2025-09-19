@@ -24,13 +24,14 @@ export function AssistiveTouch() {
   const controls = useDragControls();
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
-  const [dragConstraints, setDragConstraints] = useState<{top: number, bottom: number}>({top: 10, bottom: 500});
+  const [dragConstraints, setDragConstraints] = useState({ top: 0, bottom: 0 });
 
   useEffect(() => {
+    // This effect runs only on the client, after the component mounts
     setIsClient(true);
     setDragConstraints({
-        top: 10,
-        bottom: window.innerHeight - 74,
+      top: 10,
+      bottom: window.innerHeight - 74, // 64px height + 10px buffer
     });
   }, []);
 
@@ -46,7 +47,6 @@ export function AssistiveTouch() {
   };
 
   const handleDragEnd = () => {
-    // A timeout to prevent click event firing immediately after drag
     setTimeout(() => setIsDragging(false), 50);
   };
   
@@ -56,10 +56,6 @@ export function AssistiveTouch() {
       return;
     }
     setIsOpen(!isOpen);
-  };
-  
-  const handleActionClick = () => {
-    closeRadial();
   };
   
   // Close when clicking outside
@@ -78,9 +74,10 @@ export function AssistiveTouch() {
   }, [isOpen, isClient]);
 
   const radius = 100;
-  const arc = Math.PI;
-  const startAngle = Math.PI;
+  const arc = Math.PI; // 180 degrees
+  const startAngle = Math.PI; // Start from the left (180 degrees)
   
+  // Render nothing on the server to prevent SSR errors
   if (!isClient) {
     return null;
   }
@@ -162,10 +159,18 @@ export function AssistiveTouch() {
                             damping: 20, 
                             delay: i * 0.04 
                         }}
-                        onClick={handleActionClick}
+                        onClick={closeRadial}
                     >
                         <action.icon className="w-6 h-6" />
-                        <div className="absolute top-full mt-2 text-xs font-medium text-white/90 whitespace-nowrap">{action.label}</div>
+                        <motion.div 
+                          initial={{opacity: 0, y: 5}}
+                          animate={{opacity: 1, y: 0}}
+                          exit={{opacity: 0, y: 5}}
+                          transition={{delay: 0.2 + i * 0.04}}
+                          className="absolute top-full mt-2 text-xs font-medium text-white/90 whitespace-nowrap"
+                        >
+                            {action.label}
+                        </motion.div>
                     </motion.div>
                 </Link>
               );
