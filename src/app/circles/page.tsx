@@ -43,7 +43,7 @@ const initialCircles = [
 const MAX_INNER_RING = 6;
 const MAX_OUTER_RING = 8;
 
-const EventsDrawer = ({ events, setLocalEvents, isDrawerOpen, setIsDrawerOpen }: { events: typeof eventData, setLocalEvents: any, isDrawerOpen: boolean, setIsDrawerOpen: (isOpen: boolean) => void }) => {
+const EventsDrawer = ({ events, setLocalEvents, isDrawerOpen, setIsDrawerOpen, setIsEventDialogOpen }: { events: typeof eventData, setLocalEvents: any, isDrawerOpen: boolean, setIsDrawerOpen: (isOpen: boolean) => void, setIsEventDialogOpen: (isOpen: boolean) => void }) => {
     const ongoingEvents = events.filter(e => e.status === 'ongoing' || e.status === 'paused');
     const concludedEvents = events.filter(e => e.status === 'concluded');
     
@@ -69,7 +69,10 @@ const EventsDrawer = ({ events, setLocalEvents, isDrawerOpen, setIsDrawerOpen }:
                 </Button>
             </CardHeader>
             <CardContent className="h-[calc(100%-4rem)] p-0">
-               <CardTitle className="text-center mb-4">Your Events</CardTitle>
+               <div className="flex justify-between items-center px-4 mb-4">
+                 <CardTitle className="text-center">Your Events</CardTitle>
+                 <CreateButton onClick={() => setIsEventDialogOpen(true)} />
+               </div>
               <ScrollArea className="h-full p-4">
                   <div className="space-y-8">
                      <section>
@@ -397,32 +400,31 @@ export default function ConnectionsPage() {
                     const y = layout.radius * Math.sin(angle);
                     
                     return (
-                      <motion.div
-                        key={item.id}
-                        className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
-                        style={{
-                            width: layout.size,
-                            height: layout.size,
-                            top: '50%',
-                            left: '50%',
-                            translateX: '-50%',
-                            translateY: '-50%',
-                        }}
-                        initial={{ scale: 0, x: 0, y: 0 }}
-                        animate={{ scale: 1, x, y }}
-                        exit={{ scale: 0, x: 0, y: 0 }}
-                        transition={{
-                            type: 'spring',
-                            stiffness: 400,
-                            damping: 10,
-                            delay: i * 0.05 + ringIndex * 0.1,
-                        }}
-                        whileHover={{ y: -5, scale: 1.1 }}
-                        onClick={() => openCircleDetails(item)}
-                      >
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
+                      <TooltipProvider key={item.id}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <motion.div
+                              className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
+                              style={{
+                                  width: layout.size,
+                                  height: layout.size,
+                                  top: '50%',
+                                  left: '50%',
+                                  translateX: '-50%',
+                                  translateY: '-50%',
+                              }}
+                              initial={{ scale: 0, x: 0, y: 0 }}
+                              animate={{ scale: 1, x, y }}
+                              exit={{ scale: 0, x: 0, y: 0 }}
+                              transition={{
+                                  type: 'spring',
+                                  stiffness: 400,
+                                  damping: 10,
+                                  delay: i * 0.05 + ringIndex * 0.1,
+                              }}
+                              whileHover={{ y: y - 5, scale: 1.1 }}
+                              onClick={() => openCircleDetails(item)}
+                            >
                               <div className="w-full h-full rounded-full relative">
                                 <Image src={item.image} alt={item.name} fill className="object-cover rounded-full" />
                                 {isEraseMode && (
@@ -435,13 +437,13 @@ export default function ConnectionsPage() {
                                   </div>
                                 )}
                               </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{item.name}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </motion.div>
+                            </motion.div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{item.name}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     );
                   })}
                 </motion.div>
@@ -556,7 +558,7 @@ export default function ConnectionsPage() {
                     dragElastic={{ top: 0, bottom: 0.5 }}
                     onDragEnd={onDrawerDragEnd}
                 >
-                    <EventsDrawer events={localEvents} setLocalEvents={setLocalEvents} isDrawerOpen={isDrawerOpen} setIsDrawerOpen={setIsDrawerOpen}/>
+                    <EventsDrawer events={localEvents} setLocalEvents={setLocalEvents} isDrawerOpen={isDrawerOpen} setIsDrawerOpen={setIsDrawerOpen} setIsEventDialogOpen={setIsEventDialogOpen}/>
                 </motion.div>
             )}
         </AnimatePresence>

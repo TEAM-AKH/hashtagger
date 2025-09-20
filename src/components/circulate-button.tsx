@@ -80,21 +80,9 @@ export const CirculateButton = () => {
     <motion.button
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      className="relative flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
+      className="relative flex items-center justify-center w-9 h-9 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
     >
       <CirculateIcon isHovered={isHovered} />
-      <motion.span
-        initial={{ width: 0, opacity: 0, x: -10 }}
-        animate={{ 
-            width: isHovered ? 'auto' : 0, 
-            opacity: isHovered ? 1 : 0,
-            x: isHovered ? 0 : -10
-        }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="overflow-hidden whitespace-nowrap"
-      >
-        Circulate
-      </motion.span>
     </motion.button>
   );
 };

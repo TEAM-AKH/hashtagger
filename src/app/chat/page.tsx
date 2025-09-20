@@ -29,12 +29,12 @@ const initialCircles = [
 
 const initialMessages: Record<number, { from: 'me' | 'other'; text: string; time: string; status?: 'sent' | 'delivered' | 'seen', reactions?: string[] }[]> = {
   1: [
-    { from: 'other', text: 'Hey! Did you check the new post on The Hashtagger?', time: '10:40 AM', reactions: ['👍'] },
+    { from: 'other', text: 'Hey! Did you check the new post on The Hashtagger?', time: '10:40 AM' },
     { from: 'me', text: 'Yes, looks great! Let\'s catch up later today.', time: '10:42 AM', status: 'seen' },
     { from: 'other', text: 'Hey, are you free for a call?', time: '10:45 AM' },
   ],
   2: [
-    { from: 'other', text: 'Haha, that\'s hilarious!', time: 'Yesterday', reactions: ['😂'] },
+    { from: 'other', text: 'Haha, that\'s hilarious!', time: 'Yesterday' },
   ],
   3: [
     { from: 'other', text: 'Don\'t forget the meeting at 11.', time: '9:15 AM' },

@@ -175,7 +175,7 @@ export const ExpressButton = ({ docId, mode = 'inline' }: { docId: string, mode?
         <div ref={commentBoxRef}>
             <button
                 onClick={() => setShowBox(!showBox)}
-                className="relative flex items-center justify-center p-2 text-sm font-medium text-white"
+                className="relative flex items-center justify-center w-9 h-9 text-sm font-medium text-white"
             >
                 <ExpressIcon isStatic />
             </button>
@@ -200,24 +200,10 @@ export const ExpressButton = ({ docId, mode = 'inline' }: { docId: string, mode?
   return (
     <div className="relative" ref={commentBoxRef}>
         <motion.button
-            onHoverStart={() => setIsHovered(true)}
-            onHoverEnd={() => setIsHovered(false)}
             onClick={() => setShowBox(!showBox)}
-            className="relative flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
+            className="relative flex items-center justify-center w-9 h-9 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
             >
-            <ExpressIcon isHovered={isHovered}/>
-            <motion.span
-                initial={{ width: 0, opacity: 0, x: -10 }}
-                animate={{ 
-                    width: isHovered ? 'auto' : 0, 
-                    opacity: isHovered ? 1 : 0,
-                    x: isHovered ? 0 : -10
-                }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="overflow-hidden whitespace-nowrap"
-            >
-                Express
-            </motion.span>
+            <ExpressIcon isHovered={showBox}/>
         </motion.button>
         <AnimatePresence>
              {showBox && (
