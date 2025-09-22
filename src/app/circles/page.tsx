@@ -71,7 +71,7 @@ const EventsDrawer = ({ events, setLocalEvents, isDrawerOpen, setIsDrawerOpen, s
             <CardContent className="h-[calc(100%-4rem)] p-0">
                <div className="flex justify-between items-center px-4 mb-4">
                  <CardTitle className="text-center">Your Events</CardTitle>
-                 <CreateButton onClick={() => setIsEventDialogOpen(true)} />
+                 <Button onClick={() => setIsEventDialogOpen(true)}><Plus className="mr-2 h-4 w-4"/>Create Event</Button>
                </div>
               <ScrollArea className="h-full p-4">
                   <div className="space-y-8">
@@ -452,7 +452,7 @@ export default function ConnectionsPage() {
           </div>
 
           <div className="absolute bottom-4 left-4 z-30 flex gap-4">
-              <CreateButton onClick={() => setIsCreateDialogOpen(true)} />
+              <CreateButton onCircleCreate={() => setIsCreateDialogOpen(true)} onEventCreate={() => setIsEventDialogOpen(true)} />
           </div>
           
            <div className="absolute bottom-4 right-4 z-30">
@@ -835,5 +835,7 @@ export default function ConnectionsPage() {
     </div>
   );
 }
+
+    
 
     
