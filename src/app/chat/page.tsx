@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bell, Bot, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, ChevronLeft, ChevronRight, ThumbsUp, Heart, Laugh } from 'lucide-react';
+import { Bell, Bot, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ChitChatIcon } from '@/components/chitchat-icon';
@@ -128,9 +128,9 @@ const ChatView = ({ chat, messages, onSendMessage, onClose, onAddReaction }: { c
                     </div>
                 </ContextMenuTrigger>
                 <ContextMenuContent>
-                    <ContextMenuItem onClick={() => onAddReaction(index, '👍')}>React <ThumbsUp className="ml-auto"/></ContextMenuItem>
-                    <ContextMenuItem onClick={() => onAddReaction(index, '❤️')}>React <Heart className="ml-auto"/></ContextMenuItem>
-                    <ContextMenuItem onClick={() => onAddReaction(index, '😂')}>React <Laugh className="ml-auto"/></ContextMenuItem>
+                    <ContextMenuItem onClick={() => onAddReaction(index, ':)')}>React <span className="ml-auto">:&#41;</span></ContextMenuItem>
+                    <ContextMenuItem onClick={() => onAddReaction(index, '<3')}>React <span className="ml-auto">&lt;3</span></ContextMenuItem>
+                    <ContextMenuItem onClick={() => onAddReaction(index, ';)')}>React <span className="ml-auto">;)</span></ContextMenuItem>
                 </ContextMenuContent>
             </ContextMenu>
              {msg.reactions && msg.reactions.length > 0 && (
@@ -141,7 +141,7 @@ const ChatView = ({ chat, messages, onSendMessage, onClose, onAddReaction }: { c
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ delay: rIndex * 0.1 }}
-                            className="text-xs bg-muted border rounded-full px-2 py-0.5"
+                            className="text-sm bg-muted border rounded-full px-2.5 py-0.5 font-mono"
                         >
                             {reaction}
                         </motion.div>
@@ -439,3 +439,5 @@ export default function ChitChatPage() {
     </div>
   );
 }
+
+    
