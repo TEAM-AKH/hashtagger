@@ -19,11 +19,6 @@ import Image from 'next/image';
 
 const EventMap = ({ event }: { event: any }) => {
     const mapRef = useRef<HTMLDivElement>(null);
-    const [isMounted, setIsMounted] = useState(false);
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
 
     const mapStyles = [
         { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
@@ -47,117 +42,130 @@ const EventMap = ({ event }: { event: any }) => {
     ];
     
     useEffect(() => {
-        if (!isMounted || !mapRef.current || !window.google || !window.google.maps || !event.locationData) return;
-        
-        class CustomMarker extends window.google.maps.OverlayView {
-            private latlng: google.maps.LatLng;
-            private imageSrc: string;
-            private div: HTMLDivElement | null;
-            private listeners: google.maps.MapsEventListener[];
+        const initMap = () => {
+            if (!mapRef.current || !window.google || !window.google.maps || !event.locationData) return;
+            
+            class CustomMarker extends window.google.maps.OverlayView {
+                private latlng: google.maps.LatLng;
+                private imageSrc: string;
+                private div: HTMLDivElement | null;
+                private listeners: google.maps.MapsEventListener[];
 
-            constructor(latlng: google.maps.LatLng, imageSrc: string, map: google.maps.Map) {
-                super();
-                this.latlng = latlng;
-                this.imageSrc = imageSrc;
-                this.div = null;
-                this.listeners = [];
-                this.setMap(map);
-            }
+                constructor(latlng: google.maps.LatLng, imageSrc: string, map: google.maps.Map) {
+                    super();
+                    this.latlng = latlng;
+                    this.imageSrc = imageSrc;
+                    this.div = null;
+                    this.listeners = [];
+                    this.setMap(map);
+                }
 
-            onAdd() {
-                const div = document.createElement("div");
-                div.style.position = "absolute";
-                div.style.transform = "translate(-50%, -100%)"; // Pinpoint bottom center
-                div.innerHTML = `
-                    <div style="position: relative; width: 56px; height: 56px; transform-origin: bottom center;">
-                        <div style="position: absolute; inset: 0; background-color: hsl(var(--primary) / 0.3); border-radius: 50%; animation: pulse 2s infinite; transform: scale(1.2);"></div>
-                        <img src="${this.imageSrc}" style="width: 48px; height: 48px; border-radius: 50%; border: 4px solid hsl(var(--primary)); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                    </div>
-                    <style>
-                        @keyframes pulse {
-                            0% { transform: scale(1); opacity: 0.7; }
-                            70% { transform: scale(1.8); opacity: 0; }
-                            100% { transform: scale(1); opacity: 0; }
-                        }
-                    </style>
-                `;
-                this.div = div;
-                const panes = this.getPanes()!;
-                panes.floatPane.appendChild(div);
+                onAdd() {
+                    const div = document.createElement("div");
+                    div.style.position = "absolute";
+                    div.style.transform = "translate(-50%, -100%)";
+                    div.innerHTML = `
+                        <div style="position: relative; width: 56px; height: 56px; transform-origin: bottom center;">
+                            <div style="position: absolute; inset: 0; background-color: hsl(var(--primary) / 0.3); border-radius: 50%; animation: pulse 2s infinite; transform: scale(1.2);"></div>
+                            <img src="${this.imageSrc}" style="width: 48px; height: 48px; border-radius: 50%; border: 4px solid hsl(var(--primary)); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                        </div>
+                        <style>
+                            @keyframes pulse {
+                                0% { transform: scale(1); opacity: 0.7; }
+                                70% { transform: scale(1.8); opacity: 0; }
+                                100% { transform: scale(1); opacity: 0; }
+                            }
+                        </style>
+                    `;
+                    this.div = div;
+                    const panes = this.getPanes()!;
+                    panes.floatPane.appendChild(div);
 
-                 this.listeners.push(
-                    google.maps.event.addDomListener(this.div, "click", (e) => {
-                        google.maps.event.trigger(this, "click", e);
-                    })
-                );
-            }
+                    this.listeners.push(
+                        google.maps.event.addDomListener(this.div, "click", (e) => {
+                            google.maps.event.trigger(this, "click", e);
+                        })
+                    );
+                }
 
-            draw() {
-                const overlayProjection = this.getProjection();
-                const sw = overlayProjection.fromLatLngToDivPixel(this.latlng)!;
-                if (this.div) {
+                draw() {
+                    const overlayProjection = this.getProjection();
+                    if (!overlayProjection || !this.div) return;
+                    const sw = overlayProjection.fromLatLngToDivPixel(this.latlng)!;
                     this.div.style.left = sw.x + "px";
                     this.div.style.top = sw.y + "px";
                 }
+
+                onRemove() {
+                    if (this.div) {
+                        this.div.parentNode!.removeChild(this.div);
+                        this.div = null;
+                    }
+                    this.listeners.forEach(listener => google.maps.event.removeListener(listener));
+                }
+                
+                getPosition() {
+                    return this.latlng;
+                }
             }
 
-            onRemove() {
-                if (this.div) {
-                    this.div.parentNode!.removeChild(this.div);
-                    this.div = null;
-                }
-                this.listeners.forEach(listener => google.maps.event.removeListener(listener));
-            }
+
+            const map = new window.google.maps.Map(mapRef.current, {
+                center: event.locationData,
+                zoom: 16,
+                styles: mapStyles,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false,
+                zoomControl: false,
+                gestureHandling: 'cooperative'
+            });
             
-            getPosition() {
-                return this.latlng;
-            }
+            const organizerAvatar = "https://picsum.photos/seed/user/100";
+            const marker = new CustomMarker(new window.google.maps.LatLng(event.locationData), organizerAvatar, map);
+
+            map.addListener("center_changed", () => {
+                window.setTimeout(() => {
+                    const markerPos = marker.getPosition();
+                    if (markerPos) {
+                       map.panTo(markerPos);
+                    }
+                }, 3000);
+            });
+
+            marker.addListener("click", () => {
+                const markerPos = marker.getPosition();
+                if (markerPos) {
+                    map.setZoom(18);
+                    map.setCenter(markerPos);
+                }
+            });
+
+
+            const redirectButton = document.createElement('div');
+            redirectButton.innerHTML = `<button style="background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>`;
+            redirectButton.style.margin = '16px';
+            redirectButton.onclick = () => {
+                window.open(`https://www.google.com/maps/dir/?api=1&destination=${event.locationData.lat},${event.locationData.lng}`, '_blank');
+            };
+
+            map.controls[window.google.maps.ControlPosition.RIGHT_BOTTOM].push(redirectButton);
         }
 
-
-        const map = new window.google.maps.Map(mapRef.current, {
-            center: event.locationData,
-            zoom: 16,
-            styles: mapStyles,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: false,
-            zoomControl: false,
-            gestureHandling: 'cooperative'
-        });
-        
-        const organizerAvatar = "https://picsum.photos/seed/user/100";
-        const marker = new CustomMarker(new window.google.maps.LatLng(event.locationData), organizerAvatar, map);
-
-        map.addListener("center_changed", () => {
-          window.setTimeout(() => {
-            map.panTo(marker.getPosition()!);
-          }, 3000);
-        });
-
-        marker.addListener("click", () => {
-          map.setZoom(18);
-          map.setCenter(marker.getPosition()!);
-        });
-
-
-        const redirectButton = document.createElement('div');
-        redirectButton.innerHTML = `<button style="background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>`;
-        redirectButton.style.margin = '16px';
-        redirectButton.onclick = () => {
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${event.locationData.lat},${event.locationData.lng}`, '_blank');
-        };
-
-        map.controls[window.google.maps.ControlPosition.RIGHT_BOTTOM].push(redirectButton);
-
-
-    }, [isMounted, event]);
-    
-
-    if (!isMounted) return <div className="aspect-video bg-muted rounded-md animate-pulse" />;
+        if (window.google && window.google.maps) {
+            initMap();
+        } else {
+            const interval = setInterval(() => {
+                if (window.google && window.google.maps) {
+                    clearInterval(interval);
+                    initMap();
+                }
+            }, 100);
+        }
+    }, [event, mapStyles]);
     
     return (
-        <div ref={mapRef} className="aspect-video w-full rounded-lg" />
+        <div ref={mapRef} className="aspect-video w-full rounded-lg bg-muted animate-pulse" />
     )
 };
 
