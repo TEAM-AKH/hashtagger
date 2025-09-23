@@ -3,12 +3,15 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward, X } from 'lucide-react';
+import { MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward, X, Smile, Send } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from 'framer-motion';
 import { VibeButton } from '@/components/vibe-button';
 import { CirculateButton } from '@/components/circulate-button';
 import { ExpressButton } from '@/components/express-button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const clips = [
   { id: 1, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", user: "bunny_lover", description: "Big Buck Bunny adventures!", vibes: 128, expresses: 42, circulates: 18 },
@@ -18,9 +21,23 @@ const clips = [
   { id: 5, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", user: "fun_times", description: "Living my best life!", vibes: 2048, expresses: 560, circulates: 150 },
 ];
 
+const emojis = [
+    'https://i.imgur.com/hV5wD41.png', // happy
+    'https://i.imgur.com/Vb2a1aR.png', // love
+    'https://i.imgur.com/GZ5sJ9E.png', // laughing
+    'https://i.imgur.com/2sS9J9L.png', // surprised
+    'https://i.imgur.com/s6v4j9I.png', // sad
+    'https://i.imgur.com/qgS4hT1.png', // angry
+    'https://i.imgur.com/V2z2fV2.png', // wink
+    'https://i.imgur.com/zJp7ZJt.png', // cool
+    'https://i.imgur.com/fJb2R4j.png', // thinking
+    'https://i.imgur.com/7bA7gM3.png', // sleepy
+];
+
 const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate, onPlaybackRateChange, onHandsFreeLoopsChange }: { clip: any, isVisible: boolean, onNext: () => void, handsFreeLoops: string, playbackRate: string, onPlaybackRateChange: (rate: string) => void, onHandsFreeLoopsChange: (loops: string) => void }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [showComments, setShowComments] = useState(false);
+    const [comment, setComment] = useState('');
 
     useEffect(() => {
         const video = videoRef.current;
@@ -77,6 +94,9 @@ const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate, onPlaybac
         }
     }, [handsFreeLoops]);
     
+    const handleEmojiClick = (emoji: string) => {
+        setComment(prev => prev + `[img=${emoji}]`);
+    }
 
     return (
         <div className="relative h-full w-full snap-start flex-shrink-0" onClick={() => showComments && setShowComments(false)}>
@@ -166,14 +186,16 @@ const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate, onPlaybac
                 {showComments && (
                     <motion.div
                          initial={{ y: "100%", opacity: 0.8 }}
-                         animate={{ y: "50%", opacity: 1 }}
+                         animate={{ y: 0, opacity: 1 }}
                          exit={{ y: "100%", opacity: 0.8 }}
                          transition={{ type: 'spring', stiffness: 400, damping: 40 }}
                          className="absolute bottom-0 left-0 right-0 h-1/2 bg-card/80 backdrop-blur-md rounded-t-lg shadow-lg flex flex-col z-20"
                          onClick={(e) => e.stopPropagation()}
                     >
                        <div className="w-12 h-1.5 bg-muted-foreground/50 rounded-full mx-auto my-2 cursor-grab" onPointerDown={() => setShowComments(false)}/>
-                       <ExpressButton docId={clip.id.toString()} mode="inline-content" />
+                        <div className="flex-grow min-h-0">
+                           <ExpressButton docId={clip.id.toString()} mode="inline-content" />
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

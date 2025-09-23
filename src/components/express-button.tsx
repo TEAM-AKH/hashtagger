@@ -120,8 +120,8 @@ const CommentArea = ({ docId, onCommentAdded }: { docId: string, onCommentAdded?
     }
 
     return (
-        <div className="flex-grow p-4 flex flex-col h-full">
-            <h3 className="text-center font-bold mb-4 text-card-foreground">Expressions</h3>
+        <div className="flex flex-col h-full">
+            <h3 className="text-center font-bold mb-4 text-card-foreground text-sm">Expressions</h3>
             <ScrollArea className="flex-grow pr-4 -mr-4 h-full">
                 <div className="space-y-4">
                 {comments.length === 0 ? (
@@ -163,11 +163,11 @@ const CommentArea = ({ docId, onCommentAdded }: { docId: string, onCommentAdded?
 
             <form
                 onSubmit={handleSubmit}
-                className="pt-4 mt-auto border-t flex items-center gap-2"
+                className="pt-2 mt-auto border-t flex items-center gap-2"
             >
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon"><Smile className="h-5 w-5" /></Button>
+                        <Button variant="ghost" size="icon" className="shrink-0"><Smile className="h-5 w-5" /></Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-2">
                         <div className="grid grid-cols-5 gap-2">
@@ -189,10 +189,10 @@ const CommentArea = ({ docId, onCommentAdded }: { docId: string, onCommentAdded?
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     placeholder="Write an expression..."
-                    className="flex-grow"
+                    className="flex-grow h-9"
                 />
-                <Button type="submit" size="icon" disabled={!comment.trim()}>
-                    <Send />
+                <Button type="submit" size="icon" className="shrink-0 h-9 w-9" disabled={!comment.trim()}>
+                    <Send className="h-4 w-4" />
                 </Button>
             </form>
         </div>
@@ -203,7 +203,7 @@ const CommentArea = ({ docId, onCommentAdded }: { docId: string, onCommentAdded?
 export const ExpressButton = ({ docId, mode = 'inline', onToggle, showBox, showLabel = true }: { docId: string, mode?: 'inline' | 'inline-content' , onToggle?: () => void, showBox?: boolean, showLabel?: boolean }) => {
 
   if (mode === 'inline-content') {
-    return <CommentArea docId={docId} />;
+    return <div className="p-4 h-full"><CommentArea docId={docId} /></div>;
   }
 
   return (
