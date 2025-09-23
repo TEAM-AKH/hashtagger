@@ -375,13 +375,16 @@ export default function ConnectionsPage() {
           <div className="relative w-full h-full flex items-center justify-center min-w-[320px] min-h-[320px] md:min-w-[500px] md:min-h-[500px] xl:min-w-[650px] xl:min-h-[650px]">
             {/* Central Circle */}
              <motion.div
-                className="absolute w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center bg-card shadow-xl border-4 border-primary/50 z-20 cursor-pointer"
+                className="absolute w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center bg-card shadow-xl border-4 border-primary/50 z-20 cursor-pointer overflow-hidden"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 transition={{ type: 'spring', stiffness: 300 }}
                 onClick={() => setShowRings(!showRings)}
               >
-              <Logo className="h-16 w-16 md:h-20 md:w-20" />
+              <Avatar className="h-full w-full">
+                  <AvatarImage src="https://picsum.photos/seed/user/128" alt="User" />
+                  <AvatarFallback>U</AvatarFallback>
+              </Avatar>
             </motion.div>
 
             {/* Orbiting Rings */}
@@ -835,7 +838,3 @@ export default function ConnectionsPage() {
     </div>
   );
 }
-
-    
-
-    
