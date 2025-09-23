@@ -3,9 +3,9 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward } from 'lucide-react';
+import { MoreVertical, Upload, Flag, ThumbsUp, ThumbsDown, Wand2, Forward, X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { VibeButton } from '@/components/vibe-button';
 import { CirculateButton } from '@/components/circulate-button';
 import { ExpressButton } from '@/components/express-button';
@@ -18,54 +18,175 @@ const clips = [
   { id: 5, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", user: "fun_times", description: "Living my best life!", vibes: 2048, expresses: 560, circulates: 150 },
 ];
 
-export default function ClipsPage() {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [handsFreeLoops, setHandsFreeLoops] = useState<string>('default'); // 'default', '1' to '6'
-    const [playbackRate, setPlaybackRate] = useState('1');
-    const [currentClip, setCurrentClip] = useState<number>(0);
-    const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
-    const [showCommentsFor, setShowCommentsFor] = useState<number | null>(null);
+const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate }: { clip: any, isVisible: boolean, onNext: () => void, handsFreeLoops: string, playbackRate: string }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [showComments, setShowComments] = useState(false);
 
     useEffect(() => {
-        videoRefs.current = videoRefs.current.slice(0, clips.length);
-    }, []);
+        const video = videoRef.current;
+        if (!video) return;
+
+        if (isVisible) {
+            video.playbackRate = parseFloat(playbackRate);
+            video.play().catch(e => console.error("Autoplay failed", e));
+        } else {
+            video.pause();
+            video.currentTime = 0;
+            setShowComments(false); // Close comments when clip is not visible
+        }
+    }, [isVisible, playbackRate]);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video || !isVisible) return;
+        
+        let loopCount = 0;
+        const targetLoops = handsFreeLoops === 'default' ? 2 : parseInt(handsFreeLoops, 10);
+
+        if (targetLoops === 0) { // loop is disabled in this case
+            video.loop = false;
+            return;
+        } else {
+            video.loop = false;
+        }
+
+        const handleEnded = () => {
+            loopCount++;
+            if (loopCount >= targetLoops) {
+                onNext();
+            } else {
+                video.play();
+            }
+        };
+        
+        video.addEventListener('ended', handleEnded);
+        return () => video.removeEventListener('ended', handleEnded);
+
+    }, [isVisible, onNext, handsFreeLoops]);
     
     useEffect(() => {
-        const currentVideo = videoRefs.current[currentClip];
-        if (currentVideo) {
-            currentVideo.playbackRate = parseFloat(playbackRate);
+        if (videoRef.current) {
+            videoRef.current.loop = handsFreeLoops === "0";
         }
-    }, [playbackRate, currentClip]);
+    }, [handsFreeLoops]);
+    
+
+    return (
+        <div className="relative h-full w-full snap-start flex-shrink-0" onClick={() => showComments && setShowComments(false)}>
+            <video ref={videoRef} muted playsInline className="h-full w-full object-cover">
+                <source src={clip.src} type="video/mp4" />
+            </video>
+            
+            {/* Gradient and Info */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 text-white pointer-events-none">
+                <div className="font-bold">@{clip.user}</div>
+                <p className="text-sm">{clip.description}</p>
+            </div>
+
+            {/* Top Right Controls */}
+            <div className="absolute top-4 right-4 z-20">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-white rounded-full bg-black/30 hover:bg-black/50">
+                            <MoreVertical className="h-6 w-6" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>
+                                <Wand2 className="mr-2 h-4 w-4" />
+                                Hands-free
+                            </DropdownMenuSubTrigger>
+                             <DropdownMenuSubContent>
+                                <DropdownMenuRadioGroup value={handsFreeLoops} onValueChange={() => {}}>
+                                    <DropdownMenuRadioItem value="default">Default (2 loops)</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="1">1 loop</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="2">2 loops</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="3">3 loops</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="4">4 loops</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="5">5 loops</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="6">6 loops</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="0">Disabled</DropdownMenuRadioItem>
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                         <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>
+                                <Forward className="mr-2 h-4 w-4" />
+                                Pace
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent>
+                                <DropdownMenuRadioGroup value={playbackRate} onValueChange={() => {}}>
+                                    <DropdownMenuRadioItem value="2">2x</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="1.5">1.5x</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="1">Normal</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="0.75">0.75x</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="0.5">0.5x</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="0.25">0.25x</DropdownMenuRadioItem>
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                        <DropdownMenuItem><Flag className="mr-2"/>Report</DropdownMenuItem>
+                        <DropdownMenuItem><ThumbsUp className="mr-2"/>Interested</DropdownMenuItem>
+                        <DropdownMenuItem><ThumbsDown className="mr-2"/>Not Interested</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+
+            {/* Right Side Actions */}
+            <div className="absolute bottom-4 right-4 flex flex-col items-center gap-4 z-10">
+               <div className="flex flex-col items-center gap-1 text-white">
+                    <VibeButton showLabel={false} />
+                    <span className="text-xs font-bold">{clip.vibes}</span>
+               </div>
+                <div className="flex flex-col items-center gap-1 text-white">
+                    <ExpressButton
+                        docId={clip.id.toString()}
+                        onToggle={() => setShowComments(!showComments)}
+                        showBox={showComments}
+                        showLabel={false}
+                    />
+                    <span className="text-xs font-bold">{clip.expresses}</span>
+                </div>
+               <div className="flex flex-col items-center gap-1 text-white">
+                    <CirculateButton showLabel={false} />
+                    <span className="text-xs font-bold">{clip.circulates}</span>
+               </div>
+            </div>
+
+            {/* Comment Overlay */}
+            <AnimatePresence>
+                {showComments && (
+                    <motion.div
+                         initial={{ y: "100%", opacity: 0.8 }}
+                         animate={{ y: "50%", opacity: 1 }}
+                         exit={{ y: "100%", opacity: 0.8 }}
+                         transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+                         className="absolute bottom-0 left-0 right-0 h-full bg-card/80 backdrop-blur-md rounded-t-lg shadow-lg flex flex-col z-20"
+                         onClick={(e) => e.stopPropagation()}
+                    >
+                       <div className="w-12 h-1.5 bg-muted-foreground/50 rounded-full mx-auto my-2 cursor-grab" onPointerDown={() => setShowComments(false)}/>
+                       <ExpressButton docId={clip.id.toString()} mode="inline-content" />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    )
+}
+
+export default function ClipsPage() {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [handsFreeLoops, setHandsFreeLoops] = useState<string>('default');
+    const [playbackRate, setPlaybackRate] = useState('1');
+    const [currentClipIndex, setCurrentClipIndex] = useState(0);
 
     const handleScrollToNext = (index: number) => {
         const nextIndex = (index + 1) % clips.length;
         const container = containerRef.current;
         if (container) {
-            const nextVideoElement = container.children[nextIndex];
-            nextVideoElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            setCurrentClip(nextIndex);
+            container.children[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     };
-
-    const setupAutoScroll = (video: HTMLVideoElement, index: number) => {
-        let loopCount = 0;
-        const targetLoops = handsFreeLoops === 'default' ? 2 : parseInt(handsFreeLoops, 10);
-        
-        if (targetLoops === 0) return; // Hands-free disabled
-
-        const onEnded = () => {
-            loopCount++;
-            if (loopCount >= targetLoops) {
-                handleScrollToNext(index);
-            } else {
-                video.play();
-            }
-        };
-
-        video.addEventListener('ended', onEnded);
-        return () => video.removeEventListener('ended', onEnded);
-    };
-
 
     useEffect(() => {
         const container = containerRef.current;
@@ -74,39 +195,19 @@ export default function ClipsPage() {
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach(entry => {
-                    const video = entry.target as HTMLVideoElement;
-                    const index = videoRefs.current.indexOf(video);
-                    
                     if (entry.isIntersecting) {
-                        video.playbackRate = parseFloat(playbackRate);
-                        video.play().catch(e => console.error("Autoplay failed", e));
-                        setCurrentClip(index);
-                        setShowCommentsFor(null); // Close comments on clip change
-                        const cleanup = setupAutoScroll(video, index);
-                        (video as any).cleanupAutoScroll = cleanup;
-
-                    } else {
-                        video.pause();
-                        if ((video as any).cleanupAutoScroll) {
-                            (video as any).cleanupAutoScroll();
-                        }
+                        const index = Array.from(container.children).indexOf(entry.target);
+                        setCurrentClipIndex(index);
                     }
                 });
             },
-            { threshold: 0.7 } // At least 70% of the video is visible
+            { threshold: 0.7 }
         );
 
-        videoRefs.current.forEach(video => {
-            if (video) observer.observe(video);
-        });
+        Array.from(container.children).forEach(child => observer.observe(child));
 
-        return () => {
-            videoRefs.current.forEach(video => {
-                if (video) observer.unobserve(video);
-            });
-        };
-    }, [handsFreeLoops, playbackRate]);
-    
+        return () => observer.disconnect();
+    }, []);
 
     return (
         <div className="flex justify-center relative">
@@ -123,82 +224,14 @@ export default function ClipsPage() {
             </motion.div>
             <div ref={containerRef} className="h-[calc(100vh-10rem)] w-full max-w-md snap-y snap-mandatory overflow-y-scroll rounded-lg bg-card border">
                 {clips.map((clip, index) => (
-                    <div key={clip.id} className="relative h-full w-full snap-start flex-shrink-0">
-                        <video ref={el => videoRefs.current[index] = el} loop={handsFreeLoops === "0"} muted playsInline className="h-full w-full object-cover">
-                            <source src={clip.src} type="video/mp4" />
-                        </video>
-                        <div className="absolute top-4 right-4 z-10">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-white rounded-full bg-black/30 hover:bg-black/50">
-                                        <MoreVertical className="h-6 w-6" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuSub>
-                                        <DropdownMenuSubTrigger>
-                                            <Wand2 className="mr-2 h-4 w-4" />
-                                            Hands-free
-                                        </DropdownMenuSubTrigger>
-                                        <DropdownMenuSubContent>
-                                            <DropdownMenuRadioGroup value={handsFreeLoops} onValueChange={setHandsFreeLoops}>
-                                                <DropdownMenuRadioItem value="default">Default (2 loops)</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="1">1 loop</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="2">2 loops</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="3">3 loops</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="4">4 loops</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="5">5 loops</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="6">6 loops</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="0">Disabled</DropdownMenuRadioItem>
-                                            </DropdownMenuRadioGroup>
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuSub>
-                                    <DropdownMenuSub>
-                                        <DropdownMenuSubTrigger>
-                                            <Forward className="mr-2 h-4 w-4" />
-                                            Pace
-                                        </DropdownMenuSubTrigger>
-                                        <DropdownMenuSubContent>
-                                            <DropdownMenuRadioGroup value={playbackRate} onValueChange={setPlaybackRate}>
-                                                <DropdownMenuRadioItem value="2">2x</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="1.5">1.5x</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="1">Normal</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="0.75">0.75x</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="0.5">0.5x</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="0.25">0.25x</DropdownMenuRadioItem>
-                                            </DropdownMenuRadioGroup>
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuSub>
-                                    <DropdownMenuItem><Flag className="mr-2"/>Report</DropdownMenuItem>
-                                    <DropdownMenuItem><ThumbsUp className="mr-2"/>Interested</DropdownMenuItem>
-                                    <DropdownMenuItem><ThumbsDown className="mr-2"/>Not Interested</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 text-white">
-                            <div className="font-bold">@{clip.user}</div>
-                            <p className="text-sm">{clip.description}</p>
-                        </div>
-                        <div className="absolute bottom-4 right-4 flex flex-col items-center gap-4">
-                           <div className="flex flex-col items-center gap-1 text-white">
-                                <VibeButton showLabel={false} />
-                                <span className="text-xs font-bold">{clip.vibes}</span>
-                           </div>
-                            <div className="flex flex-col items-center gap-1 text-white">
-                                <ExpressButton
-                                    docId={clip.id.toString()}
-                                    mode="overlay"
-                                    showBox={showCommentsFor === clip.id}
-                                    onToggle={() => setShowCommentsFor(prev => prev === clip.id ? null : clip.id)}
-                                />
-                                <span className="text-xs font-bold">{clip.expresses}</span>
-                            </div>
-                           <div className="flex flex-col items-center gap-1 text-white">
-                                <CirculateButton showLabel={false} />
-                                <span className="text-xs font-bold">{clip.circulates}</span>
-                           </div>
-                        </div>
-                    </div>
+                    <Clip
+                        key={clip.id}
+                        clip={clip}
+                        isVisible={index === currentClipIndex}
+                        onNext={() => handleScrollToNext(index)}
+                        handsFreeLoops={handsFreeLoops}
+                        playbackRate={playbackRate}
+                    />
                 ))}
             </div>
         </div>

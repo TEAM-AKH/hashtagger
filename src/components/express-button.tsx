@@ -121,7 +121,7 @@ const CommentArea = ({ docId, onCommentAdded }: { docId: string, onCommentAdded?
 
     return (
         <div className="flex-grow p-4 flex flex-col h-full">
-            <h3 className="text-center font-bold mb-4">Expressions</h3>
+            <h3 className="text-center font-bold mb-4 text-card-foreground">Expressions</h3>
             <ScrollArea className="flex-grow pr-4 h-64">
                 <div className="space-y-4">
                 {comments.length === 0 ? (
@@ -200,82 +200,31 @@ const CommentArea = ({ docId, onCommentAdded }: { docId: string, onCommentAdded?
 };
 
 
-export const ExpressButton = ({ docId, mode = 'inline', onToggle, showBox }: { docId: string, mode?: 'inline' | 'inline-content' | 'overlay', onToggle?: () => void, showBox?: boolean }) => {
-  const commentBoxRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-        // Check if the click is outside the comment box itself
-        if (commentBoxRef.current && !commentBoxRef.current.contains(event.target as Node)) {
-            // Check if the click is not on the toggle button (to prevent immediate closing)
-            const toggleButton = (event.target as HTMLElement).closest('[data-express-button]');
-            if (!toggleButton && showBox && onToggle) {
-                onToggle();
-            }
-        }
-    };
-
-    if (showBox && mode === 'overlay') {
-        document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showBox, onToggle, mode]);
+export const ExpressButton = ({ docId, mode = 'inline', onToggle, showBox, showLabel = true }: { docId: string, mode?: 'inline' | 'inline-content' , onToggle?: () => void, showBox?: boolean, showLabel?: boolean }) => {
 
   if (mode === 'inline-content') {
     return <CommentArea docId={docId} />;
   }
 
-  if (mode === 'overlay') {
-     return (
-        <div ref={commentBoxRef}>
-            <button
-                data-express-button="true"
-                onClick={onToggle}
-                className="relative flex items-center justify-center w-12 h-12 text-sm font-medium text-white"
-            >
-                <ExpressIcon isStatic />
-            </button>
-            <AnimatePresence>
-                {showBox && (
-                    <motion.div
-                         initial={{ y: "100%", opacity: 0 }}
-                         animate={{ y: 0, opacity: 1 }}
-                         exit={{ y: "100%", opacity: 0 }}
-                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                         className="absolute bottom-0 left-0 right-0 h-1/2 bg-card/80 backdrop-blur-md rounded-t-lg shadow-lg flex flex-col z-20"
-                         onClick={(e) => e.stopPropagation()}
-                    >
-                       <div className="w-12 h-1.5 bg-muted-foreground/50 rounded-full mx-auto my-2 cursor-grab" onMouseDown={onToggle}/>
-                       <CommentArea docId={docId} onCommentAdded={() => {
-                          // Potentially keep open, or close. For now, keep open.
-                       }}/>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-     );
-  }
-
   return (
     <motion.button
         onClick={onToggle}
-        whileHover="hover"
+        whileHover={showLabel ? "hover" : ""}
         className="relative flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
     >
-        <ExpressIcon isHovered={showBox} />
-        <motion.span 
-            className="font-semibold"
-            initial={{ width: 0, opacity: 0, marginLeft: 0 }}
-            variants={{
-                hover: { width: "auto", opacity: 1, marginLeft: 4 }
-            }}
-            transition={{ duration: 0.3 }}
-        >
-            Express
-        </motion.span>
+        <ExpressIcon isHovered={showBox} isEnlarged={true} />
+        {showLabel && (
+            <motion.span 
+                className="font-semibold"
+                initial={{ width: 0, opacity: 0, marginLeft: 0 }}
+                variants={{
+                    hover: { width: "auto", opacity: 1, marginLeft: 4 }
+                }}
+                transition={{ duration: 0.3 }}
+            >
+                Express
+            </motion.span>
+        )}
     </motion.button>
   );
 };

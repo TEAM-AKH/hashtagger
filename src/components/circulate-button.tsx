@@ -81,7 +81,7 @@ export const CirculateButton = ({ showLabel = true }: { showLabel?: boolean }) =
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       whileHover={showLabel ? "hover" : ""}
-      className="relative flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
+      className="relative flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors p-2 rounded-full"
     >
       <CirculateIcon isHovered={isHovered} />
        {showLabel && (

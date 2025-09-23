@@ -19,7 +19,7 @@ export const VibeButton = ({ showLabel = true }: { showLabel?: boolean }) => {
                 checked={isChecked}
                 onChange={() => setIsChecked(!isChecked)}
             />
-            <label htmlFor={uniqueId} className="icons flex items-center justify-center gap-2 h-9 w-auto px-3 rounded-full transition-colors hover:text-primary cursor-pointer">
+            <label htmlFor={uniqueId} className="icons flex items-center justify-center gap-2 h-auto w-auto p-2 rounded-full transition-colors hover:text-primary cursor-pointer">
                 <div className="relative w-6 h-6">
                     <div id="icon-like-regular" className="absolute inset-0 transition-all duration-300" style={{ transform: isChecked ? 'scale(0)' : 'scale(1)'}}>
                         <span className="text-2xl">🥂</span>

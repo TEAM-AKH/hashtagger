@@ -3,14 +3,15 @@
 
 import { motion } from 'framer-motion';
 
-export const ExpressIcon = ({ isHovered, isStatic = false }: { isHovered?: boolean, isStatic?: boolean }) => {
+export const ExpressIcon = ({ isHovered, isStatic = false, isEnlarged = false }: { isHovered?: boolean, isStatic?: boolean, isEnlarged?: boolean }) => {
     const shouldAnimate = !isStatic && isHovered;
+    const size = isEnlarged ? 32 : 24;
 
     return (
         <motion.svg
             xmlns="http://www.w3.org/2000/svg"
-            width="32"
-            height="32"
+            width={size}
+            height={size}
             viewBox="0 0 24 24"
             fill="url(#grad)"
             stroke="hsl(var(--card))"
