@@ -24,6 +24,7 @@ export default function ClipsPage() {
     const [playbackRate, setPlaybackRate] = useState('1');
     const [currentClip, setCurrentClip] = useState<number>(0);
     const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+    const [showComments, setShowComments] = useState(false);
 
     useEffect(() => {
         videoRefs.current = videoRefs.current.slice(0, clips.length);
@@ -80,6 +81,7 @@ export default function ClipsPage() {
                         video.playbackRate = parseFloat(playbackRate);
                         video.play().catch(e => console.error("Autoplay failed", e));
                         setCurrentClip(index);
+                        setShowComments(false); // Close comments on clip change
                         const cleanup = setupAutoScroll(video, index);
                         (video as any).cleanupAutoScroll = cleanup;
 
@@ -183,7 +185,7 @@ export default function ClipsPage() {
                                 <span className="text-xs font-bold">{clip.vibes}</span>
                            </div>
                             <div className="flex flex-col items-center gap-1 text-white">
-                                <ExpressButton docId={clip.id.toString()} mode="overlay" />
+                                <ExpressButton docId={clip.id.toString()} mode="overlay" showBox={showComments} onToggle={() => setShowComments(!showComments)} />
                                 <span className="text-xs font-bold">{clip.expresses}</span>
                             </div>
                            <div className="flex flex-col items-center gap-1 text-white">

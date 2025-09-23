@@ -4,11 +4,12 @@
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Send, MoreVertical, Upload, Settings, Radio } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { VibeButton } from '@/components/vibe-button';
 import { CirculateButton } from '@/components/circulate-button';
 import { ExpressButton } from '@/components/express-button';
+import { Card } from '@/components/ui/card';
 
 const hashflicks = [
   {
@@ -40,34 +41,12 @@ const hashflicks = [
   },
 ];
 
+const FlickCard = ({ flick }: { flick: typeof hashflicks[0] }) => {
+    const [quality, setQuality] = useState('1080');
+    const [showComments, setShowComments] = useState(false);
 
-export default function HashflicksPage() {
-  const [quality, setQuality] = useState('1080');
-
-  return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">HASHFLICKS</h1>
-        <div className="flex items-center gap-4">
-            <Button variant="outline">
-                <Radio className="mr-2" />
-                Go Live
-            </Button>
-            <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.2 }}
-            >
-                <Button className="rounded-full shadow-lg">
-                    <Upload className="mr-2" />
-                    Upload Flick
-                </Button>
-            </motion.div>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {hashflicks.map((flick) => (
-          <div key={flick.id} className="bg-card rounded-lg overflow-hidden border shadow-sm group">
+    return (
+        <Card className="bg-card rounded-lg overflow-hidden border shadow-sm group">
             <div className="relative">
                 <video controls poster={flick.thumbnail} className="w-full h-auto aspect-video">
                     <source src={flick.videoSrc} type="video/mp4" />
@@ -101,13 +80,56 @@ export default function HashflicksPage() {
               <h3 className="font-bold text-lg">{flick.title}</h3>
               <p className="text-sm text-muted-foreground">@{flick.user}</p>
               <p className="text-sm text-muted-foreground">{flick.views} views • {flick.uploaded}</p>
-              <div className="flex justify-between items-center mt-4">
+              <div className="flex justify-around items-center w-full mt-4">
                 <VibeButton />
-                <ExpressButton docId={flick.id.toString()} mode="inline" />
+                <ExpressButton docId={flick.id.toString()} mode="inline" onToggle={() => setShowComments(!showComments)} showBox={showComments} />
                 <CirculateButton />
               </div>
             </div>
-          </div>
+            <AnimatePresence>
+                {showComments && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                    >
+                        <div className="border-t">
+                            <ExpressButton docId={flick.id.toString()} mode="inline-content" />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </Card>
+    );
+}
+
+export default function HashflicksPage() {
+  return (
+    <div className="container mx-auto p-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">HASHFLICKS</h1>
+        <div className="flex items-center gap-4">
+            <Button variant="outline">
+                <Radio className="mr-2" />
+                Go Live
+            </Button>
+            <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.2 }}
+            >
+                <Button className="rounded-full shadow-lg">
+                    <Upload className="mr-2" />
+                    Upload Flick
+                </Button>
+            </motion.div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {hashflicks.map((flick) => (
+          <FlickCard key={flick.id} flick={flick} />
         ))}
       </div>
     </div>

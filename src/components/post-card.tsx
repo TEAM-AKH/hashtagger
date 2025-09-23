@@ -43,6 +43,7 @@ type Post = {
 
 export default function PostCard({ post }: { post: Post }) {
   const [isSaved, setIsSaved] = useState(post.isSaved || false);
+  const [showComments, setShowComments] = useState(false);
 
   const handleSave = () => {
     setIsSaved(!isSaved);
@@ -110,12 +111,27 @@ export default function PostCard({ post }: { post: Post }) {
         </div>
       </CardContent>
       <CardFooter>
-        <div className="flex justify-between items-center w-full">
+        <div className="flex justify-around items-center w-full">
             <VibeButton />
-            <ExpressButton docId={post.id.toString()} mode="inline" />
+            <ExpressButton docId={post.id.toString()} mode="inline" onToggle={() => setShowComments(!showComments)} showBox={showComments} />
             <CirculateButton />
         </div>
       </CardFooter>
+      <AnimatePresence>
+        {showComments && (
+            <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="overflow-hidden"
+            >
+                <div className="border-t">
+                    <ExpressButton docId={post.id.toString()} mode="inline-content" />
+                </div>
+            </motion.div>
+        )}
+      </AnimatePresence>
     </Card>
   );
 }

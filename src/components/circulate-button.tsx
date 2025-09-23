@@ -36,8 +36,8 @@ const CirculateIcon = ({ isHovered }: { isHovered: boolean }) => {
 
   return (
     <motion.svg
-      width="20"
-      height="20"
+      width="24"
+      height="24"
       viewBox="0 0 55 55"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -80,9 +80,20 @@ export const CirculateButton = () => {
     <motion.button
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      className="relative flex items-center justify-center w-9 h-9 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
+      whileHover="hover"
+      className="relative flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
     >
       <CirculateIcon isHovered={isHovered} />
+       <motion.span 
+            className="font-semibold"
+            initial={{ width: 0, opacity: 0, marginLeft: 0 }}
+            variants={{
+                hover: { width: "auto", opacity: 1, marginLeft: 4 }
+            }}
+            transition={{ duration: 0.3 }}
+        >
+            Circulate
+        </motion.span>
     </motion.button>
   );
 };
