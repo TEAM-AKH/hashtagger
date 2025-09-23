@@ -15,7 +15,7 @@ const userPosts = [
         author: { name: "Your Name", avatar: "https://picsum.photos/seed/user/100", hint: "person selfie" },
         content: "Just set up my Hastagger profile! Excited to connect with everyone here. #newbeginnings #social",
         likes: 5,
-        comments: 2,
+        comments: [],
         circle: "Family",
     },
     {
@@ -24,7 +24,7 @@ const userPosts = [
         content: "Throwback to that amazing trip to the mountains! Can't wait for the next adventure. 🏔️",
         image: { src: "https://picsum.photos/600/375?random=3", hint: "travel landscape" },
         likes: 31,
-        comments: 7,
+        comments: [],
         circle: "Best Friends",
     },
 ];
