@@ -36,8 +36,19 @@ export default function RootLayout({
             <AppLayout>{children}</AppLayout>
           <Toaster />
         </ThemeProvider>
+         {/*
+          IMPORTANT: You are seeing a "Google Maps JavaScript API error: InvalidKeyMapError".
+          This means the API key is missing or invalid.
+          
+          To fix this:
+          1. Go to the Google Cloud Console: https://console.cloud.google.com/google/maps-apis/credentials
+          2. Create a new API key or use an existing one.
+          3. Make sure the "Maps JavaScript API" is enabled for this key.
+          4. Replace `YOUR_GOOGLE_MAPS_API_KEY_HERE` below with your new key.
+          5. For production, it's recommended to restrict the key to your website's domain.
+        */}
          <Script
-          src={`https://maps.googleapis.com/maps/api/js?key=AIzaSyCAPu1XYY_yqEw4UMpTyO8TFH44YX8iVZU&libraries=places`}
+          src={`https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY_HERE&libraries=places`}
           strategy="afterInteractive"
         />
       </body>
