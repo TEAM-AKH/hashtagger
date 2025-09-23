@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PostCard from '@/components/post-card';
 import { Badge } from '@/components/ui/badge';
-import { UserCircle, LogOut, PlusCircle, Gem, Settings } from 'lucide-react';
+import { UserCircle, LogOut, PlusCircle, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const userPosts = [
@@ -46,8 +46,8 @@ export default function ProfilePage() {
         <CardContent className="relative -mt-16 flex flex-col items-center p-6 text-center sm:flex-row sm:items-start sm:text-left">
             <Avatar className="h-32 w-32 border-4 border-card shadow-md">
                 <AvatarImage src="https://picsum.photos/seed/user/128" alt="User" data-ai-hint="person selfie"/>
-                 <AvatarFallback>
-                    <Gem className="h-12 w-12 text-muted-foreground" />
+                 <AvatarFallback className="text-6xl">
+                    ♏
                 </AvatarFallback>
             </Avatar>
             <div className='sm:ml-6 mt-4 sm:mt-16 w-full'>
@@ -57,8 +57,8 @@ export default function ProfilePage() {
                   <p className="text-muted-foreground">@yourusername</p>
                 </div>
                 <div className="mt-2 sm:mt-0 flex items-center justify-center sm:justify-start gap-2">
-                    <Gem className="h-4 w-4 text-accent-foreground/80" />
-                    <span className="font-medium text-muted-foreground">Zodiac: Scorpio</span>
+                    <span className="text-xl" title="Scorpio">♏</span>
+                    <span className="font-medium text-muted-foreground">Scorpio</span>
                 </div>
               </div>
               <p className="mt-4 max-w-xl text-center sm:text-left mx-auto sm:mx-0">

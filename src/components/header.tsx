@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Bell, CircleUser } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -22,13 +22,8 @@ export default function Header() {
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="https://picsum.photos/100" alt="@user" data-ai-hint="person selfie"/>
-              <AvatarFallback>
-                 <CircleUser className="h-5 w-5 text-muted-foreground" />
-              </AvatarFallback>
-            </Avatar>
+          <Button variant="ghost" size="icon" className="rounded-full text-2xl">
+            ♏
              <span className="sr-only">User menu</span>
           </Button>
         </DropdownMenuTrigger>
