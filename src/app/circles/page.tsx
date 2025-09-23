@@ -145,6 +145,95 @@ const EventsDrawer = ({ events, setLocalEvents, isDrawerOpen, setIsDrawerOpen, s
     );
 };
 
+const CreateEventMap = ({ onLocationSelect, open }: { onLocationSelect: (location: any) => void, open: boolean }) => {
+    const mapRef = useRef<HTMLDivElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const mapInstanceRef = useRef<any>(null);
+    const markerRef = useRef<any>(null);
+
+    useEffect(() => {
+        if (open && !mapInstanceRef.current && window.google) {
+            const map = new window.google.maps.Map(mapRef.current!, {
+                center: { lat: 37.7749, lng: -122.4194 },
+                zoom: 8,
+                streetViewControl: false,
+                mapTypeControl: false,
+            });
+            mapInstanceRef.current = map;
+
+            const searchBox = new window.google.maps.places.SearchBox(searchInputRef.current!);
+            map.controls[window.google.maps.ControlPosition.TOP_LEFT].push(searchInputRef.current!);
+
+            searchBox.addListener('places_changed', () => {
+                const places = searchBox.getPlaces();
+                if (places.length == 0) return;
+
+                const place = places[0];
+                if (!place.geometry || !place.geometry.location) return;
+
+                if (!markerRef.current) {
+                    markerRef.current = new window.google.maps.Marker({
+                        map: map,
+                        draggable: true,
+                    });
+                     markerRef.current.addListener('dragend', (e: any) => {
+                         onLocationSelect({
+                             lat: e.latLng.lat(),
+                             lng: e.latLng.lng(),
+                             name: "Custom location"
+                         });
+                     });
+                }
+                markerRef.current.setPosition(place.geometry.location);
+                markerRef.current.setVisible(true);
+
+                map.setCenter(place.geometry.location);
+                map.setZoom(15);
+                onLocationSelect({
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng(),
+                    name: place.name
+                });
+            });
+            
+             map.addListener('click', (e: any) => {
+                if (!markerRef.current) {
+                    markerRef.current = new window.google.maps.Marker({
+                        map: map,
+                        draggable: true,
+                    });
+                     markerRef.current.addListener('dragend', (e: any) => {
+                         onLocationSelect({
+                             lat: e.latLng.lat(),
+                             lng: e.latLng.lng(),
+                             name: "Custom location"
+                         });
+                     });
+                }
+                markerRef.current.setPosition(e.latLng);
+                markerRef.current.setVisible(true);
+                onLocationSelect({
+                    lat: e.latLng.lat(),
+                    lng: e.latLng.lng(),
+                    name: "Custom location"
+                });
+            });
+        }
+    }, [open, onLocationSelect]);
+
+    return (
+        <div className="relative">
+            <Input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search for a location..."
+                className="absolute top-2 left-2 z-10 w-72"
+            />
+            <div ref={mapRef} className="h-64 w-full rounded-md bg-muted" />
+        </div>
+    );
+};
+
 export default function ConnectionsPage() {
   const [items, setItems] = useState(initialCircles);
   const [localEvents, setLocalEvents] = useState(eventData);
@@ -163,6 +252,7 @@ export default function ConnectionsPage() {
   const [isEraseMode, setIsEraseMode] = useState(false);
   const [circlesToErase, setCirclesToErase] = useState<number[]>([]);
   const [showRings, setShowRings] = useState(false);
+  const [eventLocation, setEventLocation] = useState<any>(null);
 
 
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
@@ -313,7 +403,8 @@ export default function ConnectionsPage() {
     const newEvent = {
         id: Date.now(),
         name: formData.get('event-name') as string,
-        location: formData.get('event-location') as string,
+        location: eventLocation?.name || 'No location specified',
+        locationData: eventLocation,
         startDate: formData.get('start-date') as string,
         startTime: formData.get('start-time') as string,
         endDate: formData.get('end-date') as string,
@@ -324,6 +415,7 @@ export default function ConnectionsPage() {
     addEvent(newEvent as any);
     setLocalEvents(prev => [newEvent as any, ...prev]);
     setIsEventDialogOpen(false);
+    setEventLocation(null);
   }
   
   const onDrawerDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
@@ -743,7 +835,7 @@ export default function ConnectionsPage() {
         </Dialog>
 
         <Dialog open={isEventDialogOpen} onOpenChange={setIsEventDialogOpen}>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Create a New Event</DialogTitle>
                     <DialogDescription>Organize a get-together for your circles and friends.</DialogDescription>
@@ -754,7 +846,6 @@ export default function ConnectionsPage() {
                             <Label htmlFor="event-name">Event Name</Label>
                             <Input id="event-name" name="event-name" placeholder="e.g. Summer BBQ" required />
                         </div>
-                        
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="start-date">Start Date</Label>
@@ -775,13 +866,21 @@ export default function ConnectionsPage() {
                                 <Input id="end-time" name="end-time" type="time" required/>
                             </div>
                         </div>
-                        <div className="space-y-2">
+                         <div className="space-y-2">
                             <Label htmlFor="event-location">Location</Label>
                             <div className="relative">
-                                <Input id="event-location" name="event-location" placeholder="e.g. Central Park" required/>
+                               <Input 
+                                   id="event-location"
+                                   name="event-location"
+                                   value={eventLocation?.name || ''}
+                                   readOnly
+                                   placeholder="Select location on map"
+                                   required
+                               />
                                 <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
                             </div>
                         </div>
+                        <CreateEventMap onLocationSelect={setEventLocation} open={isEventDialogOpen} />
                         <div className="flex items-center space-x-2 pt-2">
                             <Checkbox id="live-location-check" />
                             <label htmlFor="live-location-check" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
@@ -790,7 +889,7 @@ export default function ConnectionsPage() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="secondary" onClick={() => setIsEventDialogOpen(false)}>Cancel</Button>
+                        <Button type="button" variant="secondary" onClick={() => {setIsEventDialogOpen(false); setEventLocation(null)}}>Cancel</Button>
                         <Button type="submit">Create Event</Button>
                     </DialogFooter>
                 </form>

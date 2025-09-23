@@ -4,6 +4,7 @@ import './globals.css';
 import AppLayout from '@/components/app-layout';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'Hastagger',
@@ -35,9 +36,11 @@ export default function RootLayout({
             <AppLayout>{children}</AppLayout>
           <Toaster />
         </ThemeProvider>
+         <Script
+          src={`https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`}
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
 }
-
-    

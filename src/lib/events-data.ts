@@ -8,6 +8,7 @@ export type Event = {
   id: number;
   name: string;
   location: string;
+  locationData?: any;
   startDate: string;
   startTime: string;
   endDate: string;
@@ -21,6 +22,7 @@ export let events: Event[] = [
         id: 1,
         name: "Team Brainstorm",
         location: "Office 404",
+        locationData: { lat: 37.7749, lng: -122.4194 },
         startDate: "2024-08-15",
         startTime: "10:00",
         endDate: "2024-08-15",
@@ -32,6 +34,7 @@ export let events: Event[] = [
         id: 2,
         name: "Summer BBQ",
         location: "Central Park",
+        locationData: { lat: 40.7812, lng: -73.9665 },
         startDate: "2024-07-20",
         startTime: "14:00",
         endDate: "2024-07-20",
@@ -55,5 +58,3 @@ export function setEventStatus(eventId: number, status: EventStatus) {
         event.id === eventId ? { ...event, status } : event
     );
 }
-
-    

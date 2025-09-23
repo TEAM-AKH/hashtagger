@@ -6,26 +6,172 @@ import { events, setEventStatus } from '@/lib/events-data';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Users, Map, Clock, Upload, Download, Save, Play, Pause, XCircle, Plus, Mail } from 'lucide-react';
+import { ChevronLeft, Users, Map, Clock, Upload, Download, Save, Play, Pause, XCircle, Plus, Mail, Pin, Route, Navigation } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
-const MapPlaceholder = ({ location }: { location: string }) => (
-    <div className="aspect-video bg-muted rounded-md flex flex-col items-center justify-center text-center p-4">
-        <Map className="h-12 w-12 text-muted-foreground mb-2" />
-        <p className="text-muted-foreground font-semibold text-lg">{location}</p>
-        <p className="text-muted-foreground text-sm">Live map placeholder</p>
-        <div className="flex gap-2 mt-4">
-            <Button variant="outline" size="sm">Open in Google Maps</Button>
-            <Button variant="outline" size="sm">Open in Apple Maps</Button>
+
+const EventMap = ({ event }: { event: any }) => {
+    const mapRef = useRef(null);
+    const directionsRendererRef = useRef<any>(null);
+    const directionsServiceRef = useRef<any>(null);
+    const [origin, setOrigin] = useState("");
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    const mapStyles = [
+        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+        {
+            featureType: "administrative.locality",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#d59563" }],
+        },
+        {
+            featureType: "poi",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#d59563" }],
+        },
+        {
+            featureType: "poi.park",
+            elementType: "geometry",
+            stylers: [{ color: "#263c3f" }],
+        },
+        {
+            featureType: "poi.park",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#6b9a76" }],
+        },
+        {
+            featureType: "road",
+            elementType: "geometry",
+            stylers: [{ color: "#38414e" }],
+        },
+        {
+            featureType: "road",
+            elementType: "geometry.stroke",
+            stylers: [{ color: "#212a37" }],
+        },
+        {
+            featureType: "road",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#9ca5b3" }],
+        },
+        {
+            featureType: "road.highway",
+            elementType: "geometry",
+            stylers: [{ color: "#746855" }],
+        },
+        {
+            featureType: "road.highway",
+            elementType: "geometry.stroke",
+            stylers: [{ color: "#1f2835" }],
+        },
+        {
+            featureType: "road.highway",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#f3d19c" }],
+        },
+        {
+            featureType: "transit",
+            elementType: "geometry",
+            stylers: [{ color: "#2f3948" }],
+        },
+        {
+            featureType: "transit.station",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#d59563" }],
+        },
+        {
+            featureType: "water",
+            elementType: "geometry",
+            stylers: [{ color: "#17263c" }],
+        },
+        {
+            featureType: "water",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#515c6d" }],
+        },
+        {
+            featureType: "water",
+            elementType: "labels.text.stroke",
+            stylers: [{ color: "#17263c" }],
+        },
+    ];
+
+    useEffect(() => {
+        if (!isMounted || !mapRef.current || !window.google) return;
+        
+        const map = new window.google.maps.Map(mapRef.current, {
+            center: event.locationData,
+            zoom: 15,
+            styles: mapStyles,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+        });
+        
+        new window.google.maps.Marker({
+            position: event.locationData,
+            map: map,
+            title: event.name,
+        });
+        
+        directionsServiceRef.current = new window.google.maps.DirectionsService();
+        directionsRendererRef.current = new window.google.maps.DirectionsRenderer();
+        directionsRendererRef.current.setMap(map);
+
+    }, [isMounted, event]);
+    
+    const calculateAndDisplayRoute = () => {
+        if (!origin) return;
+        directionsServiceRef.current.route(
+          {
+            origin: origin,
+            destination: event.locationData,
+            travelMode: window.google.maps.TravelMode.DRIVING,
+          },
+          (response: any, status: any) => {
+            if (status === "OK") {
+              directionsRendererRef.current.setDirections(response);
+            } else {
+              alert("Directions request failed due to " + status);
+            }
+          }
+        );
+    };
+
+    if (!isMounted) return <div className="aspect-video bg-muted rounded-md animate-pulse" />;
+    
+    return (
+        <div className="space-y-4">
+             <div ref={mapRef} className="aspect-video w-full rounded-lg" />
+             <div className="flex gap-2">
+                <div className="relative w-full">
+                     <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
+                     <Input 
+                        type="text" 
+                        placeholder="Enter your starting point" 
+                        value={origin}
+                        onChange={(e) => setOrigin(e.target.value)}
+                        className="pl-10"
+                    />
+                </div>
+                <Button onClick={calculateAndDisplayRoute} disabled={!origin}><Route className="mr-2 h-4 w-4"/>Get Directions</Button>
+            </div>
         </div>
-    </div>
-);
+    )
+};
 
 
 export default function EventDetailPage() {
@@ -71,6 +217,10 @@ export default function EventDetailPage() {
                 <div className="flex justify-between items-start">
                     <div>
                         <h1 className="text-4xl font-bold tracking-tight">{event.name}</h1>
+                        <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                          <Pin/>
+                          <p>{event.location}</p>
+                        </div>
                         <p className="text-muted-foreground">
                             From {new Date(event.startDate).toLocaleDateString()} to {new Date(event.endDate).toLocaleDateString()}
                         </p>
@@ -88,7 +238,7 @@ export default function EventDetailPage() {
                             <CardTitle className="flex items-center gap-2"><Map className="h-5 w-5"/> Live Location</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <MapPlaceholder location={event.location} />
+                           {event.locationData ? <EventMap event={event} /> : <p>No location data for this event.</p>}
                         </CardContent>
                     </Card>
                     
@@ -224,5 +374,3 @@ export default function EventDetailPage() {
         </div>
     );
 }
-
-    
