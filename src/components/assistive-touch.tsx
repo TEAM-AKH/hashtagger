@@ -43,30 +43,30 @@ export function AssistiveTouch() {
 
   const radius = 90;
   const numActions = actions.length;
-  // Spread items over a 180-degree arc (PI radians) on the left side
+  // Spread items over a 180-degree arc (PI radians) on the right side
   const angleIncrement = Math.PI / (numActions);
-  const startAngle = Math.PI / 2; // Start from the top
+  const startAngle = -Math.PI / 2; // Start from the top
 
   return (
      <motion.div
         drag="y"
         dragConstraints={dragConstraints}
         style={{ y: springY }}
-        className="fixed top-1/2 right-0 z-50"
+        className="fixed top-1/2 left-0 z-50"
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
-        animate={{ x: isHovered || isOpen ? 0 : 28 }}
+        animate={{ x: isHovered || isOpen ? 0 : -28 }}
         transition={{ type: 'spring', stiffness: 400, damping: 20 }}
       >
       {/* Radial Menu Wrapper */}
       <AnimatePresence>
         {isOpen && (
-           <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-14 h-14">
+           <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-14 h-14">
              {actions.map((action, i) => {
-                // angle for left-side arc (from top to bottom)
+                // angle for right-side arc (from top to bottom)
                 const angle = startAngle + (i + 0.5) * angleIncrement;
-                const x = -radius * Math.cos(angle - Math.PI/2);
-                const y = -radius * Math.sin(angle - Math.PI/2);
+                const x = radius * Math.cos(angle);
+                const y = radius * Math.sin(angle);
               
                 return (
                   <motion.div
