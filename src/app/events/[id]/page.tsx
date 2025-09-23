@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 
 const EventMap = ({ event, isEnlarged = false }: { event: any, isEnlarged?: boolean }) => {
@@ -406,5 +407,7 @@ export default function EventDetailPage() {
         </div>
     );
 }
+
+    
 
     
