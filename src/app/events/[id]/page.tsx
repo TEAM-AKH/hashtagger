@@ -46,62 +46,62 @@ const EventMap = ({ event }: { event: any }) => {
         { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] },
     ];
     
-    // Custom marker overlay
-    class CustomMarker extends window.google.maps.OverlayView {
-        private latlng: google.maps.LatLng;
-        private imageSrc: string;
-        private div: HTMLDivElement | null;
+    useEffect(() => {
+        if (!isMounted || !mapRef.current || !window.google || !window.google.maps || !event.locationData) return;
+        
+        // Custom marker overlay
+        class CustomMarker extends window.google.maps.OverlayView {
+            private latlng: google.maps.LatLng;
+            private imageSrc: string;
+            private div: HTMLDivElement | null;
 
-        constructor(latlng: google.maps.LatLng, imageSrc: string) {
-            super();
-            this.latlng = latlng;
-            this.imageSrc = imageSrc;
-            this.div = null;
-        }
-
-        onAdd() {
-            const div = document.createElement("div");
-            div.style.position = "absolute";
-            div.style.transform = "translate(-50%, -50%)";
-            div.innerHTML = `
-                <div style="position: relative; width: 48px; height: 48px;">
-                    <div style="position: absolute; inset: 0; background-color: hsl(var(--primary) / 0.3); border-radius: 50%; animation: pulse 1.5s infinite;"></div>
-                    <img src="${this.imageSrc}" style="width: 40px; height: 40px; border-radius: 50%; border: 4px solid hsl(var(--primary)); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                </div>
-                <style>
-                    @keyframes pulse {
-                        0% { transform: scale(1); opacity: 0.5; }
-                        50% { transform: scale(1.5); opacity: 0; }
-                        100% { transform: scale(1); opacity: 0; }
-                    }
-                </style>
-            `;
-            this.div = div;
-            const panes = this.getPanes()!;
-            panes.overlayMouseTarget.appendChild(div);
-        }
-
-        draw() {
-            const overlayProjection = this.getProjection();
-            const sw = overlayProjection.fromLatLngToDivPixel(this.latlng)!;
-            if (this.div) {
-                this.div.style.left = sw.x + "px";
-                this.div.style.top = sw.y + "px";
-            }
-        }
-
-        onRemove() {
-            if (this.div) {
-                this.div.parentNode!.removeChild(this.div);
+            constructor(latlng: google.maps.LatLng, imageSrc: string) {
+                super();
+                this.latlng = latlng;
+                this.imageSrc = imageSrc;
                 this.div = null;
             }
+
+            onAdd() {
+                const div = document.createElement("div");
+                div.style.position = "absolute";
+                div.style.transform = "translate(-50%, -50%)";
+                div.innerHTML = `
+                    <div style="position: relative; width: 48px; height: 48px;">
+                        <div style="position: absolute; inset: 0; background-color: hsl(var(--primary) / 0.3); border-radius: 50%; animation: pulse 1.5s infinite;"></div>
+                        <img src="${this.imageSrc}" style="width: 40px; height: 40px; border-radius: 50%; border: 4px solid hsl(var(--primary)); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                    </div>
+                    <style>
+                        @keyframes pulse {
+                            0% { transform: scale(1); opacity: 0.5; }
+                            50% { transform: scale(1.5); opacity: 0; }
+                            100% { transform: scale(1); opacity: 0; }
+                        }
+                    </style>
+                `;
+                this.div = div;
+                const panes = this.getPanes()!;
+                panes.overlayMouseTarget.appendChild(div);
+            }
+
+            draw() {
+                const overlayProjection = this.getProjection();
+                const sw = overlayProjection.fromLatLngToDivPixel(this.latlng)!;
+                if (this.div) {
+                    this.div.style.left = sw.x + "px";
+                    this.div.style.top = sw.y + "px";
+                }
+            }
+
+            onRemove() {
+                if (this.div) {
+                    this.div.parentNode!.removeChild(this.div);
+                    this.div = null;
+                }
+            }
         }
-    }
 
 
-    useEffect(() => {
-        if (!isMounted || !mapRef.current || !window.google || !event.locationData) return;
-        
         const map = new window.google.maps.Map(mapRef.current, {
             center: event.locationData,
             zoom: 16,
