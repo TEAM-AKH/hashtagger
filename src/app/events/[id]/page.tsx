@@ -10,7 +10,7 @@ import { ChevronLeft, Users, Map, Clock, Upload, Download, Save, Play, Pause, XC
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -19,154 +19,159 @@ import Image from 'next/image';
 
 const EventMap = ({ event }: { event: any }) => {
     const mapRef = useRef<HTMLDivElement>(null);
+    const mapInstanceRef = useRef<any>(null);
 
-    const mapStyles = [
-        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
-        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
-        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-        { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
-        { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
-        { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#263c3f" }] },
-        { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] },
-        { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
-        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
-        { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
-        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
-        { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] },
-        { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] },
-        { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
-        { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
-        { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
-        { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
-        { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] },
-    ];
-    
-    useEffect(() => {
-        const initMap = () => {
-            if (!mapRef.current || !window.google || !window.google.maps || !event.locationData) return;
-            
-            class CustomMarker extends window.google.maps.OverlayView {
-                private latlng: google.maps.LatLng;
-                private imageSrc: string;
-                private div: HTMLDivElement | null;
-                private listeners: google.maps.MapsEventListener[];
+    const initMap = useCallback(() => {
+        if (!mapRef.current || !window.google?.maps || !event.locationData) return;
+        if (mapInstanceRef.current) return; // Map already initialized
 
-                constructor(latlng: google.maps.LatLng, imageSrc: string, map: google.maps.Map) {
-                    super();
-                    this.latlng = latlng;
-                    this.imageSrc = imageSrc;
-                    this.div = null;
-                    this.listeners = [];
-                    this.setMap(map);
-                }
+        const mapStyles = [
+            { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+            { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+            { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+            { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#263c3f" }] },
+            { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] },
+            { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+            { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+            { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+            { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
+            { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] },
+            { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] },
+            { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
+            { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+            { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+            { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
+            { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] },
+        ];
+        
+        // Marker class must be defined after google.maps is available
+        class CustomMarker extends window.google.maps.OverlayView {
+            private latlng: google.maps.LatLng;
+            private imageSrc: string;
+            private div: HTMLDivElement | null;
+            private listeners: google.maps.MapsEventListener[];
 
-                onAdd() {
-                    const div = document.createElement("div");
-                    div.style.position = "absolute";
-                    div.style.transform = "translate(-50%, -100%)";
-                    div.innerHTML = `
-                        <div style="position: relative; width: 56px; height: 56px; transform-origin: bottom center;">
-                            <div style="position: absolute; inset: 0; background-color: hsl(var(--primary) / 0.3); border-radius: 50%; animation: pulse 2s infinite; transform: scale(1.2);"></div>
-                            <img src="${this.imageSrc}" style="width: 48px; height: 48px; border-radius: 50%; border: 4px solid hsl(var(--primary)); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                        </div>
-                        <style>
-                            @keyframes pulse {
-                                0% { transform: scale(1); opacity: 0.7; }
-                                70% { transform: scale(1.8); opacity: 0; }
-                                100% { transform: scale(1); opacity: 0; }
-                            }
-                        </style>
-                    `;
-                    this.div = div;
-                    const panes = this.getPanes()!;
-                    panes.floatPane.appendChild(div);
-
-                    this.listeners.push(
-                        google.maps.event.addDomListener(this.div, "click", (e) => {
-                            google.maps.event.trigger(this, "click", e);
-                        })
-                    );
-                }
-
-                draw() {
-                    const overlayProjection = this.getProjection();
-                    if (!overlayProjection || !this.div) return;
-                    const sw = overlayProjection.fromLatLngToDivPixel(this.latlng)!;
-                    this.div.style.left = sw.x + "px";
-                    this.div.style.top = sw.y + "px";
-                }
-
-                onRemove() {
-                    if (this.div) {
-                        this.div.parentNode!.removeChild(this.div);
-                        this.div = null;
-                    }
-                    this.listeners.forEach(listener => google.maps.event.removeListener(listener));
-                }
-                
-                getPosition() {
-                    return this.latlng;
-                }
+            constructor(latlng: google.maps.LatLng, imageSrc: string, map: google.maps.Map) {
+                super();
+                this.latlng = latlng;
+                this.imageSrc = imageSrc;
+                this.div = null;
+                this.listeners = [];
+                this.setMap(map);
             }
 
+            onAdd() {
+                const div = document.createElement("div");
+                div.style.position = "absolute";
+                div.style.transform = "translate(-50%, -100%)";
+                div.innerHTML = `
+                    <div style="position: relative; width: 56px; height: 56px; transform-origin: bottom center;">
+                        <div style="position: absolute; inset: 0; background-color: hsl(var(--primary) / 0.3); border-radius: 50%; animation: pulse 2s infinite; transform: scale(1.2);"></div>
+                        <img src="${this.imageSrc}" style="width: 48px; height: 48px; border-radius: 50%; border: 4px solid hsl(var(--primary)); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                    </div>
+                    <style>
+                        @keyframes pulse {
+                            0% { transform: scale(1); opacity: 0.7; }
+                            70% { transform: scale(1.8); opacity: 0; }
+                            100% { transform: scale(1); opacity: 0; }
+                        }
+                    </style>
+                `;
+                this.div = div;
+                const panes = this.getPanes()!;
+                panes.floatPane.appendChild(div);
 
-            const map = new window.google.maps.Map(mapRef.current, {
-                center: event.locationData,
-                zoom: 16,
-                styles: mapStyles,
-                mapTypeControl: false,
-                streetViewControl: false,
-                fullscreenControl: false,
-                zoomControl: false,
-                gestureHandling: 'cooperative'
-            });
-            
-            const organizerAvatar = "https://picsum.photos/seed/user/100";
-            const marker = new CustomMarker(new window.google.maps.LatLng(event.locationData), organizerAvatar, map);
+                this.listeners.push(
+                    google.maps.event.addDomListener(this.div, "click", (e) => {
+                        google.maps.event.trigger(this, "click", e);
+                    })
+                );
+            }
 
-            map.addListener("center_changed", () => {
-                window.setTimeout(() => {
-                    const markerPos = marker.getPosition();
-                    if (markerPos) {
-                       map.panTo(markerPos);
-                    }
-                }, 3000);
-            });
+            draw() {
+                const overlayProjection = this.getProjection();
+                if (!overlayProjection || !this.div) return;
+                const sw = overlayProjection.fromLatLngToDivPixel(this.latlng)!;
+                this.div.style.left = sw.x + "px";
+                this.div.style.top = sw.y + "px";
+            }
 
-            marker.addListener("click", () => {
-                const markerPos = marker.getPosition();
-                if (markerPos) {
-                    map.setZoom(18);
-                    map.setCenter(markerPos);
+            onRemove() {
+                if (this.div) {
+                    this.div.parentNode!.removeChild(this.div);
+                    this.div = null;
                 }
-            });
-
-
-            const redirectButton = document.createElement('div');
-            redirectButton.innerHTML = `<button style="background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>`;
-            redirectButton.style.margin = '16px';
-            redirectButton.onclick = () => {
-                window.open(`https://www.google.com/maps/dir/?api=1&destination=${event.locationData.lat},${event.locationData.lng}`, '_blank');
-            };
-
-            map.controls[window.google.maps.ControlPosition.RIGHT_BOTTOM].push(redirectButton);
+                this.listeners.forEach(listener => google.maps.event.removeListener(listener));
+            }
+            
+            getPosition() {
+                return this.latlng;
+            }
         }
 
-        if (window.google && window.google.maps) {
+
+        const map = new window.google.maps.Map(mapRef.current, {
+            center: event.locationData,
+            zoom: 16,
+            styles: mapStyles,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            zoomControl: false,
+            gestureHandling: 'cooperative'
+        });
+        mapInstanceRef.current = map;
+        
+        const organizerAvatar = "https://picsum.photos/seed/user/100";
+        const marker = new CustomMarker(new window.google.maps.LatLng(event.locationData), organizerAvatar, map);
+
+        map.addListener("center_changed", () => {
+            window.setTimeout(() => {
+                const markerPos = marker.getPosition();
+                if (markerPos) {
+                    map.panTo(markerPos);
+                }
+            }, 3000);
+        });
+
+        marker.addListener("click", () => {
+            const markerPos = marker.getPosition();
+            if (markerPos) {
+                map.setZoom(18);
+                map.setCenter(markerPos);
+            }
+        });
+
+        const redirectButton = document.createElement('div');
+        redirectButton.innerHTML = `<button style="background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>`;
+        redirectButton.style.margin = '16px';
+        redirectButton.onclick = () => {
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${event.locationData.lat},${event.locationData.lng}`, '_blank');
+        };
+
+        map.controls[window.google.maps.ControlPosition.RIGHT_BOTTOM].push(redirectButton);
+
+    }, [event]);
+    
+    useEffect(() => {
+        if (window.google?.maps) {
             initMap();
         } else {
             const interval = setInterval(() => {
-                if (window.google && window.google.maps) {
+                if (window.google?.maps) {
                     clearInterval(interval);
                     initMap();
                 }
             }, 100);
+            return () => clearInterval(interval);
         }
-    }, [event, mapStyles]);
+    }, [initMap]);
     
     return (
         <div ref={mapRef} className="aspect-video w-full rounded-lg bg-muted animate-pulse" />
-    )
+    );
 };
 
 
@@ -370,5 +375,3 @@ export default function EventDetailPage() {
         </div>
     );
 }
-
-    
