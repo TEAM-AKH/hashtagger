@@ -10,7 +10,6 @@ import { cn } from '@/lib/utils';
 
 const actions = [
   { href: '/profile', label: 'Profile', icon: User },
-  { href: '/notifications', label: 'Notifications', icon: Bell },
   { href: '/settings', label: 'Settings', icon: Settings },
   { href: '/logout', label: 'Logout', icon: LogOut },
 ];
@@ -45,7 +44,7 @@ export function AssistiveTouch() {
   const radius = 90;
   const numActions = actions.length;
   // Spread items over a 180-degree arc (PI radians) on the left side
-  const angleIncrement = Math.PI / (numActions - 1);
+  const angleIncrement = Math.PI / (numActions);
   const startAngle = Math.PI / 2; // Start from the top
 
   return (
@@ -65,7 +64,7 @@ export function AssistiveTouch() {
            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-14 h-14">
              {actions.map((action, i) => {
                 // angle for left-side arc (from top to bottom)
-                const angle = startAngle + i * angleIncrement;
+                const angle = startAngle + (i + 0.5) * angleIncrement;
                 const x = -radius * Math.cos(angle - Math.PI/2);
                 const y = -radius * Math.sin(angle - Math.PI/2);
               
