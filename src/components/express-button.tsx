@@ -122,7 +122,7 @@ const CommentArea = ({ docId, onCommentAdded }: { docId: string, onCommentAdded?
     return (
         <div className="flex-grow p-4 flex flex-col h-full">
             <h3 className="text-center font-bold mb-4 text-card-foreground">Expressions</h3>
-            <ScrollArea className="flex-grow pr-4 h-64">
+            <ScrollArea className="flex-grow pr-4 h-full">
                 <div className="space-y-4">
                 {comments.length === 0 ? (
                     <p className="text-muted-foreground text-sm text-center py-8">
@@ -210,9 +210,9 @@ export const ExpressButton = ({ docId, mode = 'inline', onToggle, showBox, showL
     <motion.button
         onClick={onToggle}
         whileHover={showLabel ? "hover" : ""}
-        className="relative flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
+        className="relative flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors p-2 rounded-full"
     >
-        <ExpressIcon isHovered={showBox} isEnlarged={true} />
+        <ExpressIcon isHovered={showBox} isEnlarged={showLabel} />
         {showLabel && (
             <motion.span 
                 className="font-semibold"

@@ -18,7 +18,7 @@ const clips = [
   { id: 5, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", user: "fun_times", description: "Living my best life!", vibes: 2048, expresses: 560, circulates: 150 },
 ];
 
-const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate }: { clip: any, isVisible: boolean, onNext: () => void, handsFreeLoops: string, playbackRate: string }) => {
+const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate, onPlaybackRateChange, onHandsFreeLoopsChange }: { clip: any, isVisible: boolean, onNext: () => void, handsFreeLoops: string, playbackRate: string, onPlaybackRateChange: (rate: string) => void, onHandsFreeLoopsChange: (loops: string) => void }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [showComments, setShowComments] = useState(false);
 
@@ -45,7 +45,9 @@ const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate }: { clip:
 
         if (targetLoops === 0) { // loop is disabled in this case
             video.loop = false;
-            return;
+             const handleEndedNoLoop = () => onNext();
+             video.addEventListener('ended', handleEndedNoLoop);
+             return () => video.removeEventListener('ended', handleEndedNoLoop);
         } else {
             video.loop = false;
         }
@@ -66,7 +68,12 @@ const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate }: { clip:
     
     useEffect(() => {
         if (videoRef.current) {
-            videoRef.current.loop = handsFreeLoops === "0";
+            const isLooping = handsFreeLoops === "0";
+            if (isLooping) {
+                 videoRef.current.loop = true;
+            } else {
+                 videoRef.current.loop = false;
+            }
         }
     }, [handsFreeLoops]);
     
@@ -98,7 +105,7 @@ const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate }: { clip:
                                 Hands-free
                             </DropdownMenuSubTrigger>
                              <DropdownMenuSubContent>
-                                <DropdownMenuRadioGroup value={handsFreeLoops} onValueChange={() => {}}>
+                                <DropdownMenuRadioGroup value={handsFreeLoops} onValueChange={onHandsFreeLoopsChange}>
                                     <DropdownMenuRadioItem value="default">Default (2 loops)</DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="1">1 loop</DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="2">2 loops</DropdownMenuRadioItem>
@@ -106,7 +113,7 @@ const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate }: { clip:
                                     <DropdownMenuRadioItem value="4">4 loops</DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="5">5 loops</DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="6">6 loops</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="0">Disabled</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="0">Loop forever</DropdownMenuRadioItem>
                                 </DropdownMenuRadioGroup>
                             </DropdownMenuSubContent>
                         </DropdownMenuSub>
@@ -116,7 +123,7 @@ const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate }: { clip:
                                 Pace
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent>
-                                <DropdownMenuRadioGroup value={playbackRate} onValueChange={() => {}}>
+                                <DropdownMenuRadioGroup value={playbackRate} onValueChange={onPlaybackRateChange}>
                                     <DropdownMenuRadioItem value="2">2x</DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="1.5">1.5x</DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="1">Normal</DropdownMenuRadioItem>
@@ -231,9 +238,12 @@ export default function ClipsPage() {
                         onNext={() => handleScrollToNext(index)}
                         handsFreeLoops={handsFreeLoops}
                         playbackRate={playbackRate}
+                        onPlaybackRateChange={setPlaybackRate}
+                        onHandsFreeLoopsChange={setHandsFreeLoops}
                     />
                 ))}
             </div>
         </div>
     );
 }
+
