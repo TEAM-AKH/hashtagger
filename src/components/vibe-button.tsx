@@ -3,14 +3,14 @@
 import { useState, useId } from 'react';
 import { motion } from 'framer-motion';
 
-export const VibeButton = () => {
+export const VibeButton = ({ showLabel = true }: { showLabel?: boolean }) => {
     const [isChecked, setIsChecked] = useState(false);
     const uniqueId = useId();
   
     return (
         <motion.div 
             className="relative flex items-center"
-            whileHover="hover"
+            whileHover={showLabel ? "hover" : ""}
         >
             <input 
                 id={uniqueId}
@@ -28,16 +28,18 @@ export const VibeButton = () => {
                        <span className="text-2xl">🥂</span>
                     </div>
                 </div>
-                 <motion.span 
-                    className="font-semibold"
-                    initial={{ width: 0, opacity: 0, marginLeft: 0 }}
-                    variants={{
-                        hover: { width: "auto", opacity: 1, marginLeft: 4 }
-                    }}
-                    transition={{ duration: 0.3 }}
-                >
-                    Vibe
-                </motion.span>
+                 {showLabel && (
+                    <motion.span 
+                        className="font-semibold"
+                        initial={{ width: 0, opacity: 0, marginLeft: 0 }}
+                        variants={{
+                            hover: { width: "auto", opacity: 1, marginLeft: 4 }
+                        }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        Vibe
+                    </motion.span>
+                 )}
             </label>
             <div className="fireworks absolute inset-0 pointer-events-none">
                 {isChecked && Array.from({ length: 10 }).map((_, i) => (

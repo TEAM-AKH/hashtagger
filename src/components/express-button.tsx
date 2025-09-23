@@ -205,17 +205,22 @@ export const ExpressButton = ({ docId, mode = 'inline', onToggle, showBox }: { d
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (commentBoxRef.current && !commentBoxRef.current.contains(event.target as Node)) {
-        if(showBox && onToggle) onToggle();
-      }
+        // Check if the click is outside the comment box itself
+        if (commentBoxRef.current && !commentBoxRef.current.contains(event.target as Node)) {
+            // Check if the click is not on the toggle button (to prevent immediate closing)
+            const toggleButton = (event.target as HTMLElement).closest('[data-express-button]');
+            if (!toggleButton && showBox && onToggle) {
+                onToggle();
+            }
+        }
     };
 
     if (showBox && mode === 'overlay') {
-      document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showBox, onToggle, mode]);
 
@@ -227,6 +232,7 @@ export const ExpressButton = ({ docId, mode = 'inline', onToggle, showBox }: { d
      return (
         <div ref={commentBoxRef}>
             <button
+                data-express-button="true"
                 onClick={onToggle}
                 className="relative flex items-center justify-center w-12 h-12 text-sm font-medium text-white"
             >
@@ -239,10 +245,10 @@ export const ExpressButton = ({ docId, mode = 'inline', onToggle, showBox }: { d
                          animate={{ y: 0, opacity: 1 }}
                          exit={{ y: "100%", opacity: 0 }}
                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                         className="fixed bottom-0 left-0 right-0 h-1/2 bg-card/80 backdrop-blur-md rounded-t-2xl shadow-lg flex flex-col z-20"
+                         className="absolute bottom-0 left-0 right-0 h-1/2 bg-card/80 backdrop-blur-md rounded-t-lg shadow-lg flex flex-col z-20"
                          onClick={(e) => e.stopPropagation()}
                     >
-                       <div className="w-12 h-1.5 bg-muted-foreground/50 rounded-full mx-auto my-2 cursor-grab" onClick={onToggle}/>
+                       <div className="w-12 h-1.5 bg-muted-foreground/50 rounded-full mx-auto my-2 cursor-grab" onMouseDown={onToggle}/>
                        <CommentArea docId={docId} onCommentAdded={() => {
                           // Potentially keep open, or close. For now, keep open.
                        }}/>
@@ -250,7 +256,7 @@ export const ExpressButton = ({ docId, mode = 'inline', onToggle, showBox }: { d
                 )}
             </AnimatePresence>
         </div>
-     )
+     );
   }
 
   return (
@@ -259,7 +265,7 @@ export const ExpressButton = ({ docId, mode = 'inline', onToggle, showBox }: { d
         whileHover="hover"
         className="relative flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
     >
-        <ExpressIcon isHovered={showBox}/>
+        <ExpressIcon isHovered={showBox} />
         <motion.span 
             className="font-semibold"
             initial={{ width: 0, opacity: 0, marginLeft: 0 }}

@@ -73,18 +73,19 @@ const CirculateIcon = ({ isHovered }: { isHovered: boolean }) => {
 };
 
 
-export const CirculateButton = () => {
+export const CirculateButton = ({ showLabel = true }: { showLabel?: boolean }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <motion.button
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      whileHover="hover"
+      whileHover={showLabel ? "hover" : ""}
       className="relative flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors py-2 px-3 rounded-full"
     >
       <CirculateIcon isHovered={isHovered} />
-       <motion.span 
+       {showLabel && (
+        <motion.span 
             className="font-semibold"
             initial={{ width: 0, opacity: 0, marginLeft: 0 }}
             variants={{
@@ -94,6 +95,7 @@ export const CirculateButton = () => {
         >
             Circulate
         </motion.span>
+       )}
     </motion.button>
   );
 };
