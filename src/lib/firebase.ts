@@ -4,9 +4,10 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-// IMPORTANT: Replace the placeholder values with your actual Firebase project configuration.
+// IMPORTANT: You've set the API key, but you still need to replace the other placeholder values below
+// with your actual Firebase project configuration for database features to work.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyCAPu1XYY_yqEw4UMpTyO8TFH44YX8iVZU",
   authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
   projectId: "YOUR_PROJECT_ID",
   storageBucket: "YOUR_PROJECT_ID.appspot.com",
