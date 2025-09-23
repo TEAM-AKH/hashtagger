@@ -49,39 +49,47 @@ const EventMap = ({ event }: { event: any }) => {
     useEffect(() => {
         if (!isMounted || !mapRef.current || !window.google || !window.google.maps || !event.locationData) return;
         
-        // Custom marker overlay
         class CustomMarker extends window.google.maps.OverlayView {
             private latlng: google.maps.LatLng;
             private imageSrc: string;
             private div: HTMLDivElement | null;
+            private listeners: google.maps.MapsEventListener[];
 
-            constructor(latlng: google.maps.LatLng, imageSrc: string) {
+            constructor(latlng: google.maps.LatLng, imageSrc: string, map: google.maps.Map) {
                 super();
                 this.latlng = latlng;
                 this.imageSrc = imageSrc;
                 this.div = null;
+                this.listeners = [];
+                this.setMap(map);
             }
 
             onAdd() {
                 const div = document.createElement("div");
                 div.style.position = "absolute";
-                div.style.transform = "translate(-50%, -50%)";
+                div.style.transform = "translate(-50%, -100%)"; // Pinpoint bottom center
                 div.innerHTML = `
-                    <div style="position: relative; width: 48px; height: 48px;">
-                        <div style="position: absolute; inset: 0; background-color: hsl(var(--primary) / 0.3); border-radius: 50%; animation: pulse 1.5s infinite;"></div>
-                        <img src="${this.imageSrc}" style="width: 40px; height: 40px; border-radius: 50%; border: 4px solid hsl(var(--primary)); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                    <div style="position: relative; width: 56px; height: 56px; transform-origin: bottom center;">
+                        <div style="position: absolute; inset: 0; background-color: hsl(var(--primary) / 0.3); border-radius: 50%; animation: pulse 2s infinite; transform: scale(1.2);"></div>
+                        <img src="${this.imageSrc}" style="width: 48px; height: 48px; border-radius: 50%; border: 4px solid hsl(var(--primary)); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
                     </div>
                     <style>
                         @keyframes pulse {
-                            0% { transform: scale(1); opacity: 0.5; }
-                            50% { transform: scale(1.5); opacity: 0; }
+                            0% { transform: scale(1); opacity: 0.7; }
+                            70% { transform: scale(1.8); opacity: 0; }
                             100% { transform: scale(1); opacity: 0; }
                         }
                     </style>
                 `;
                 this.div = div;
                 const panes = this.getPanes()!;
-                panes.overlayMouseTarget.appendChild(div);
+                panes.floatPane.appendChild(div);
+
+                 this.listeners.push(
+                    google.maps.event.addDomListener(this.div, "click", (e) => {
+                        google.maps.event.trigger(this, "click", e);
+                    })
+                );
             }
 
             draw() {
@@ -98,6 +106,11 @@ const EventMap = ({ event }: { event: any }) => {
                     this.div.parentNode!.removeChild(this.div);
                     this.div = null;
                 }
+                this.listeners.forEach(listener => google.maps.event.removeListener(listener));
+            }
+            
+            getPosition() {
+                return this.latlng;
             }
         }
 
@@ -113,11 +126,23 @@ const EventMap = ({ event }: { event: any }) => {
             gestureHandling: 'cooperative'
         });
         
-        const organizerAvatar = "https://picsum.photos/seed/organizer/100"; // Placeholder for organizer's pic
-        new CustomMarker(new window.google.maps.LatLng(event.locationData), organizerAvatar).setMap(map);
+        const organizerAvatar = "https://picsum.photos/seed/user/100";
+        const marker = new CustomMarker(new window.google.maps.LatLng(event.locationData), organizerAvatar, map);
+
+        map.addListener("center_changed", () => {
+          window.setTimeout(() => {
+            map.panTo(marker.getPosition()!);
+          }, 3000);
+        });
+
+        marker.addListener("click", () => {
+          map.setZoom(18);
+          map.setCenter(marker.getPosition()!);
+        });
+
 
         const redirectButton = document.createElement('div');
-        redirectButton.innerHTML = `<button style="background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>`;
+        redirectButton.innerHTML = `<button style="background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>`;
         redirectButton.style.margin = '16px';
         redirectButton.onclick = () => {
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${event.locationData.lat},${event.locationData.lng}`, '_blank');
