@@ -59,6 +59,22 @@ const initialMessages: Record<number, { from: 'me' | 'other'; text: string; time
   ]
 };
 
+const emojis = [
+    'https://i.imgur.com/hV5wD41.png', // happy
+    'https://i.imgur.com/Vb2a1aR.png', // love
+    'https://i.imgur.com/GZ5sJ9E.png', // laughing
+    'https://i.imgur.com/2sS9J9L.png', // surprised
+    'https://i.imgur.com/s6v4j9I.png', // sad
+    'https://i.imgur.com/qgS4hT1.png', // angry
+    'https://i.imgur.com/V2z2fV2.png', // wink
+    'https://i.imgur.com/zJp7ZJt.png', // cool
+    'https://i.imgur.com/fJb2R4j.png', // thinking
+    'https://i.imgur.com/7bA7gM3.png', // sleepy
+];
+
+const reactionEmojis = [emojis[0], emojis[1], emojis[6]];
+
+
 const ChatView = ({ chat, messages, onSendMessage, onClose, onAddReaction }: { chat: any, messages: any[], onSendMessage: (text: string) => void, onClose: () => void, onAddReaction: (msgIndex: number, reaction: string) => void }) => {
   const [newMessage, setNewMessage] = useState('');
 
@@ -73,6 +89,21 @@ const ChatView = ({ chat, messages, onSendMessage, onClose, onAddReaction }: { c
     if (e.key === 'Enter') {
         handleSend();
     }
+  }
+  
+  const handleEmojiClick = (emoji: string) => {
+    setNewMessage(prev => prev + `[img=${emoji}]`);
+  }
+
+  const renderMessageText = (text: string) => {
+    const parts = text.split(/(\[img=.*?\])/g);
+    return parts.map((part, index) => {
+        if (part.startsWith('[img=') && part.endsWith(']')) {
+            const url = part.substring(5, part.length - 1);
+            return <img key={index} src={url} alt="emoji" className="inline-block w-6 h-6 mx-0.5" />;
+        }
+        return part;
+    });
   }
 
   return (
@@ -118,7 +149,7 @@ const ChatView = ({ chat, messages, onSendMessage, onClose, onAddReaction }: { c
             <ContextMenu>
                 <ContextMenuTrigger>
                     <div className={`p-3 rounded-lg max-w-xs lg:max-w-md ${msg.from === 'me' ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
-                        <p>{msg.text}</p>
+                        <p className="inline-flex items-center flex-wrap">{renderMessageText(msg.text)}</p>
                          <div className={`flex items-center justify-end gap-1 text-xs mt-1 ${msg.from === 'me' ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                             <span>{msg.time}</span>
                             {msg.from === 'me' && msg.status && index === messages.length - 1 && (
@@ -128,9 +159,18 @@ const ChatView = ({ chat, messages, onSendMessage, onClose, onAddReaction }: { c
                     </div>
                 </ContextMenuTrigger>
                 <ContextMenuContent>
-                    <ContextMenuItem onClick={() => onAddReaction(index, ':)')}>React <span className="ml-auto">:&#41;</span></ContextMenuItem>
-                    <ContextMenuItem onClick={() => onAddReaction(index, '<3')}>React <span className="ml-auto">&lt;3</span></ContextMenuItem>
-                    <ContextMenuItem onClick={() => onAddReaction(index, ';)')}>React <span className="ml-auto">;)</span></ContextMenuItem>
+                    <div className="flex gap-2 p-2">
+                        {reactionEmojis.map((emoji, rIndex) => (
+                            <motion.img 
+                                key={rIndex}
+                                src={emoji} 
+                                alt="reaction" 
+                                className="w-8 h-8 cursor-pointer"
+                                whileHover={{ scale: 1.2, rotate: [0, 10, -10, 0] }}
+                                onClick={() => onAddReaction(index, emoji)}
+                            />
+                        ))}
+                    </div>
                 </ContextMenuContent>
             </ContextMenu>
              {msg.reactions && msg.reactions.length > 0 && (
@@ -141,9 +181,9 @@ const ChatView = ({ chat, messages, onSendMessage, onClose, onAddReaction }: { c
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ delay: rIndex * 0.1 }}
-                            className="text-sm bg-muted border rounded-full px-2.5 py-0.5 font-mono"
+                            className="text-sm bg-muted border rounded-full px-1 py-1"
                         >
-                            {reaction}
+                            <img src={reaction} alt="reaction" className="w-5 h-5" />
                         </motion.div>
                     ))}
                 </div>
@@ -152,7 +192,25 @@ const ChatView = ({ chat, messages, onSendMessage, onClose, onAddReaction }: { c
         ))}
       </div>
       <div className="p-4 border-t flex items-center gap-2 bg-background">
-        <Button variant="ghost" size="icon"><Smile className="h-5 w-5" /></Button>
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon"><Smile className="h-5 w-5" /></Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2">
+                <div className="grid grid-cols-5 gap-2">
+                    {emojis.map((emoji, index) => (
+                        <motion.img 
+                            key={index} 
+                            src={emoji} 
+                            alt="emoji" 
+                            className="w-8 h-8 cursor-pointer" 
+                            whileHover={{ scale: 1.2 }}
+                            onClick={() => handleEmojiClick(emoji)}
+                        />
+                    ))}
+                </div>
+            </PopoverContent>
+        </Popover>
          <Button variant="ghost" size="icon" title="Dragomen"><Languages className="h-5 w-5" /></Button>
         <Input 
           value={newMessage}
@@ -439,5 +497,7 @@ export default function ChitChatPage() {
     </div>
   );
 }
+
+    
 
     
