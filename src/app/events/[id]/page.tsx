@@ -6,7 +6,7 @@ import { events, setEventStatus } from '@/lib/events-data';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Users, Map, Clock, Upload, Download, Save, Play, Pause, XCircle, Plus, Mail, Pin, Route, Navigation } from 'lucide-react';
+import { ChevronLeft, Users, Map, Clock, Upload, Download, Save, Play, Pause, XCircle, Plus, Mail, Pin, Route, Navigation, ArrowRight, Maximize } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -17,13 +17,14 @@ import { Label } from '@/components/ui/label';
 import Image from 'next/image';
 
 
-const EventMap = ({ event }: { event: any }) => {
+const EventMap = ({ event, isEnlarged = false }: { event: any, isEnlarged?: boolean }) => {
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<any>(null);
+    const [isMapOpen, setIsMapOpen] = useState(false);
 
     const initMap = useCallback(() => {
         if (!mapRef.current || !window.google?.maps || !event.locationData) return;
-        if (mapInstanceRef.current) return; // Map already initialized
+        if (mapInstanceRef.current && !isEnlarged) return;
 
         const mapStyles = [
             { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
@@ -46,7 +47,8 @@ const EventMap = ({ event }: { event: any }) => {
             { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] },
         ];
         
-        // Marker class must be defined after google.maps is available
+        if (!window.google.maps.OverlayView) return;
+
         class CustomMarker extends window.google.maps.OverlayView {
             private latlng: google.maps.LatLng;
             private imageSrc: string;
@@ -119,7 +121,7 @@ const EventMap = ({ event }: { event: any }) => {
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: false,
-            zoomControl: false,
+            zoomControl: true,
             gestureHandling: 'cooperative'
         });
         mapInstanceRef.current = map;
@@ -144,23 +146,37 @@ const EventMap = ({ event }: { event: any }) => {
             }
         });
 
-        const redirectButton = document.createElement('div');
-        redirectButton.innerHTML = `<button style="background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>`;
-        redirectButton.style.margin = '16px';
-        redirectButton.onclick = () => {
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${event.locationData.lat},${event.locationData.lng}`, '_blank');
-        };
+        if (!isEnlarged) {
+             const controlsContainer = document.createElement('div');
+             controlsContainer.style.margin = '16px';
+             controlsContainer.style.display = 'flex';
+             controlsContainer.style.gap = '8px';
+             
+             const redirectButton = document.createElement('div');
+            redirectButton.innerHTML = `<button style="background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>`;
+            redirectButton.onclick = () => {
+                window.open(`https://www.google.com/maps/dir/?api=1&destination=${event.locationData.lat},${event.locationData.lng}`, '_blank');
+            };
+            
+            const enlargeButton = document.createElement('div');
+            enlargeButton.innerHTML = `<button style="background: hsl(var(--background)); color: hsl(var(--foreground)); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg></button>`;
+            enlargeButton.onclick = () => {
+                setIsMapOpen(true);
+            };
+            
+            controlsContainer.appendChild(enlargeButton);
+            controlsContainer.appendChild(redirectButton);
+            map.controls[window.google.maps.ControlPosition.RIGHT_BOTTOM].push(controlsContainer);
+        }
 
-        map.controls[window.google.maps.ControlPosition.RIGHT_BOTTOM].push(redirectButton);
-
-    }, [event]);
+    }, [event, isEnlarged]);
     
     useEffect(() => {
-        if (window.google?.maps) {
+        if (window.google?.maps?.OverlayView) {
             initMap();
         } else {
             const interval = setInterval(() => {
-                if (window.google?.maps) {
+                if (window.google?.maps?.OverlayView) {
                     clearInterval(interval);
                     initMap();
                 }
@@ -170,7 +186,22 @@ const EventMap = ({ event }: { event: any }) => {
     }, [initMap]);
     
     return (
-        <div ref={mapRef} className="aspect-video w-full rounded-lg bg-muted animate-pulse" />
+        <>
+            <div ref={mapRef} className={cn("w-full bg-muted animate-pulse", isEnlarged ? "h-[70vh]" : "aspect-video rounded-lg")} />
+
+            {!isEnlarged && (
+                 <Dialog open={isMapOpen} onOpenChange={setIsMapOpen}>
+                    <DialogContent className="max-w-4xl h-[90vh] p-0">
+                        <DialogHeader className="p-4">
+                            <DialogTitle>{event.name} - Live Location</DialogTitle>
+                        </DialogHeader>
+                        <div className="h-full w-full px-4 pb-4">
+                            <EventMap event={event} isEnlarged={true} />
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
+        </>
     );
 };
 
@@ -375,3 +406,5 @@ export default function EventDetailPage() {
         </div>
     );
 }
+
+    
