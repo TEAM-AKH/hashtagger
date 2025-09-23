@@ -14,14 +14,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import Image from 'next/image';
 
 
 const EventMap = ({ event }: { event: any }) => {
-    const mapRef = useRef(null);
-    const directionsRendererRef = useRef<any>(null);
-    const directionsServiceRef = useRef<any>(null);
-    const [origin, setOrigin] = useState("");
+    const mapRef = useRef<HTMLDivElement>(null);
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
@@ -32,144 +29,110 @@ const EventMap = ({ event }: { event: any }) => {
         { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
         { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
         { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-        {
-            featureType: "administrative.locality",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#d59563" }],
-        },
-        {
-            featureType: "poi",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#d59563" }],
-        },
-        {
-            featureType: "poi.park",
-            elementType: "geometry",
-            stylers: [{ color: "#263c3f" }],
-        },
-        {
-            featureType: "poi.park",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#6b9a76" }],
-        },
-        {
-            featureType: "road",
-            elementType: "geometry",
-            stylers: [{ color: "#38414e" }],
-        },
-        {
-            featureType: "road",
-            elementType: "geometry.stroke",
-            stylers: [{ color: "#212a37" }],
-        },
-        {
-            featureType: "road",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#9ca5b3" }],
-        },
-        {
-            featureType: "road.highway",
-            elementType: "geometry",
-            stylers: [{ color: "#746855" }],
-        },
-        {
-            featureType: "road.highway",
-            elementType: "geometry.stroke",
-            stylers: [{ color: "#1f2835" }],
-        },
-        {
-            featureType: "road.highway",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#f3d19c" }],
-        },
-        {
-            featureType: "transit",
-            elementType: "geometry",
-            stylers: [{ color: "#2f3948" }],
-        },
-        {
-            featureType: "transit.station",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#d59563" }],
-        },
-        {
-            featureType: "water",
-            elementType: "geometry",
-            stylers: [{ color: "#17263c" }],
-        },
-        {
-            featureType: "water",
-            elementType: "labels.text.fill",
-            stylers: [{ color: "#515c6d" }],
-        },
-        {
-            featureType: "water",
-            elementType: "labels.text.stroke",
-            stylers: [{ color: "#17263c" }],
-        },
+        { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+        { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+        { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#263c3f" }] },
+        { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+        { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
+        { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] },
+        { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] },
+        { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
+        { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+        { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
+        { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] },
     ];
+    
+    // Custom marker overlay
+    class CustomMarker extends window.google.maps.OverlayView {
+        private latlng: google.maps.LatLng;
+        private imageSrc: string;
+        private div: HTMLDivElement | null;
+
+        constructor(latlng: google.maps.LatLng, imageSrc: string) {
+            super();
+            this.latlng = latlng;
+            this.imageSrc = imageSrc;
+            this.div = null;
+        }
+
+        onAdd() {
+            const div = document.createElement("div");
+            div.style.position = "absolute";
+            div.style.transform = "translate(-50%, -50%)";
+            div.innerHTML = `
+                <div style="position: relative; width: 48px; height: 48px;">
+                    <div style="position: absolute; inset: 0; background-color: hsl(var(--primary) / 0.3); border-radius: 50%; animation: pulse 1.5s infinite;"></div>
+                    <img src="${this.imageSrc}" style="width: 40px; height: 40px; border-radius: 50%; border: 4px solid hsl(var(--primary)); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                </div>
+                <style>
+                    @keyframes pulse {
+                        0% { transform: scale(1); opacity: 0.5; }
+                        50% { transform: scale(1.5); opacity: 0; }
+                        100% { transform: scale(1); opacity: 0; }
+                    }
+                </style>
+            `;
+            this.div = div;
+            const panes = this.getPanes()!;
+            panes.overlayMouseTarget.appendChild(div);
+        }
+
+        draw() {
+            const overlayProjection = this.getProjection();
+            const sw = overlayProjection.fromLatLngToDivPixel(this.latlng)!;
+            if (this.div) {
+                this.div.style.left = sw.x + "px";
+                this.div.style.top = sw.y + "px";
+            }
+        }
+
+        onRemove() {
+            if (this.div) {
+                this.div.parentNode!.removeChild(this.div);
+                this.div = null;
+            }
+        }
+    }
+
 
     useEffect(() => {
-        if (!isMounted || !mapRef.current || !window.google) return;
+        if (!isMounted || !mapRef.current || !window.google || !event.locationData) return;
         
         const map = new window.google.maps.Map(mapRef.current, {
             center: event.locationData,
-            zoom: 15,
+            zoom: 16,
             styles: mapStyles,
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: false,
+            zoomControl: false,
+            gestureHandling: 'cooperative'
         });
         
-        new window.google.maps.Marker({
-            position: event.locationData,
-            map: map,
-            title: event.name,
-        });
-        
-        directionsServiceRef.current = new window.google.maps.DirectionsService();
-        directionsRendererRef.current = new window.google.maps.DirectionsRenderer();
-        directionsRendererRef.current.setMap(map);
+        const organizerAvatar = "https://picsum.photos/seed/organizer/100"; // Placeholder for organizer's pic
+        new CustomMarker(new window.google.maps.LatLng(event.locationData), organizerAvatar).setMap(map);
+
+        const redirectButton = document.createElement('div');
+        redirectButton.innerHTML = `<button style="background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>`;
+        redirectButton.style.margin = '16px';
+        redirectButton.onclick = () => {
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${event.locationData.lat},${event.locationData.lng}`, '_blank');
+        };
+
+        map.controls[window.google.maps.ControlPosition.RIGHT_BOTTOM].push(redirectButton);
+
 
     }, [isMounted, event]);
     
-    const calculateAndDisplayRoute = () => {
-        if (!origin) return;
-        directionsServiceRef.current.route(
-          {
-            origin: origin,
-            destination: event.locationData,
-            travelMode: window.google.maps.TravelMode.DRIVING,
-          },
-          (response: any, status: any) => {
-            if (status === "OK") {
-              directionsRendererRef.current.setDirections(response);
-            } else {
-              alert("Directions request failed due to " + status);
-            }
-          }
-        );
-    };
 
     if (!isMounted) return <div className="aspect-video bg-muted rounded-md animate-pulse" />;
     
     return (
-        <div className="space-y-4">
-             <div ref={mapRef} className="aspect-video w-full rounded-lg" />
-             <div className="flex gap-2">
-                <div className="relative w-full">
-                     <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
-                     <Input 
-                        type="text" 
-                        placeholder="Enter your starting point" 
-                        value={origin}
-                        onChange={(e) => setOrigin(e.target.value)}
-                        className="pl-10"
-                    />
-                </div>
-                <Button onClick={calculateAndDisplayRoute} disabled={!origin}><Route className="mr-2 h-4 w-4"/>Get Directions</Button>
-            </div>
-        </div>
+        <div ref={mapRef} className="aspect-video w-full rounded-lg" />
     )
 };
 
@@ -374,3 +337,5 @@ export default function EventDetailPage() {
         </div>
     );
 }
+
+    
