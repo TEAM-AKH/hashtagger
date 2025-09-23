@@ -122,7 +122,7 @@ const CommentArea = ({ docId, onCommentAdded }: { docId: string, onCommentAdded?
     return (
         <div className="flex-grow p-4 flex flex-col h-full">
             <h3 className="text-center font-bold mb-4 text-card-foreground">Expressions</h3>
-            <ScrollArea className="flex-grow pr-4 h-full">
+            <ScrollArea className="flex-grow pr-4 -mr-4 h-full">
                 <div className="space-y-4">
                 {comments.length === 0 ? (
                     <p className="text-muted-foreground text-sm text-center py-8">
@@ -163,7 +163,7 @@ const CommentArea = ({ docId, onCommentAdded }: { docId: string, onCommentAdded?
 
             <form
                 onSubmit={handleSubmit}
-                className="pt-4 border-t flex items-center gap-2"
+                className="pt-4 mt-auto border-t flex items-center gap-2"
             >
                 <Popover>
                     <PopoverTrigger asChild>

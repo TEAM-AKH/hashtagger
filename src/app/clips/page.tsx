@@ -169,7 +169,7 @@ const Clip = ({ clip, isVisible, onNext, handsFreeLoops, playbackRate, onPlaybac
                          animate={{ y: "50%", opacity: 1 }}
                          exit={{ y: "100%", opacity: 0.8 }}
                          transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-                         className="absolute bottom-0 left-0 right-0 h-full bg-card/80 backdrop-blur-md rounded-t-lg shadow-lg flex flex-col z-20"
+                         className="absolute bottom-0 left-0 right-0 h-1/2 bg-card/80 backdrop-blur-md rounded-t-lg shadow-lg flex flex-col z-20"
                          onClick={(e) => e.stopPropagation()}
                     >
                        <div className="w-12 h-1.5 bg-muted-foreground/50 rounded-full mx-auto my-2 cursor-grab" onPointerDown={() => setShowComments(false)}/>
