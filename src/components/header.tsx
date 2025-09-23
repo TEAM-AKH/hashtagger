@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import Link from 'next/link';
 import { ModeToggle } from './dark-mode-toggle';
 import { HaloSearch } from './halo-search';
+import { ScorpioIcon } from './scorpio-icon';
 
 export default function Header() {
   return (
@@ -22,8 +23,8 @@ export default function Header() {
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full text-2xl">
-            ♏
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <ScorpioIcon />
              <span className="sr-only">User menu</span>
           </Button>
         </DropdownMenuTrigger>
