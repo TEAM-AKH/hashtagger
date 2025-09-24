@@ -31,16 +31,22 @@ const mockContent = {
   'Trending': [
      { type: 'clip', data: { id: 3, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/clip3/400/711", user: "firestarter", description: "Just chilling by the fire." } },
      { type: 'post', data: { id: 3, author: { name: "Charlie", avatar: "https://picsum.photos/seed/3/100", hint: "person nature" }, content: "Exploring the hidden gems of the city. #urbanexplorer", image: { src: "https://picsum.photos/seed/post3/600/375", hint: "city street art" }, likes: 23, comments: [], circles: [], isSaved: false } },
+     { type: 'post', data: { id: 6, author: { name: "Grace", avatar: "https://picsum.photos/seed/6/100", hint: "woman city" }, content: "This new cafe has the best latte art!", image: { src: "https://picsum.photos/seed/post6/600/375", hint: "latte art coffee" }, likes: 88, comments: [], circles: [], isSaved: false } },
+     { type: 'clip', data: { id: 6, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4", thumbnail: "https://picsum.photos/seed/clip6/400/711", user: "sci-fi_fan", description: "Tears of Steel opening scene." } },
   ],
   'Following': [
      { type: 'post', data: { id: 4, author: { name: "David", avatar: "https://picsum.photos/seed/4/100", hint: "man portrait" }, content: "Weekend baking project: success! 🍞", image: { src: "https://picsum.photos/seed/post4/600/375", hint: "fresh bread" }, likes: 78, comments: [], circles: [], isSaved: false } },
+     { type: 'post', data: { id: 1, author: { name: "Alice", avatar: "https://picsum.photos/seed/1/100", hint: "woman smiling" }, content: "The sequel to my last post! The park was even more beautiful in the evening.", image: { src: "https://picsum.photos/seed/post1-2/600/375", hint: "park sunset" }, likes: 34, comments: [], circles: [{id: 1, name: "Best Friends"}], isSaved: false } },
   ],
    'Recent': [
     { type: 'post', data: { id: 5, author: { name: "Eve", avatar: "https://picsum.photos/seed/5/100", hint: "woman nature" }, content: "Morning hike views. #hiking", image: { src: "https://picsum.photos/seed/post5/600/375", hint: "mountain sunrise" }, likes: 102, comments: [], isSaved: true } },
+    { type: 'post', data: { id: 2, author: { name: "Bob", avatar: "https://picsum.photos/seed/2/100", hint: "man glasses" }, content: "I've added a new plant to my desk. It really ties the room together.", image: { src: "https://picsum.photos/seed/post2-2/600/375", hint: "desk plant" }, likes: 50, comments: [], circles: [], isSaved: true } },
   ],
    'Discover': [
     { type: 'clip', data: { id: 4, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/clip4/400/711", user: "escape_artist", description: "My great escape" } },
+    { type: 'post', data: { id: 7, author: { name: "Heidi", avatar: "https://picsum.photos/seed/7/100", hint: "woman architecture" }, content: "Architecture is fascinating.", image: { src: "https://picsum.photos/seed/post7/600/375", hint: "modern building" }, likes: 150, comments: [], circles: [], isSaved: false } },
     { type: 'clip', data: { id: 5, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", thumbnail: "https://picsum.photos/seed/clip5/400/711", user: "fun_times", description: "Living my best life!" } },
+    { type: 'post', data: { id: 8, author: { name: "Ivan", avatar: "https://picsum.photos/seed/8/100", hint: "man with dog" }, content: "A boy and his dog. 🐾", image: { src: "https://picsum.photos/seed/post8/600/375", hint: "person dog beach" }, likes: 200, comments: [], circles: [], isSaved: false } },
   ]
 };
 

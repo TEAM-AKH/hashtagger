@@ -16,6 +16,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { HaloSearch } from '@/components/halo-search';
 
 const initialContacts = [
     { id: 1, name: "Alice", image: "https://picsum.photos/seed/c1/100", lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', status: 'seen', online: true, lastVisited: Date.now() - 10000, circle: { id: 1, name: "Project Team", members: ["Alice", "Bob", "Charlie"] } },
@@ -241,17 +242,8 @@ const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onCha
            <Button variant="ghost" size="icon"><Bell className="h-5 w-5"/></Button>
          </div>
       </div>
-      <div className="relative">
-        <div id="halo-search">
-            <div id="search-wrapper">
-                <input
-                    placeholder="Search..."
-                    type="text"
-                    name="text"
-                    className="search-field"
-                />
-            </div>
-        </div>
+      <div className="relative flex justify-center">
+        <HaloSearch />
       </div>
       <Card className="flex-grow overflow-hidden">
         <CardContent className="p-0 h-full overflow-y-auto">
@@ -638,5 +630,3 @@ export default function ChitChatPage() {
     </div>
   );
 }
-
-    

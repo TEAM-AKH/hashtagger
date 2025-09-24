@@ -31,7 +31,7 @@ export function HaloSearch() {
   return (
     <>
       <style jsx>{`
-        #halo-search-container {
+        #halo-search {
           position: relative;
           display: flex;
           align-items: center;
@@ -271,38 +271,38 @@ export function HaloSearch() {
             background-color: hsl(var(--background));
         }
 
-        #halo-search-container:hover > .halo-effect .outer-ring::before {
+        #halo-search:hover > .halo-effect .outer-ring::before {
           transform: translate(-50%, -50%) rotate(-98deg);
         }
 
-        #halo-search-container:hover > .halo-effect .aurora-glow::before {
+        #halo-search:hover > .halo-effect .aurora-glow::before {
           transform: translate(-50%, -50%) rotate(-120deg);
         }
 
-        #halo-search-container:hover > .halo-effect .inner-glow::before {
+        #halo-search:hover > .halo-effect .inner-glow::before {
           transform: translate(-50%, -50%) rotate(-97deg);
         }
 
-        #halo-search-container:hover > .halo-effect .main-border::before {
+        #halo-search:hover > .halo-effect .main-border::before {
           transform: translate(-50%, -50%) rotate(-110deg);
         }
 
-        #halo-search-container:focus-within > .halo-effect .outer-ring::before {
+        #halo-search:focus-within > .halo-effect .outer-ring::before {
           transform: translate(-50%, -50%) rotate(442deg);
           transition: all 4s;
         }
 
-        #halo-search-container:focus-within > .halo-effect .aurora-glow::before {
+        #halo-search:focus-within > .halo-effect .aurora-glow::before {
           transform: translate(-50%, -50%) rotate(420deg);
           transition: all 4s;
         }
 
-        #halo-search-container:focus-within > .halo-effect .inner-glow::before {
+        #halo-search:focus-within > .halo-effect .inner-glow::before {
           transform: translate(-50%, -50%) rotate(443deg);
           transition: all 4s;
         }
 
-        #halo-search-container:focus-within > .halo-effect .main-border::before {
+        #halo-search:focus-within > .halo-effect .main-border::before {
           transform: translate(-50%, -50%) rotate(430deg);
           transition: all 4s;
         }
@@ -317,7 +317,7 @@ export function HaloSearch() {
           }
         }
       `}</style>
-      <div id="halo-search-container" ref={searchRef}>
+      <div id="halo-search" ref={searchRef}>
         <div className="halo-effect">
             <div className="aurora-glow"></div>
             <div className="outer-ring"></div>
