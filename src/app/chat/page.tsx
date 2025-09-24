@@ -5,15 +5,16 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bell, Bot, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bell, Bot, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, ChevronLeft, ChevronRight, Users, Plus, FileArchive, Search } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ChitChatIcon } from '@/components/chitchat-icon';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const initialCircles = [
     { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"], lastVisited: Date.now() - 10000, online: true, lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', status: 'seen' },
@@ -286,6 +287,64 @@ const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onCha
   );
 };
 
+const CircleDetails = ({ chat }: { chat: any }) => {
+    if (!chat) return null;
+  
+    return (
+        <motion.div
+            key={`details-${chat.id}`}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            transition={{ duration: 0.3 }}
+            className="h-full"
+        >
+          <Card className="h-full flex flex-col">
+            <CardHeader className="text-center items-center">
+                 <Avatar className="h-20 w-20 mb-2">
+                    <AvatarImage src={chat.image || `https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
+                    <AvatarFallback>{chat.name.charAt(0)}</AvatarFallback>
+                 </Avatar>
+                <CardTitle>{chat.name}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow space-y-6">
+                <div className="space-y-3">
+                    <h3 className="font-semibold text-muted-foreground flex items-center gap-2"><Users className="h-5 w-5" /> Members ({chat.members.length})</h3>
+                    <div className="flex flex-wrap gap-2">
+                        {chat.members.map((member: string) => (
+                             <TooltipProvider key={member}>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Avatar className="h-9 w-9">
+                                            <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${member}`} />
+                                            <AvatarFallback>{member.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{member}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                             </TooltipProvider>
+                        ))}
+                    </div>
+                </div>
+                 <div className="space-y-3">
+                    <h3 className="font-semibold text-muted-foreground flex items-center gap-2"><FileArchive className="h-5 w-5" /> Shared Files</h3>
+                    <div className="text-center text-sm text-muted-foreground py-4 border rounded-lg">
+                        No files shared yet.
+                    </div>
+                </div>
+            </CardContent>
+            <div className="p-4 border-t flex flex-col gap-2">
+                <Button variant="outline"><Plus className="mr-2"/> Add Member</Button>
+                <Button variant="outline"><BellOff className="mr-2"/> Mute Notifications</Button>
+                <Button variant="outline"><Search className="mr-2"/> Search in Chat</Button>
+            </div>
+          </Card>
+        </motion.div>
+    )
+}
+
 
 export default function ChitChatPage() {
   const [chats, setChats] = useState(initialCircles);
@@ -481,23 +540,25 @@ export default function ChitChatPage() {
         </div>
         
         <div className="col-span-4">
-            <AnimatePresence>
-                <motion.div 
-                    key="chat-list"
-                    initial={{ opacity: 1, x: 0 }}
-                    animate={{ opacity: selectedChat ? 0 : 1, x: selectedChat ? 50 : 0 }}
-                    exit={{ opacity: 0, x: 50 }}
-                    transition={{ duration: 0.3 }}
-                    className="h-full"
-                >
-                    <ChatList chats={sortedChats} onChatSelect={openChat} selectedChatId={selectedChatId} />
-                </motion.div>
+            <AnimatePresence mode="wait">
+                {selectedChat ? (
+                    <CircleDetails chat={selectedChat} />
+                ) : (
+                    <motion.div 
+                        key="chat-list"
+                        initial={{ opacity: 1, x: 0 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 50 }}
+                        transition={{ duration: 0.3 }}
+                        className="h-full"
+                    >
+                        <ChatList chats={sortedChats} onChatSelect={openChat} selectedChatId={selectedChatId} />
+                    </motion.div>
+                )}
             </AnimatePresence>
         </div>
     </div>
   );
 }
-
-    
 
     
