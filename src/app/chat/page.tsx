@@ -16,7 +16,7 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChatSearchButton } from '@/components/chat-search-button';
+import { ChatSearch } from '@/components/chat-search';
 
 const initialContacts = [
     { id: 1, name: "Alice", image: "https://picsum.photos/seed/c1/100", lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', status: 'seen', online: true, lastVisited: Date.now() - 10000, circle: { id: 1, name: "Project Team", members: ["Alice", "Bob", "Charlie"] } },
@@ -231,7 +231,7 @@ const ChatView = ({ chat, messages, onSendMessage, onClose, onAddReaction }: { c
   );
 };
 
-const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onChatSelect: (id: number) => void, selectedChatId: number | null }) => {
+const ChatList = ({ chats, onChatSelect, selectedChatId, onSearch }: { chats: any[], onChatSelect: (id: number) => void, selectedChatId: number | null, onSearch: (query: string) => void }) => {
   return (
     <div className="flex flex-col gap-4 h-full">
       <div className="flex items-center justify-between">
@@ -243,7 +243,7 @@ const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onCha
          </div>
       </div>
       <div className="relative flex justify-center py-4">
-        <ChatSearchButton />
+        <ChatSearch onSearch={onSearch} />
       </div>
       <Card className="flex-grow overflow-hidden">
         <CardContent className="p-0 h-full overflow-y-auto">
@@ -421,10 +421,14 @@ export default function ChitChatPage() {
   const [messages, setMessages] = useState(initialMessages);
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const sortedChats = useMemo(() => {
-    return [...chats].sort((a, b) => b.lastVisited - a.lastVisited);
-  }, [chats]);
+    const filteredChats = chats.filter(chat =>
+      chat.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    return [...filteredChats].sort((a, b) => b.lastVisited - a.lastVisited);
+  }, [chats, searchQuery]);
   
   const selectedChat = chats.find(c => c.id === selectedChatId);
   const chatMessages = selectedChatId ? messages[selectedChatId as keyof typeof messages] || [] : [];
@@ -569,7 +573,7 @@ export default function ChitChatPage() {
                     exit={{ x: "-100%" }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                  >
-                    <ChatList chats={sortedChats} onChatSelect={openChat} selectedChatId={selectedChatId} />
+                    <ChatList chats={sortedChats} onChatSelect={openChat} selectedChatId={selectedChatId} onSearch={setSearchQuery} />
                  </motion.div>
             )}
         </AnimatePresence>
@@ -622,7 +626,7 @@ export default function ChitChatPage() {
                         transition={{ duration: 0.3 }}
                         className="h-full"
                     >
-                        <ChatList chats={sortedChats} onChatSelect={openChat} selectedChatId={selectedChatId} />
+                        <ChatList chats={sortedChats} onChatSelect={openChat} selectedChatId={selectedChatId} onSearch={setSearchQuery} />
                     </motion.div>
                 )}
             </AnimatePresence>
