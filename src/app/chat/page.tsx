@@ -20,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 const initialContacts = [
     { id: 1, name: "Alice", image: "https://picsum.photos/seed/c1/100", lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', status: 'seen', online: true, lastVisited: Date.now() - 10000, circle: { id: 1, name: "Project Team", members: ["Alice", "Bob", "Charlie"] } },
     { id: 2, name: "David", image: "https://picsum.photos/seed/c2/100", lastMessage: 'Haha, that\'s hilarious!', time: 'Yesterday', status: 'sent', online: false, lastVisited: Date.now() - 20000, circle: { id: 2, name: "Close Friends", members: ["David", "Eve"] } },
-    { id: 3', name: "Frank", image: "https://picsum.photos/seed/c3/100", lastMessage: 'Don\'t forget the meeting at 11.', time: '9:15 AM', status: 'delivered', unread: true, online: true, lastVisited: Date.now() - 30000, circle: { id: 3, name: "Gaming Squad", members: ["Frank", "Grace", "Heidi"] } },
+    { id: 3, name: "Frank", image: "https://picsum.photos/seed/c3/100", lastMessage: 'Don\'t forget the meeting at 11.', time: '9:15 AM', status: 'delivered', unread: true, online: true, lastVisited: Date.now() - 30000, circle: { id: 3, name: "Gaming Squad", members: ["Frank", "Grace", "Heidi"] } },
     { id: 4, name: "Ivan", image: "https://picsum.photos/seed/c4/100", lastMessage: 'Let\'s catch up next week.', time: 'Sunday', status: 'sent', online: false, lastVisited: Date.now() - 40000, circle: { id: 4, name: "Family", members: ["Ivan", "Judy"] } },
     { id: 5, name: "Mallory", image: "https://picsum.photos/seed/c5/100", lastMessage: 'I saw that movie you recommended!', time: 'Friday', status: 'seen', online: false, lastVisited: Date.now() - 50000, circle: { id: 5, name: "Book Club", members: ["Mallory", "Niaj"] } },
     { id: 6, name: "Oscar", image: "https://picsum.photos/seed/c6/100", lastMessage: 'Can you send me the files?', time: '8:30 AM', status: 'delivered', online: false, lastVisited: Date.now() - 60000, circle: { id: 6, name: "Hiking Group", members: ["Oscar", "Peggy"] } },
@@ -638,3 +638,5 @@ export default function ChitChatPage() {
     </div>
   );
 }
+
+    
