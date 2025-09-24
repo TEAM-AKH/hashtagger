@@ -57,6 +57,7 @@ const posts = [
         image: { src: "https://picsum.photos/seed/post5/600/375", hint: "mountain sunrise" },
         likes: 102,
         comments: [],
+        circles: [],
         isSaved: true,
     },
 ];
