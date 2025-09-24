@@ -7,26 +7,28 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Bell, Bot, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, ChevronLeft, ChevronRight, Users, Plus, FileArchive, Search } from 'lucide-react';
+import { Bell, Bot, Settings, Smile, Mic, Camera, Phone, Video, X, User, BellOff, ShieldAlert, History, Languages, MoreVertical, ChevronLeft, ChevronRight, Users, Plus, FileArchive, Search, MoreHorizontal, Edit, Share, Share2, Image as ImageIcon, VideoIcon, FileText, Music, MapPin, UserSquare } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChitChatIcon } from '@/components/chitchat-icon';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-const initialCircles = [
-    { id: 1, name: "Project Team", image: "https://picsum.photos/seed/1/100", members: ["Alice", "Bob", "Charlie"], lastVisited: Date.now() - 10000, online: true, lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', status: 'seen' },
-    { id: 2, name: "Close Friends", image: "https://picsum.photos/seed/2/100", members: ["David", "Eve"], lastVisited: Date.now() - 20000, online: false, lastMessage: 'Haha, that\'s hilarious!', time: 'Yesterday', status: 'sent'},
-    { id: 3, name: "Gaming Squad", image: "https://picsum.photos/seed/3/100", members: ["Frank", "Grace", "Heidi"], lastVisited: Date.now() - 30000, online: true, lastMessage: 'Don\'t forget the meeting at 11.', time: '9:15 AM', status: 'delivered', unread: true },
-    { id: 4, name: "Family", image: "https://picsum.photos/seed/4/100", members: ["Ivan", "Judy"], lastVisited: Date.now() - 40000, online: false, lastMessage: 'Let\'s catch up next week.', time: 'Sunday', status: 'sent' },
-    { id: 5, name: "Book Club", image: "https://picsum.photos/seed/5/100", members: ["Mallory", "Niaj"], lastVisited: Date.now() - 50000, online: false, lastMessage: 'I saw that movie you recommended!', time: 'Friday', status: 'seen' },
-    { id: 6, name: "Hiking Group", image: "https://picsum.photos/seed/6/100", members: ["Oscar", "Peggy"], lastVisited: Date.now() - 60000, online: false, lastMessage: 'Can you send me the files?', time: '8:30 AM', status: 'delivered' },
-    { id: 7, name: "Travel Buddies", image: "https://picsum.photos/seed/7/100", members: ["Quentin", "Rachel"], lastVisited: Date.now() - 70000, online: true, lastMessage: 'Typing...', time: '7:55 AM', typing: true, status: 'seen'},
-    { id: 8, name: "Movie Buffs", image: "https://picsum.photos/seed/8/100", members: ["Steve", "Tina"], lastVisited: Date.now() - 80000, online: false, lastMessage: 'Sounds good!', time: 'Yesterday', status: 'seen'},
-    { id: 9, name: "Coders", image: "https://picsum.photos/seed/9/100", members: ["Ursula", "Vince"], lastVisited: Date.now() - 90000, online: true, lastMessage: 'Just pushed the latest commit.', time: '11:00 AM', status: 'delivered' },
+const initialContacts = [
+    { id: 1, name: "Alice", image: "https://picsum.photos/seed/c1/100", lastMessage: 'Hey, are you free for a call?', time: '10:45 AM', status: 'seen', online: true, lastVisited: Date.now() - 10000, circle: { id: 1, name: "Project Team", members: ["Alice", "Bob", "Charlie"] } },
+    { id: 2, name: "David", image: "https://picsum.photos/seed/c2/100", lastMessage: 'Haha, that\'s hilarious!', time: 'Yesterday', status: 'sent', online: false, lastVisited: Date.now() - 20000, circle: { id: 2, name: "Close Friends", members: ["David", "Eve"] } },
+    { id: 3', name: "Frank", image: "https://picsum.photos/seed/c3/100", lastMessage: 'Don\'t forget the meeting at 11.', time: '9:15 AM', status: 'delivered', unread: true, online: true, lastVisited: Date.now() - 30000, circle: { id: 3, name: "Gaming Squad", members: ["Frank", "Grace", "Heidi"] } },
+    { id: 4, name: "Ivan", image: "https://picsum.photos/seed/c4/100", lastMessage: 'Let\'s catch up next week.', time: 'Sunday', status: 'sent', online: false, lastVisited: Date.now() - 40000, circle: { id: 4, name: "Family", members: ["Ivan", "Judy"] } },
+    { id: 5, name: "Mallory", image: "https://picsum.photos/seed/c5/100", lastMessage: 'I saw that movie you recommended!', time: 'Friday', status: 'seen', online: false, lastVisited: Date.now() - 50000, circle: { id: 5, name: "Book Club", members: ["Mallory", "Niaj"] } },
+    { id: 6, name: "Oscar", image: "https://picsum.photos/seed/c6/100", lastMessage: 'Can you send me the files?', time: '8:30 AM', status: 'delivered', online: false, lastVisited: Date.now() - 60000, circle: { id: 6, name: "Hiking Group", members: ["Oscar", "Peggy"] } },
+    { id: 7, name: "Quentin", image: "https://picsum.photos/seed/c7/100", lastMessage: 'Typing...', time: '7:55 AM', typing: true, status: 'seen', online: true, lastVisited: Date.now() - 70000, circle: { id: 7, name: "Travel Buddies", members: ["Quentin", "Rachel"] } },
+    { id: 8, name: "Steve", image: "https://picsum.photos/seed/c8/100", lastMessage: 'Sounds good!', time: 'Yesterday', status: 'seen', online: false, lastVisited: Date.now() - 80000, circle: { id: 8, name: "Movie Buffs", members: ["Steve", "Tina"] } },
+    { id: 9, name: "Ursula", image: "https://picsum.photos/seed/c9/100", lastMessage: 'Just pushed the latest commit.', time: '11:00 AM', status: 'delivered', online: true, lastVisited: Date.now() - 90000, circle: { id: 9, name: "Coders", members: ["Ursula", "Vince"] } },
 ];
+
 
 const initialMessages: Record<number, { from: 'me' | 'other'; text: string; time: string; status?: 'sent' | 'delivered' | 'seen', reactions?: string[] }[]> = {
   1: [
@@ -287,12 +289,23 @@ const ChatList = ({ chats, onChatSelect, selectedChatId }: { chats: any[], onCha
   );
 };
 
-const CircleDetails = ({ chat }: { chat: any }) => {
-    if (!chat) return null;
+const ContactDetails = ({ contact }: { contact: any }) => {
+    const [isUploadMenuOpen, setIsUploadMenuOpen] = useState(false);
+    
+    if (!contact) return null;
+
+    const uploadOptions = [
+        { icon: ImageIcon, label: "Image" },
+        { icon: VideoIcon, label: "Video" },
+        { icon: FileText, label: "Document" },
+        { icon: Music, label: "Audio" },
+        { icon: MapPin, label: "Location" },
+        { icon: UserSquare, label: "Contact" },
+    ];
   
     return (
         <motion.div
-            key={`details-${chat.id}`}
+            key={`details-${contact.id}`}
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 50 }}
@@ -302,16 +315,20 @@ const CircleDetails = ({ chat }: { chat: any }) => {
           <Card className="h-full flex flex-col">
             <CardHeader className="text-center items-center">
                  <Avatar className="h-20 w-20 mb-2">
-                    <AvatarImage src={chat.image || `https://picsum.photos/seed/${chat.id}/100`} alt={chat.name} />
-                    <AvatarFallback>{chat.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={contact.image || `https://picsum.photos/seed/${contact.id}/100`} alt={contact.name} />
+                    <AvatarFallback>{contact.name.charAt(0)}</AvatarFallback>
                  </Avatar>
-                <CardTitle>{chat.name}</CardTitle>
+                <CardTitle>{contact.name}</CardTitle>
+                 <div className="flex items-center gap-2 text-muted-foreground pt-2">
+                    <Share2 className="h-4 w-4" />
+                    <span className="font-semibold">{contact.circle.name}</span>
+                </div>
             </CardHeader>
             <CardContent className="flex-grow space-y-6">
                 <div className="space-y-3">
-                    <h3 className="font-semibold text-muted-foreground flex items-center gap-2"><Users className="h-5 w-5" /> Members ({chat.members.length})</h3>
+                    <h3 className="font-semibold text-muted-foreground flex items-center gap-2"><Users className="h-5 w-5" /> Members ({contact.circle.members.length})</h3>
                     <div className="flex flex-wrap gap-2">
-                        {chat.members.map((member: string) => (
+                        {contact.circle.members.map((member: string) => (
                              <TooltipProvider key={member}>
                                 <Tooltip>
                                     <TooltipTrigger>
@@ -335,10 +352,71 @@ const CircleDetails = ({ chat }: { chat: any }) => {
                     </div>
                 </div>
             </CardContent>
-            <div className="p-4 border-t flex flex-col gap-2">
-                <Button variant="outline"><Plus className="mr-2"/> Add Member</Button>
-                <Button variant="outline"><BellOff className="mr-2"/> Mute Notifications</Button>
-                <Button variant="outline"><Search className="mr-2"/> Search in Chat</Button>
+            <div className="p-4 border-t flex flex-col items-center gap-2">
+                 <div className="w-full flex justify-end">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreHorizontal /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem><Share className="mr-2"/> Share Contact</DropdownMenuItem>
+                            <DropdownMenuItem><Edit className="mr-2"/> Edit Name</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+                <div className="relative w-48 h-48 flex items-center justify-center">
+                    <AnimatePresence>
+                    {isUploadMenuOpen && (
+                        uploadOptions.map((option, index) => {
+                            const angle = (index / uploadOptions.length) * Math.PI * 2 - (Math.PI / 2);
+                            const radius = 80;
+                            const x = radius * Math.cos(angle);
+                            const y = radius * Math.sin(angle);
+                            return (
+                                <motion.div
+                                    key={option.label}
+                                    className="absolute"
+                                    initial={{ scale: 0, x: 0, y: 0 }}
+                                    animate={{ scale: 1, x, y }}
+                                    exit={{ scale: 0, x: 0, y: 0 }}
+                                    transition={{ type: 'spring', stiffness: 400, damping: 15, delay: index * 0.05 }}
+                                >
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button variant="outline" size="icon" className="w-12 h-12 rounded-full shadow-lg">
+                                                    <option.icon className="h-6 w-6"/>
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>{option.label}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </motion.div>
+                            )
+                        })
+                    )}
+                    </AnimatePresence>
+                     <motion.button
+                        onClick={() => setIsUploadMenuOpen(!isUploadMenuOpen)}
+                        className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg z-10"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                    >
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={isUploadMenuOpen ? 'close' : 'plus'}
+                                initial={{ scale: 0, rotate: -90 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                exit={{ scale: 0, rotate: 90 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                {isUploadMenuOpen ? <X/> : <Plus/>}
+                            </motion.div>
+                        </AnimatePresence>
+                    </motion.button>
+                </div>
             </div>
           </Card>
         </motion.div>
@@ -347,7 +425,7 @@ const CircleDetails = ({ chat }: { chat: any }) => {
 
 
 export default function ChitChatPage() {
-  const [chats, setChats] = useState(initialCircles);
+  const [chats, setChats] = useState(initialContacts);
   const [messages, setMessages] = useState(initialMessages);
   const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -542,7 +620,7 @@ export default function ChitChatPage() {
         <div className="col-span-4">
             <AnimatePresence mode="wait">
                 {selectedChat ? (
-                    <CircleDetails chat={selectedChat} />
+                    <ContactDetails contact={selectedChat} />
                 ) : (
                     <motion.div 
                         key="chat-list"
@@ -560,5 +638,3 @@ export default function ChitChatPage() {
     </div>
   );
 }
-
-    
