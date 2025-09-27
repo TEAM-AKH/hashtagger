@@ -1,10 +1,10 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Card, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, Send, X, Plus, MoreHorizontal, Trash2, Edit, Share, FolderHeart, PlayCircle, Compass, Clapperboard, Flame, User, Users, Clock } from 'lucide-react';
+import { Camera, Send, X, Plus, MoreHorizontal, Trash2, Edit, Share, FolderHeart, PlayCircle, Compass, Clapperboard, Flame, User, Users, Clock, Pause, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PostCard from '@/components/post-card';
 import { Badge } from '@/components/ui/badge';
@@ -35,15 +35,15 @@ const mockContent = {
 mockContent.following = [...mockContent.forYou].reverse();
 mockContent.recent = [...mockContent.discover].reverse();
 
-const stories = [
-    { id: 'story1', user: 'Your Story', avatar: 'https://picsum.photos/seed/user/100', isLive: false, isNew: true },
-    { id: 'story2', user: 'Alice', avatar: 'https://picsum.photos/seed/1/100', isLive: true, isNew: false },
-    { id: 'story3', user: 'Bob', avatar: 'https://picsum.photos/seed/2/100', isLive: false, isNew: true },
-    { id: 'story4', user: 'Charlie', avatar: 'https://picsum.photos/seed/3/100', isLive: false, isNew: false },
-    { id: 'story5', user: 'David', avatar: 'https://picsum.photos/seed/4/100', isLive: true, isNew: false },
-    { id: 'story6', user: 'Eve', avatar: 'https://picsum.photos/seed/5/100', isLive: false, isNew: false },
-    { id: 'story7', user: 'Frank', avatar: 'https://picsum.photos/seed/c3/100', isLive: false, isNew: true },
-    { id: 'story8', user: 'Ivan', avatar: 'https://picsum.photos/seed/c4/100', isLive: false, isNew: false },
+const initialStories = [
+    { id: 'story1', user: 'Your Story', avatar: 'https://picsum.photos/seed/user/100', isLive: false, items: [{id: 1, type: 'image', src: 'https://picsum.photos/seed/s1/1080/1920'}] },
+    { id: 'story2', user: 'Alice', avatar: 'https://picsum.photos/seed/1/100', isLive: true, items: [{id: 2, type: 'image', src: 'https://picsum.photos/seed/s2/1080/1920'}, {id: 3, type: 'video', src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'}] },
+    { id: 'story3', user: 'Bob', avatar: 'https://picsum.photos/seed/2/100', isLive: false, items: [{id: 4, type: 'image', src: 'https://picsum.photos/seed/s3/1080/1920'}] },
+    { id: 'story4', user: 'Charlie', avatar: 'https://picsum.photos/seed/3/100', isLive: false, items: [{id: 5, type: 'image', src: 'https://picsum.photos/seed/s4/1080/1920'}] },
+    { id: 'story5', user: 'David', avatar: 'https://picsum.photos/seed/4/100', isLive: true, items: [{id: 6, type: 'image', src: 'https://picsum.photos/seed/s5/1080/1920'}] },
+    { id: 'story6', user: 'Eve', avatar: 'https://picsum.photos/seed/5/100', isLive: false, items: [{id: 7, type: 'image', src: 'https://picsum.photos/seed/s6/1080/1920'}] },
+    { id: 'story7', user: 'Frank', avatar: 'https://picsum.photos/seed/c3/100', isLive: false, items: [{id: 8, type: 'image', src: 'https://picsum.photos/seed/s7/1080/1920'}] },
+    { id: 'story8', user: 'Ivan', avatar: 'https://picsum.photos/seed/c4/100', isLive: false, items: [{id: 9, type: 'image', src: 'https://picsum.photos/seed/s8/1080/1920'}] },
 ];
 
 
@@ -57,7 +57,7 @@ const feedFilters = [
 
 const MasonryItem = ({ item, onClick, isPostFirstInPair }: { item: any, onClick: () => void, isPostFirstInPair: boolean }) => (
     <motion.div
-        layout
+        layoutId={`item-container-${item.id}`}
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.8 }}
@@ -82,9 +82,7 @@ const MasonryItem = ({ item, onClick, isPostFirstInPair }: { item: any, onClick:
     </motion.div>
 );
 
-
 const FeedViewer = ({ items, activeId, onClose, onScrollTo }: { items: any[], activeId: string, onClose: () => void, onScrollTo: (id: string) => void }) => {
-    const activeIndex = useMemo(() => items.findIndex(item => item.id === activeId), [items, activeId]);
     const containerRef = useRef<HTMLDivElement>(null);
     const [showComments, setShowComments] = useState<string | null>(null);
 
@@ -107,7 +105,7 @@ const FeedViewer = ({ items, activeId, onClose, onScrollTo }: { items: any[], ac
         elements?.forEach(el => observer.observe(el));
 
         return () => elements?.forEach(el => observer.unobserve(el));
-    }, [onScrollTo]);
+    }, [onScrollTo, items]);
 
     useEffect(() => {
         const element = containerRef.current?.querySelector(`[data-id="${activeId}"]`);
@@ -167,13 +165,14 @@ const FeedViewer = ({ items, activeId, onClose, onScrollTo }: { items: any[], ac
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            onClick={onClose}
         >
             <Button onClick={onClose} variant="ghost" size="icon" className="absolute top-4 right-4 z-50 bg-background/50 rounded-full hover:bg-background">
                 <X />
             </Button>
             <div ref={containerRef} className="h-full w-full snap-y snap-mandatory overflow-y-scroll">
                 {items.map((item) => (
-                    <div key={item.id} data-id={item.id} className="h-full w-full snap-start flex items-center justify-center p-4 sm:p-8 md:p-16">
+                    <div key={item.id} data-id={item.id} className="h-full w-full snap-start flex items-center justify-center p-4 sm:p-8 md:p-16" onClick={e => e.stopPropagation()}>
                          <motion.div
                             layoutId={`item-container-${item.id}`}
                             className="w-full max-w-lg h-full"
@@ -217,61 +216,250 @@ const DynamicFeedNav = ({ activeFilter, onFilterChange }: { activeFilter: string
     )
 }
 
-const StoryItem = ({ story }: { story: typeof stories[0] }) => (
-    <div className="flex flex-col items-center gap-1.5 cursor-pointer group">
-        <div className={cn(
-            "relative w-16 h-16 rounded-full p-0.5 flex items-center justify-center transition-transform duration-300 group-hover:scale-110",
-            story.isNew && "bg-gradient-to-tr from-yellow-400 to-primary",
-            story.isLive && "bg-gradient-to-tr from-pink-500 to-red-500",
-        )}>
-            <div className="bg-background p-0.5 rounded-full">
-                <Image
-                    src={story.avatar}
-                    alt={story.user}
-                    width={60}
-                    height={60}
-                    className="rounded-full"
-                />
-            </div>
-            {story.isLive && (
-                <Badge className="absolute -bottom-1 text-xs scale-90" variant="destructive">LIVE</Badge>
-            )}
-        </div>
-        <p className="text-xs font-medium text-muted-foreground truncate w-16 text-center group-hover:text-foreground">
-            {story.user}
-        </p>
-    </div>
-);
+const StoryViewer = ({ stories, activeStoryId, onClose, onStorySeen }: { stories: any[], activeStoryId: string, onClose: () => void, onStorySeen: (storyId: string, itemId: number) => void }) => {
+    const [currentUserIndex, setCurrentUserIndex] = useState(stories.findIndex(s => s.id === activeStoryId));
+    const [currentItemIndex, setCurrentItemIndex] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
+    
+    const currentUser = stories[currentUserIndex];
+    const currentItem = currentUser.items[currentItemIndex];
 
+    useEffect(() => {
+        onStorySeen(currentUser.id, currentItem.id);
+    }, [currentUser, currentItem, onStorySeen]);
+
+    useEffect(() => {
+        if (isPaused) return;
+        const timer = setTimeout(() => {
+            handleNextItem();
+        }, currentItem.type === 'video' ? 15000 : 5000);
+        return () => clearTimeout(timer);
+    }, [currentItemIndex, currentUserIndex, isPaused]);
+
+    const handleNextUser = () => {
+        if (currentUserIndex < stories.length - 1) {
+            setCurrentUserIndex(currentUserIndex + 1);
+            setCurrentItemIndex(0);
+        } else {
+            onClose();
+        }
+    };
+
+    const handlePrevUser = () => {
+        if (currentUserIndex > 0) {
+            setCurrentUserIndex(currentUserIndex - 1);
+            setCurrentItemIndex(0);
+        }
+    };
+    
+    const handleNextItem = () => {
+        if (currentItemIndex < currentUser.items.length - 1) {
+            setCurrentItemIndex(currentItemIndex + 1);
+        } else {
+            handleNextUser();
+        }
+    };
+
+    const handlePrevItem = () => {
+        if (currentItemIndex > 0) {
+            setCurrentItemIndex(currentItemIndex - 1);
+        } else {
+            handlePrevUser();
+        }
+    };
+    
+    const handlePointerDown = () => setIsPaused(true);
+    const handlePointerUp = () => setIsPaused(false);
+    
+    const handleTap = (e: any) => {
+        const { clientX, target } = e;
+        const { left, width } = target.getBoundingClientRect();
+        const tapPosition = (clientX - left) / width;
+        if (tapPosition > 0.3) {
+            handleNextItem();
+        } else {
+            handlePrevItem();
+        }
+    };
+
+    return (
+        <motion.div
+            className="fixed inset-0 bg-black/50 backdrop-blur-lg z-50 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+        >
+            <motion.div
+                className="relative w-[320px] h-[570px] bg-muted rounded-2xl overflow-hidden shadow-2xl"
+                layoutId={`story-container-${activeStoryId}`}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                onClick={e => e.stopPropagation()}
+                onTap={handleTap}
+                onPointerDown={handlePointerDown}
+                onPointerUp={handlePointerUp}
+            >
+                {/* Progress Bars */}
+                <div className="absolute top-2 left-2 right-2 flex gap-1 z-10">
+                    {currentUser.items.map((item: any, index: number) => (
+                        <div key={item.id} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+                           <AnimatePresence>
+                            {index <= currentItemIndex && (
+                                <motion.div 
+                                    className="h-full bg-white" 
+                                    initial={{ width: index < currentItemIndex ? '100%' : '0%' }}
+                                    animate={{ width: isPaused ? '100%' : '100%' }}
+                                    transition={{ duration: index === currentItemIndex ? (currentItem.type === 'video' ? 15 : 5) : 0, ease: 'linear' }}
+                                />
+                            )}
+                           </AnimatePresence>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Header */}
+                 <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
+                    <Image src={currentUser.avatar} width={40} height={40} className="rounded-full border-2 border-white" alt={currentUser.user} />
+                    <p className="text-white font-bold text-sm">{currentUser.user}</p>
+                </div>
+                 <Button onClick={onClose} variant="ghost" size="icon" className="absolute top-2 right-2 z-10 text-white hover:bg-white/20">
+                     <X />
+                 </Button>
+
+                {/* Content */}
+                <AnimatePresence initial={false}>
+                    <motion.div
+                        key={`${currentUser.id}-${currentItem.id}`}
+                        className="absolute inset-0"
+                        initial={{ x: 320, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -320, opacity: 0 }}
+                        transition={{type: 'spring', stiffness: 400, damping: 40}}
+                    >
+                         {currentItem.type === 'image' && (
+                             <Image src={currentItem.src} alt="story content" layout="fill" objectFit="cover" />
+                         )}
+                         {currentItem.type === 'video' && (
+                             <video src={currentItem.src} className="w-full h-full object-cover" autoPlay muted playsInline onEnded={handleNextItem} />
+                         )}
+                    </motion.div>
+                </AnimatePresence>
+            </motion.div>
+             <button onClick={handlePrevUser} className="absolute left-4 text-white/50 hover:text-white transition-colors p-4"><ArrowLeft size={32} /></button>
+             <button onClick={handleNextUser} className="absolute right-4 text-white/50 hover:text-white transition-colors p-4"><ArrowRight size={32} /></button>
+        </motion.div>
+    );
+};
+
+const StoriesTray = ({ stories, onStoryClick, seenStories }: { stories: any[], onStoryClick: (id: string) => void, seenStories: { [key: string]: number[] } }) => {
+    
+    const isStorySeen = (story: any) => {
+        const seenItems = seenStories[story.id] || [];
+        return seenItems.length === story.items.length;
+    };
+    
+    const mainStory = stories[0];
+    const topStories = stories.slice(1, 3);
+    const bottomStories = stories.slice(3, 8);
+
+    const trianglePositions = [
+        // Main
+        { top: '50%', left: '0', x: '0%', y: '-50%' }, 
+        // Top two
+        { top: '0%', left: '50%', x: '-50%', y: '0%' },
+        { top: '100%', left: '50%', x: '-50%', y: '-100%' },
+        // right side
+        { top: '25%', left: '100%', x: '-100%', y: '0%' },
+        { top: '75%', left: '100%', x: '-100%', y: '-100%' },
+    ];
+    
+    const StoryItem = ({ story, layoutId, onClick, style }: { story: any, layoutId: string, onClick: () => void, style?: any }) => (
+         <motion.div
+            layoutId={layoutId}
+            onClick={onClick}
+            style={style}
+            className="absolute group cursor-pointer"
+            whileHover={{ scale: 1.1 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+         >
+             <div className="relative">
+                <div className={cn("absolute -inset-1 rounded-full bg-gradient-to-tr from-yellow-400 to-primary", { "animate-pulse": !isStorySeen(story), "from-gray-400 to-gray-600": isStorySeen(story) })} />
+                <div className="relative w-16 h-16 bg-background p-1 rounded-full">
+                    <Image
+                        src={story.avatar}
+                        alt={story.user}
+                        width={60}
+                        height={60}
+                        className="rounded-full"
+                    />
+                </div>
+                 {story.isLive && (
+                    <Badge className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-xs scale-90" variant="destructive">LIVE</Badge>
+                )}
+            </div>
+             <p className="text-xs font-medium text-muted-foreground truncate w-16 text-center mt-1.5 group-hover:text-foreground">{story.user}</p>
+        </motion.div>
+    );
+
+    return (
+        <div className="relative h-48 w-full flex items-center justify-center my-8">
+            <StoryItem story={stories[0]} layoutId={`story-container-${stories[0].id}`} onClick={() => onStoryClick(stories[0].id)} style={{...trianglePositions[0]}} />
+            <StoryItem story={stories[1]} layoutId={`story-container-${stories[1].id}`} onClick={() => onStoryClick(stories[1].id)} style={{...trianglePositions[1]}} />
+            <StoryItem story={stories[2]} layoutId={`story-container-${stories[2].id}`} onClick={() => onStoryClick(stories[2].id)} style={{...trianglePositions[2]}} />
+            <StoryItem story={stories[3]} layoutId={`story-container-${stories[3].id}`} onClick={() => onStoryClick(stories[3].id)} style={{...trianglePositions[3]}} />
+            <StoryItem story={stories[4]} layoutId={`story-container-${stories[4].id}`} onClick={() => onStoryClick(stories[4].id)} style={{...trianglePositions[4]}} />
+        </div>
+    )
+}
 
 export default function DynamicFeedsPage() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [scrolledId, setScrolledId] = useState<string | null>(null);
     const [activeFilter, setActiveFilter] = useState('forYou');
+    const [activeStoryId, setActiveStoryId] = useState<string | null>(null);
+    const [stories, setStories] = useState(initialStories);
+    const [seenStories, setSeenStories] = useState<{ [key: string]: number[] }>({});
     
     const items = useMemo(() => mockContent[activeFilter as keyof typeof mockContent] || [], [activeFilter]);
     let postPairTracker = true;
 
+    const handleStorySeen = useCallback((storyId: string, itemId: number) => {
+        setSeenStories(prev => {
+            const storySeenItems = prev[storyId] || [];
+            if (!storySeenItems.includes(itemId)) {
+                return {
+                    ...prev,
+                    [storyId]: [...storySeenItems, itemId]
+                };
+            }
+            return prev;
+        });
+    }, []);
+
     return (
         <div className="container mx-auto p-4 space-y-8">
              <div className="space-y-6">
-                <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-                    <CarouselContent>
-                        {stories.map(story => (
-                            <CarouselItem key={story.id} className="basis-auto">
-                                <StoryItem story={story} />
-                            </CarouselItem>
-                        ))}
-                    </CarouselContent>
-                </Carousel>
+                <AnimatePresence>
+                    {activeStoryId && (
+                        <StoryViewer 
+                            stories={stories} 
+                            activeStoryId={activeStoryId} 
+                            onClose={() => setActiveStoryId(null)} 
+                            onStorySeen={handleStorySeen}
+                        />
+                    )}
+                </AnimatePresence>
+                <StoriesTray stories={stories} onStoryClick={setActiveStoryId} seenStories={seenStories} />
                 <DynamicFeedNav activeFilter={activeFilter} onFilterChange={setActiveFilter} />
             </div>
 
              <motion.div
                 key={activeFilter}
+                layout
                 style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                    gridAutoFlow: 'dense',
                     gridAutoRows: '200px',
                     gap: '12px',
                 }}
@@ -280,12 +468,12 @@ export default function DynamicFeedsPage() {
                 transition={{ duration: 0.5 }}
             >
                 <AnimatePresence>
-                {items.map((item) => {
+                {items.map((item, index) => {
                     let isPostFirstInPair = false;
-                    if (item.type === 'post') {
-                        isPostFirstInPair = postPairTracker;
-                        postPairTracker = !postPairTracker;
-                    }
+                     if (item.type === 'post') {
+                         const postIndex = items.filter(it => it.type === 'post').findIndex(it => it.id === item.id);
+                         isPostFirstInPair = postIndex % 2 === 0;
+                     }
 
                     return (
                         <MasonryItem
@@ -315,5 +503,7 @@ export default function DynamicFeedsPage() {
         </div>
     );
 }
+
+    
 
     
