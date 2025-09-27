@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Card, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, Send, X, Plus, MoreHorizontal, Trash2, Edit, Share, FolderHeart, PlayCircle, Compass, Clapperboard, Flame, User, Users, Clock, Pause, ArrowLeft } from 'lucide-react';
+import { Camera, Send, X, Plus, MoreHorizontal, Trash2, Edit, Share, FolderHeart, PlayCircle, Compass, Clapperboard, Flame, User, Users, Clock, Pause, ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PostCard from '@/components/post-card';
 import { Badge } from '@/components/ui/badge';
@@ -503,6 +503,8 @@ export default function DynamicFeedsPage() {
         </div>
     );
 }
+
+    
 
     
 
