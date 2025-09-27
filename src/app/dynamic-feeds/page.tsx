@@ -2,9 +2,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, Send, X, Plus, MoreHorizontal, Trash2, Edit, Share, FolderHeart, PlayCircle, Compass, Clapperboard } from 'lucide-react';
+import { Camera, Send, X, Plus, MoreHorizontal, Trash2, Edit, Share, FolderHeart, PlayCircle, Compass, Clapperboard, Flame, User, Users, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PostCard from '@/components/post-card';
 import { Badge } from '@/components/ui/badge';
@@ -13,40 +13,71 @@ import { cn } from '@/lib/utils';
 import { VibeButton } from '@/components/vibe-button';
 import { ExpressButton } from '@/components/express-button';
 import { CirculateButton } from '@/components/circulate-button';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
-const mockContent = [
-    { type: 'post', id: 'post1', data: { id: 1, author: { name: "Alice", avatar: "https://picsum.photos/seed/1/100", hint: "woman smiling" }, content: "Just enjoying a beautiful day out! ☀️ #nature", image: { src: "https://picsum.photos/seed/p1/600/800", hint: "landscape nature" }, likes: 12, comments: [], circles: [{id: 1, name: "Best Friends"}], isSaved: false } },
-    { type: 'clip', id: 'clip1', data: { id: 1, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/c1/400/711", user: "bunny_lover", description: "Big Buck Bunny adventures!" } },
-    { type: 'post', id: 'post2', data: { id: 2, author: { name: "Bob", avatar: "https://picsum.photos/seed/2/100", hint: "man glasses" }, content: "My new minimalist workspace setup. #wfh", image: { src: "https://picsum.photos/seed/p2/600/400", hint: "computer desk" }, likes: 45, comments: [], circles: [], isSaved: true } },
-    { type: 'clip', id: 'clip2', data: { id: 2, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", thumbnail: "https://picsum.photos/seed/c2/400/711", user: "dreamer", description: "Elephants have dreams too." } },
-    { type: 'post', id: 'post3', data: { id: 3, author: { name: "Charlie", avatar: "https://picsum.photos/seed/3/100", hint: "person nature" }, content: "Exploring the hidden gems of the city. #urbanexplorer", image: { src: "https://picsum.photos/seed/p3/600/900", hint: "city street art" }, likes: 23, comments: [], circles: [], isSaved: false } },
-    { type: 'clip', id: 'clip3', data: { id: 3, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/c3/400/711", user: "firestarter", description: "Just chilling by the fire." } },
-    { type: 'post', id: 'post4', data: { id: 4, author: { name: "David", avatar: "https://picsum.photos/seed/4/100", hint: "man portrait" }, content: "Weekend baking project: success! 🍞", image: { src: "https://picsum.photos/seed/p4/600/500", hint: "fresh bread" }, likes: 78, comments: [], circles: [], isSaved: false } },
-    { type: 'post', id: 'post5', data: { id: 5, author: { name: "Eve", avatar: "https://picsum.photos/seed/5/100", hint: "woman nature" }, content: "Morning hike views. #hiking", image: { src: "https://picsum.photos/seed/p5/600/750", hint: "mountain sunrise" }, likes: 102, comments: [], isSaved: true } },
-    { type: 'clip', id: 'clip4', data: { id: 4, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/c4/400/711", user: "escape_artist", description: "My great escape" } },
+const mockContent = {
+    forYou: [
+        { type: 'post', id: 'post1', data: { id: 1, author: { name: "Alice", avatar: "https://picsum.photos/seed/1/100", hint: "woman smiling" }, content: "Just enjoying a beautiful day out! ☀️ #nature", image: { src: "https://picsum.photos/seed/p1/600/800", hint: "landscape nature" }, likes: 12, comments: [], circles: [{id: 1, name: "Best Friends"}], isSaved: false } },
+        { type: 'clip', id: 'clip1', data: { id: 1, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/c1/400/711", user: "bunny_lover", description: "Big Buck Bunny adventures!" } },
+        { type: 'post', id: 'post2', data: { id: 2, author: { name: "Bob", avatar: "https://picsum.photos/seed/2/100", hint: "man glasses" }, content: "My new minimalist workspace setup. #wfh", image: { src: "https://picsum.photos/seed/p2/600/400", hint: "computer desk" }, likes: 45, comments: [], circles: [], isSaved: true } },
+    ],
+    trending: [
+        { type: 'post', id: 'post5', data: { id: 5, author: { name: "Eve", avatar: "https://picsum.photos/seed/5/100", hint: "woman nature" }, content: "Morning hike views. #hiking", image: { src: "https://picsum.photos/seed/p5/600/750", hint: "mountain sunrise" }, likes: 102, comments: [], isSaved: true } },
+        { type: 'clip', id: 'clip4', data: { id: 4, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/c4/400/711", user: "escape_artist", description: "My great escape" } },
+        { type: 'post', id: 'post4', data: { id: 4, author: { name: "David", avatar: "https://picsum.photos/seed/4/100", hint: "man portrait" }, content: "Weekend baking project: success! 🍞", image: { src: "https://picsum.photos/seed/p4/600/500", hint: "fresh bread" }, likes: 78, comments: [], circles: [], isSaved: false } },
+    ],
+    discover: [
+        { type: 'clip', id: 'clip2', data: { id: 2, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", thumbnail: "https://picsum.photos/seed/c2/400/711", user: "dreamer", description: "Elephants have dreams too." } },
+        { type: 'post', id: 'post3', data: { id: 3, author: { name: "Charlie", avatar: "https://picsum.photos/seed/3/100", hint: "person nature" }, content: "Exploring the hidden gems of the city. #urbanexplorer", image: { src: "https://picsum.photos/seed/p3/600/900", hint: "city street art" }, likes: 23, comments: [], circles: [], isSaved: false } },
+        { type: 'clip', id: 'clip3', data: { id: 3, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/c3/400/711", user: "firestarter", description: "Just chilling by the fire." } },
+    ],
+};
+mockContent.following = [...mockContent.forYou].reverse();
+mockContent.recent = [...mockContent.discover].reverse();
+
+const stories = [
+    { id: 'story1', user: 'Your Story', avatar: 'https://picsum.photos/seed/user/100', isLive: false, isNew: true },
+    { id: 'story2', user: 'Alice', avatar: 'https://picsum.photos/seed/1/100', isLive: true, isNew: false },
+    { id: 'story3', user: 'Bob', avatar: 'https://picsum.photos/seed/2/100', isLive: false, isNew: true },
+    { id: 'story4', user: 'Charlie', avatar: 'https://picsum.photos/seed/3/100', isLive: false, isNew: false },
+    { id: 'story5', user: 'David', avatar: 'https://picsum.photos/seed/4/100', isLive: true, isNew: false },
+    { id: 'story6', user: 'Eve', avatar: 'https://picsum.photos/seed/5/100', isLive: false, isNew: false },
+    { id: 'story7', user: 'Frank', avatar: 'https://picsum.photos/seed/c3/100', isLive: false, isNew: true },
+    { id: 'story8', user: 'Ivan', avatar: 'https://picsum.photos/seed/c4/100', isLive: false, isNew: false },
 ];
 
 
+const feedFilters = [
+    { id: 'forYou', label: 'For You', icon: User },
+    { id: 'trending', label: 'Trending', icon: Flame },
+    { id: 'discover', label: 'Discover', icon: Compass },
+    { id: 'following', label: 'Following', icon: Users },
+    { id: 'recent', label: 'Recent', icon: Clock },
+];
+
 const MasonryItem = ({ item, onClick, isPostFirstInPair }: { item: any, onClick: () => void, isPostFirstInPair: boolean }) => (
     <motion.div
-        layoutId={`item-container-${item.id}`}
+        layout
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
         onClick={onClick}
         className={cn(
-            "relative cursor-pointer group",
+            "relative cursor-pointer group rounded-lg overflow-hidden",
             item.type === 'post' && (isPostFirstInPair ? 'row-span-2' : ''),
         )}
-        whileHover={{ scale: 1.02 }}
     >
         <Image
             src={item.type === 'post' ? item.data.image.src : item.data.thumbnail}
             alt={item.type === 'post' ? item.data.content : item.data.description}
             width={500}
             height={item.type === 'post' ? (isPostFirstInPair ? 800 : 400) : 711}
-            className="w-full h-full object-cover rounded-lg"
+            className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-        <div className="absolute top-2 right-2 text-white">
-            {item.type === 'clip' && <Clapperboard className="h-5 w-5" />}
+        <div className="absolute top-2 right-2 text-white bg-black/30 rounded-full p-1">
+            {item.type === 'clip' && <Clapperboard className="h-4 w-4" />}
         </div>
     </motion.div>
 );
@@ -89,7 +120,7 @@ const FeedViewer = ({ items, activeId, onClose, onScrollTo }: { items: any[], ac
         }
         if (item.type === 'clip') {
             return (
-                <Card className="h-full w-full bg-black flex flex-col">
+                <Card className="h-full w-full bg-black flex flex-col rounded-lg overflow-hidden">
                     <div className="relative flex-grow">
                          <video
                             src={item.data.src}
@@ -104,7 +135,7 @@ const FeedViewer = ({ items, activeId, onClose, onScrollTo }: { items: any[], ac
                             <p className="text-sm">{item.data.description}</p>
                         </div>
                     </div>
-                     <CardFooter>
+                     <CardFooter className="bg-card">
                         <div className="flex justify-around items-center w-full">
                            <VibeButton />
                            <ExpressButton docId={item.id.toString()} mode="inline" onToggle={() => setShowComments(prev => prev === item.id ? null : item.id)} showBox={showComments === item.id}/>
@@ -156,31 +187,99 @@ const FeedViewer = ({ items, activeId, onClose, onScrollTo }: { items: any[], ac
     );
 }
 
+const DynamicFeedNav = ({ activeFilter, onFilterChange }: { activeFilter: string, onFilterChange: (id: string) => void }) => {
+    return (
+        <div className="relative flex justify-center">
+            <div className="flex items-center gap-2 rounded-full bg-muted/80 backdrop-blur-sm p-1.5 border">
+                {feedFilters.map(filter => (
+                    <button
+                        key={filter.id}
+                        onClick={() => onFilterChange(filter.id)}
+                        className={cn(
+                            "relative flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-colors",
+                            activeFilter === filter.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                        )}
+                    >
+                        {activeFilter === filter.id && (
+                            <motion.div
+                                layoutId="active-filter-bubble"
+                                className="absolute inset-0 bg-primary z-0"
+                                style={{ borderRadius: 9999 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                            />
+                        )}
+                        <filter.icon className="relative z-10 h-4 w-4" />
+                        <span className="relative z-10">{filter.label}</span>
+                    </button>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+const StoryItem = ({ story }: { story: typeof stories[0] }) => (
+    <div className="flex flex-col items-center gap-1.5 cursor-pointer group">
+        <div className={cn(
+            "relative w-16 h-16 rounded-full p-0.5 flex items-center justify-center transition-transform duration-300 group-hover:scale-110",
+            story.isNew && "bg-gradient-to-tr from-yellow-400 to-primary",
+            story.isLive && "bg-gradient-to-tr from-pink-500 to-red-500",
+        )}>
+            <div className="bg-background p-0.5 rounded-full">
+                <Image
+                    src={story.avatar}
+                    alt={story.user}
+                    width={60}
+                    height={60}
+                    className="rounded-full"
+                />
+            </div>
+            {story.isLive && (
+                <Badge className="absolute -bottom-1 text-xs scale-90" variant="destructive">LIVE</Badge>
+            )}
+        </div>
+        <p className="text-xs font-medium text-muted-foreground truncate w-16 text-center group-hover:text-foreground">
+            {story.user}
+        </p>
+    </div>
+);
+
+
 export default function DynamicFeedsPage() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [scrolledId, setScrolledId] = useState<string | null>(null);
-    const [items, setItems] = useState(mockContent);
-
-    const postItems = items.filter(item => item.type === 'post');
+    const [activeFilter, setActiveFilter] = useState('forYou');
+    
+    const items = useMemo(() => mockContent[activeFilter as keyof typeof mockContent] || [], [activeFilter]);
     let postPairTracker = true;
 
     return (
         <div className="container mx-auto p-4 space-y-8">
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">Discover</h1>
-                <Button variant="outline" size="sm">
-                    <Compass className="mr-2 h-4 w-4" /> Filter
-                </Button>
+             <div className="space-y-6">
+                <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+                    <CarouselContent>
+                        {stories.map(story => (
+                            <CarouselItem key={story.id} className="basis-auto">
+                                <StoryItem story={story} />
+                            </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                </Carousel>
+                <DynamicFeedNav activeFilter={activeFilter} onFilterChange={setActiveFilter} />
             </div>
 
-             <div
+             <motion.div
+                key={activeFilter}
                 style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                    gridAutoRows: '150px',
-                    gap: '8px',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                    gridAutoRows: '200px',
+                    gap: '12px',
                 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
             >
+                <AnimatePresence>
                 {items.map((item) => {
                     let isPostFirstInPair = false;
                     if (item.type === 'post') {
@@ -200,7 +299,8 @@ export default function DynamicFeedsPage() {
                         />
                     );
                 })}
-            </div>
+                </AnimatePresence>
+            </motion.div>
 
             <AnimatePresence>
                 {selectedId && (
@@ -215,3 +315,5 @@ export default function DynamicFeedsPage() {
         </div>
     );
 }
+
+    
