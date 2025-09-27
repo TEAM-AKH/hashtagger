@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 const actions = [
   { href: '/profile', label: 'Profile', icon: User },
   { href: '/settings', label: 'Settings', icon: Settings },
-  { href: '/logout', label: 'Logout', icon: LogOut },
+  { href: '#', label: 'Notifications', icon: Bell },
 ];
 
 export function AssistiveTouch() {

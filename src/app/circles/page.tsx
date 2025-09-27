@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, CalendarClock, CheckCircle, Save, ArrowLeft, GripHorizontal, MoreVertical, RotateCw, Upload, Camera } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Trash2, UserX, Users, X, Calendar, MapPin, CalendarClock, CheckCircle, Save, ArrowLeft, GripHorizontal, MoreVertical, RotateCw, Upload, Camera, Shuffle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -457,6 +457,24 @@ export default function ConnectionsPage() {
     setIsCircleDetailsOpen(true);
   }
 
+  const shuffleArray = (array: any[]) => {
+      let currentIndex = array.length, randomIndex;
+      while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [
+          array[randomIndex], array[currentIndex]];
+      }
+      return array;
+  }
+  
+  const handleShuffle = () => {
+      setItems(prevItems => {
+          const shuffled = shuffleArray([...prevItems]);
+          return shuffled.map(item => ({...item, lastVisited: Date.now() - Math.random() * 100000}));
+      });
+  };
+
   const currentEvent = localEvents.find(e => e.status === 'ongoing');
 
 
@@ -499,6 +517,7 @@ export default function ConnectionsPage() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <motion.div
+                              layoutId={`circle-${item.id}`}
                               className="absolute flex items-center justify-center rounded-full border-4 border-primary/30 bg-background shadow-md overflow-hidden cursor-pointer"
                               style={{
                                   width: layout.size,
@@ -514,7 +533,7 @@ export default function ConnectionsPage() {
                               transition={{
                                   type: 'spring',
                                   stiffness: 400,
-                                  damping: 10,
+                                  damping: 15,
                                   delay: i * 0.05 + ringIndex * 0.1,
                               }}
                               whileHover={{ y: y - 5, scale: 1.1 }}
@@ -546,8 +565,15 @@ export default function ConnectionsPage() {
             </AnimatePresence>
           </div>
 
-          <div className="absolute bottom-4 left-4 z-30 flex gap-4">
+          <div className="absolute bottom-4 left-4 z-30 flex gap-4 items-center">
               <CreateButton onCircleCreate={() => setIsCreateDialogOpen(true)} onEventCreate={() => setIsEventDialogOpen(true)} />
+              {showRings && (
+                <motion.div initial={{scale:0, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0, opacity:0}}>
+                    <Button variant="outline" size="icon" onClick={handleShuffle} className="rounded-full shadow-lg">
+                        <Shuffle className="h-5 w-5"/>
+                    </Button>
+                </motion.div>
+              )}
           </div>
           
            <div className="absolute bottom-4 right-4 z-30">
