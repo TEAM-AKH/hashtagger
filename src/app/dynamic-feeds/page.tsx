@@ -430,8 +430,8 @@ export default function DynamicFeedsPage() {
     }, []);
 
     return (
-        <div className="container mx-auto p-4 space-y-8">
-             <div className="space-y-6">
+        <div className="container mx-auto p-4 space-y-6">
+             <div className="space-y-4">
                 <AnimatePresence>
                     {activeStoryId && (
                         <StoryViewer 
@@ -496,6 +496,8 @@ export default function DynamicFeedsPage() {
         </div>
     );
 }
+
+    
 
     
 
