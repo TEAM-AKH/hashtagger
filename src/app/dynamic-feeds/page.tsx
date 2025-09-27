@@ -33,7 +33,7 @@ const mockContent = {
     ],
 };
 mockContent.following = [...mockContent.forYou].reverse();
-mockContent.recent = [...mockContent.discover].reverse();
+mockContent.recent = [...mockcontent.discover].reverse();
 
 const initialStories = [
     { id: 'story1', user: 'Your Story', avatar: 'https://picsum.photos/seed/user/100', isLive: false, items: [{id: 1, type: 'image', src: 'https://picsum.photos/seed/s1/1080/1920'}] },
@@ -290,61 +290,67 @@ const StoryViewer = ({ stories, activeStoryId, onClose, onStorySeen }: { stories
             exit={{ opacity: 0 }}
             onClick={onClose}
         >
-            <motion.div
-                className="relative w-[320px] h-[570px] bg-muted rounded-2xl overflow-hidden shadow-2xl"
-                layoutId={`story-container-${activeStoryId}`}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                onClick={e => e.stopPropagation()}
-                onTap={handleTap}
-                onPointerDown={handlePointerDown}
-                onPointerUp={handlePointerUp}
-            >
-                {/* Progress Bars */}
-                <div className="absolute top-2 left-2 right-2 flex gap-1 z-10">
-                    {currentUser.items.map((item: any, index: number) => (
-                        <div key={item.id} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
-                           <AnimatePresence>
-                            {index <= currentItemIndex && (
-                                <motion.div 
-                                    className="h-full bg-white" 
-                                    initial={{ width: index < currentItemIndex ? '100%' : '0%' }}
-                                    animate={{ width: isPaused ? '100%' : '100%' }}
-                                    transition={{ duration: index === currentItemIndex ? (currentItem.type === 'video' ? 15 : 5) : 0, ease: 'linear' }}
-                                />
-                            )}
-                           </AnimatePresence>
-                        </div>
-                    ))}
-                </div>
+             <AnimatePresence initial={false}>
+                <motion.div
+                    key={currentUserIndex}
+                    className="relative w-[320px] h-[570px] bg-muted rounded-2xl overflow-hidden shadow-2xl"
+                    layoutId={`story-container-${activeStoryId}`}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    onClick={e => e.stopPropagation()}
+                    onTap={handleTap}
+                    onPointerDown={handlePointerDown}
+                    onPointerUp={handlePointerUp}
+                >
+                    {/* Progress Bars */}
+                    <div className="absolute top-2 left-2 right-2 flex gap-1 z-10">
+                        {currentUser.items.map((item: any, index: number) => (
+                            <div key={item.id} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+                               <AnimatePresence>
+                                {index <= currentItemIndex && (
+                                    <motion.div 
+                                        className="h-full bg-white" 
+                                        initial={{ width: index < currentItemIndex ? '100%' : '0%' }}
+                                        animate={{ width: '100%' }}
+                                        transition={{ duration: index === currentItemIndex && !isPaused ? (currentItem.type === 'video' ? 15 : 5) : 0, ease: 'linear' }}
+                                    />
+                                )}
+                               </AnimatePresence>
+                            </div>
+                        ))}
+                    </div>
 
-                {/* Header */}
-                 <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
-                    <Image src={currentUser.avatar} width={40} height={40} className="rounded-full border-2 border-white" alt={currentUser.user} />
-                    <p className="text-white font-bold text-sm">{currentUser.user}</p>
-                </div>
-                 <Button onClick={onClose} variant="ghost" size="icon" className="absolute top-2 right-2 z-10 text-white hover:bg-white/20">
-                     <X />
-                 </Button>
+                    {/* Header */}
+                     <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
+                        <Image src={currentUser.avatar} width={40} height={40} className="rounded-full border-2 border-white" alt={currentUser.user} />
+                        <p className="text-white font-bold text-sm">{currentUser.user}</p>
+                    </div>
+                     <Button onClick={onClose} variant="ghost" size="icon" className="absolute top-2 right-2 z-10 text-white hover:bg-white/20">
+                         <X />
+                     </Button>
 
-                {/* Content */}
-                <AnimatePresence initial={false}>
-                    <motion.div
-                        key={`${currentUser.id}-${currentItem.id}`}
-                        className="absolute inset-0"
-                        initial={{ x: 320, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: -320, opacity: 0 }}
-                        transition={{type: 'spring', stiffness: 400, damping: 40}}
-                    >
-                         {currentItem.type === 'image' && (
-                             <Image src={currentItem.src} alt="story content" layout="fill" objectFit="cover" />
-                         )}
-                         {currentItem.type === 'video' && (
-                             <video src={currentItem.src} className="w-full h-full object-cover" autoPlay muted playsInline onEnded={handleNextItem} />
-                         )}
-                    </motion.div>
-                </AnimatePresence>
-            </motion.div>
+                    {/* Content */}
+                    <AnimatePresence initial={false} mode="wait">
+                        <motion.div
+                            key={`${currentUser.id}-${currentItem.id}`}
+                            className="absolute inset-0"
+                            initial={{ x: 30, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: -30, opacity: 0 }}
+                            transition={{type: 'easeIn', duration: 0.2}}
+                        >
+                             {currentItem.type === 'image' && (
+                                 <Image src={currentItem.src} alt="story content" layout="fill" objectFit="cover" />
+                             )}
+                             {currentItem.type === 'video' && (
+                                 <video src={currentItem.src} className="w-full h-full object-cover" autoPlay muted playsInline onEnded={handleNextItem} />
+                             )}
+                        </motion.div>
+                    </AnimatePresence>
+                </motion.div>
+            </AnimatePresence>
              <button onClick={handlePrevUser} className="absolute left-4 text-white/50 hover:text-white transition-colors p-4"><ArrowLeft size={32} /></button>
              <button onClick={handleNextUser} className="absolute right-4 text-white/50 hover:text-white transition-colors p-4"><ArrowRight size={32} /></button>
         </motion.div>
@@ -488,11 +494,5 @@ export default function DynamicFeedsPage() {
         </div>
     );
 }
-
-    
-
-    
-
-    
 
     
