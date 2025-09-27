@@ -31,9 +31,11 @@ const mockContent = {
         { type: 'post', id: 'post3', data: { id: 3, author: { name: "Charlie", avatar: "https://picsum.photos/seed/3/100", hint: "person nature" }, content: "Exploring the hidden gems of the city. #urbanexplorer", image: { src: "https://picsum.photos/seed/p3/600/900", hint: "city street art" }, likes: 23, comments: [], circles: [], isSaved: false } },
         { type: 'clip', id: 'clip3', data: { id: 3, src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/c3/400/711", user: "firestarter", description: "Just chilling by the fire." } },
     ],
+    following: [],
+    recent: [],
 };
 mockContent.following = [...mockContent.forYou].reverse();
-mockContent.recent = [...mockcontent.discover].reverse();
+mockContent.recent = [...mockContent.discover].reverse();
 
 const initialStories = [
     { id: 'story1', user: 'Your Story', avatar: 'https://picsum.photos/seed/user/100', isLive: false, items: [{id: 1, type: 'image', src: 'https://picsum.photos/seed/s1/1080/1920'}] },
@@ -332,7 +334,7 @@ const StoryViewer = ({ stories, activeStoryId, onClose, onStorySeen }: { stories
                      </Button>
 
                     {/* Content */}
-                    <AnimatePresence initial={false} mode="wait">
+                    <AnimatePresence initial={false} custom={currentItemIndex}>
                         <motion.div
                             key={`${currentUser.id}-${currentItem.id}`}
                             className="absolute inset-0"
@@ -378,16 +380,16 @@ const StoriesTray = ({ stories, onStoryClick, seenStories }: { stories: any[], o
                  >
                      <div className="relative">
                         <div className={cn(
-                            "absolute -inset-1 rounded-full bg-gradient-to-tr from-yellow-400 to-primary transition-all duration-500", 
+                            "absolute -inset-1 rounded-2xl bg-gradient-to-tr from-yellow-400 to-primary transition-all duration-500", 
                             { "animate-pulse": !isStorySeen(story) && !story.isLive, "from-gray-400 to-gray-600": isStorySeen(story) }
                         )} />
-                        <div className="relative w-20 h-20 bg-background p-1 rounded-full">
+                        <div className="relative w-20 h-20 bg-background p-1 rounded-2xl">
                             <Image
                                 src={story.avatar}
                                 alt={story.user}
                                 width={76}
                                 height={76}
-                                className="rounded-full"
+                                className="rounded-xl"
                             />
                         </div>
                          {story.isLive && (
@@ -494,5 +496,7 @@ export default function DynamicFeedsPage() {
         </div>
     );
 }
+
+    
 
     
