@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { VibeButton } from '@/components/vibe-button';
 import { ExpressButton } from '@/components/express-button';
 import { CirculateButton } from '@/components/circulate-button';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 const mockContent = {
     forYou: [
@@ -358,57 +358,42 @@ const StoriesTray = ({ stories, onStoryClick, seenStories }: { stories: any[], o
         return seenItems.length === story.items.length;
     };
     
-    const mainStory = stories[0];
-    const topStories = stories.slice(1, 3);
-    const bottomStories = stories.slice(3, 8);
-
-    const trianglePositions = [
-        // Main
-        { top: '50%', left: '0', x: '0%', y: '-50%' }, 
-        // Top two
-        { top: '0%', left: '50%', x: '-50%', y: '0%' },
-        { top: '100%', left: '50%', x: '-50%', y: '-100%' },
-        // right side
-        { top: '25%', left: '100%', x: '-100%', y: '0%' },
-        { top: '75%', left: '100%', x: '-100%', y: '-100%' },
-    ];
-    
-    const StoryItem = ({ story, layoutId, onClick, style }: { story: any, layoutId: string, onClick: () => void, style?: any }) => (
-         <motion.div
-            layoutId={layoutId}
-            onClick={onClick}
-            style={style}
-            className="absolute group cursor-pointer"
-            whileHover={{ scale: 1.1 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-         >
-             <div className="relative">
-                <div className={cn("absolute -inset-1 rounded-full bg-gradient-to-tr from-yellow-400 to-primary", { "animate-pulse": !isStorySeen(story), "from-gray-400 to-gray-600": isStorySeen(story) })} />
-                <div className="relative w-16 h-16 bg-background p-1 rounded-full">
-                    <Image
-                        src={story.avatar}
-                        alt={story.user}
-                        width={60}
-                        height={60}
-                        className="rounded-full"
-                    />
-                </div>
-                 {story.isLive && (
-                    <Badge className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-xs scale-90" variant="destructive">LIVE</Badge>
-                )}
-            </div>
-             <p className="text-xs font-medium text-muted-foreground truncate w-16 text-center mt-1.5 group-hover:text-foreground">{story.user}</p>
-        </motion.div>
-    );
-
     return (
-        <div className="relative h-48 w-full flex items-center justify-center my-8">
-            <StoryItem story={stories[0]} layoutId={`story-container-${stories[0].id}`} onClick={() => onStoryClick(stories[0].id)} style={{...trianglePositions[0]}} />
-            <StoryItem story={stories[1]} layoutId={`story-container-${stories[1].id}`} onClick={() => onStoryClick(stories[1].id)} style={{...trianglePositions[1]}} />
-            <StoryItem story={stories[2]} layoutId={`story-container-${stories[2].id}`} onClick={() => onStoryClick(stories[2].id)} style={{...trianglePositions[2]}} />
-            <StoryItem story={stories[3]} layoutId={`story-container-${stories[3].id}`} onClick={() => onStoryClick(stories[3].id)} style={{...trianglePositions[3]}} />
-            <StoryItem story={stories[4]} layoutId={`story-container-${stories[4].id}`} onClick={() => onStoryClick(stories[4].id)} style={{...trianglePositions[4]}} />
-        </div>
+        <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+          <CarouselContent className="-ml-2">
+            {stories.map((story) => (
+              <CarouselItem key={story.id} className="basis-auto pl-4">
+                 <motion.div
+                    layoutId={`story-container-${story.id}`}
+                    onClick={() => onStoryClick(story.id)}
+                    className="flex flex-col items-center gap-2 group cursor-pointer"
+                    whileHover={{ y: -5 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                 >
+                     <div className="relative">
+                        <div className={cn(
+                            "absolute -inset-1 rounded-full bg-gradient-to-tr from-yellow-400 to-primary transition-all duration-500", 
+                            { "animate-pulse": !isStorySeen(story) && !story.isLive, "from-gray-400 to-gray-600": isStorySeen(story) }
+                        )} />
+                        <div className="relative w-20 h-20 bg-background p-1 rounded-full">
+                            <Image
+                                src={story.avatar}
+                                alt={story.user}
+                                width={76}
+                                height={76}
+                                className="rounded-full"
+                            />
+                        </div>
+                         {story.isLive && (
+                            <Badge className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-xs" variant="destructive">LIVE</Badge>
+                        )}
+                    </div>
+                     <p className="text-xs font-medium text-muted-foreground truncate w-20 text-center group-hover:text-foreground">{story.user}</p>
+                </motion.div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
     )
 }
 
@@ -503,6 +488,8 @@ export default function DynamicFeedsPage() {
         </div>
     );
 }
+
+    
 
     
 
